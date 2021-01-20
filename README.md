@@ -1,6 +1,6 @@
 # tmc-cli-rust
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/rage/tmc-cli-rust/main/LICENSE)
 
 Command line interface for TMC, written in Rust. 
 
@@ -41,4 +41,4 @@ The recommended linter is [rust-clippy](https://github.com/rust-lang/rust-clippy
 
 ## Disclaimer
 
-This software is licensed under the Apacho 2.0 license. 
+This software is licensed under the [Apache 2.0 license](https://raw.githubusercontent.com/rage/tmc-cli-rust/main/LICENSE). 
