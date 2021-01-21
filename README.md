@@ -1,6 +1,9 @@
 # tmc-cli-rust
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/rage/tmc-cli-rust/main/LICENSE)
+![Linux](https://github.com/rage/tmc-cli-rust/workflows/Linux/badge.svg)
+![Windows](https://github.com/rage/tmc-cli-rust/workflows/Windows/badge.svg)
+![macOS](https://github.com/rage/tmc-cli-rust/workflows/macOS/badge.svg)
 
 Command line interface for TMC, written in Rust. 
 
