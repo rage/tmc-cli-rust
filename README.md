@@ -25,9 +25,22 @@ https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchil
 #### Client meetings
 https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
-## Installation
+## Getting started
+
+### Installation
 
 Instructions for setting up the project
+
+### Commands
+
+        tmc-cli-ohtuprojekti [FLAGS] [SUBCOMMAND]
+
+FLAG | Description
+:--- | :---
+`-h, --help` | Prints help information
+`-d, --no-update` | Disable auto update temporarily
+`-V, --version` | Prints version information
+
 
 ## Published Builds
 
@@ -45,7 +58,22 @@ Code should be formatted with [rustfmt](https://github.com/rust-lang/rustfmt)
 
 The recommended linter is [rust-clippy](https://github.com/rust-lang/rust-clippy)
 
+## Credits
 
-## Disclaimer
+Software will be developed during spring 2021 as a part of the course *Ohjelmistotuotantoprojekti* in the University of Helsinki.
 
-This software is licensed under the [Apache 2.0 license](https://raw.githubusercontent.com/rage/tmc-cli-rust/main/LICENSE). 
+### Original developers
+
+* Aleksis
+* Arttu
+* Jaime
+* Joni
+* Juha [Robustic](https://github.com/Robustic/)
+* Miika
+* Tatu 
+
+### Disclaimer
+
+This software is licensed under the [Apache 2.0 license](https://raw.githubusercontent.com/rage/tmc-cli-rust/main/LICENSE).
+
+This software comes with no warranty. University of Helsinki and the tmc-cli-rust developers are not responsible for any damages caused by misuse or misbehaviour of this software.
