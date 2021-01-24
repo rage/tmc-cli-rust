@@ -11,7 +11,7 @@ The old Java CLI can be found at [testmycode/tmc-cli](https://github.com/testmyc
 
 ## Project documentation
 
-*This documentation is written in Finnish*
+*These documentations are written in Finnish*
 
 #### Root folder
 https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
@@ -28,6 +28,10 @@ https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 ## Installation
 
 Instructions for setting up the project
+
+## Published Builds
+
+Published *Builds* will be located to the [https://download.mooc.fi](https://download.mooc.fi). Builds are published for the some different operating systems (Windows, MacOS, Linux).
 
 ## Usage manual
 
