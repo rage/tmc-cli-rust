@@ -64,7 +64,7 @@ Software will be developed during spring 2021 as a part of the course *Ohjelmist
 
 ### Original developers
 
-* Aleksis
+* Aleksis [Tykky](https://github.com/Tykky)
 * Arttu
 * Jaime
 * Joni
