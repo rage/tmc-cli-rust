@@ -279,7 +279,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tmc-cli-ohtuprojekti"
+name = "tmc-cli-rust"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
