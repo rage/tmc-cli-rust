@@ -33,7 +33,7 @@ Instructions for setting up the project
 
 ### Commands
 
-        tmc-cli-ohtuprojekti [FLAGS] [SUBCOMMAND]
+        tmc-cli-rust [FLAGS] [SUBCOMMAND]
 
 FLAG | Description
 :--- | :---

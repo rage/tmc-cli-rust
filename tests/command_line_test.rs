@@ -4,7 +4,7 @@ use std::process::Command;
 
 #[test]
 fn hello() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("tmc-cli-ohtuprojekti")?;
+    let mut cmd = Command::cargo_bin("tmc-cli-rust")?;
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("Hello"));
@@ -14,7 +14,7 @@ fn hello() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("tmc-cli-ohtuprojekti")?;
+    let mut cmd = Command::cargo_bin("tmc-cli-rust")?;
     cmd.arg("--help");
     cmd.assert()
         .success()
@@ -25,7 +25,7 @@ fn help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn wrong_argument() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("tmc-cli-ohtuprojekti")?;
+    let mut cmd = Command::cargo_bin("tmc-cli-rust")?;
     cmd.arg("--wrong_argument");
     cmd.assert()
         .failure()
