@@ -16,9 +16,9 @@ fn hello() -> Result<(), Box<dyn std::error::Error>> {
 fn help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("tmc-cli-rust")?;
     cmd.arg("--help");
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains("Test My Code client written in Rust"));
+    cmd.assert().success().stdout(predicate::str::contains(
+        "Test My Code client written in Rust",
+    ));
 
     Ok(())
 }
