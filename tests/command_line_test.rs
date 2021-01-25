@@ -22,3 +22,14 @@ fn help() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[test]
+fn frong_argument() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("tmc-cli-ohtuprojekti")?;
+    cmd.arg("--frong_argument");
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("error: Found argument '--frong_argument' which wasn't expected, or isn't valid in this context"));
+
+    Ok(())
+}

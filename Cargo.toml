@@ -1,8 +1,11 @@
 [package]
 name = "tmc-cli-ohtuprojekti"
 version = "0.1.0"
-authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>"]
+authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
+           "Robustic <juha.malinen@helsinki.fi"]
 edition = "2018"
+description = "Command line interface for TMC, written in Rust."
+license = "Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
