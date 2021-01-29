@@ -6,22 +6,22 @@ fn main() {
         .about("Does awesome things")
         .subcommand(
             SubCommand::with_name("config")
-                .help("Set/unset TMC-CLI properties and change settings"),
+                .about("Set/unset TMC-CLI properties and change settings"),
         )
-        .subcommand(SubCommand::with_name("courses").help("List the available courses"))
-        .subcommand(SubCommand::with_name("download").help("Sets the level of verbosity"))
+        .subcommand(SubCommand::with_name("courses").about("List the available courses"))
+        .subcommand(SubCommand::with_name("download").about("Sets the level of verbosity"))
         .subcommand(
-            SubCommand::with_name("exercises").help("List the exercises for a specific course"),
+            SubCommand::with_name("exercises").about("List the exercises for a specific course"),
         )
-        .subcommand(SubCommand::with_name("help").help("List every command"))
-        .subcommand(SubCommand::with_name("info").help("Show info about the current directory"))
-        .subcommand(SubCommand::with_name("login").help("Login to TMC server"))
-        .subcommand(SubCommand::with_name("logout").help("Logout from TMC server"))
-        .subcommand(SubCommand::with_name("organization").help("Change organization"))
-        .subcommand(SubCommand::with_name("paste").help("Submit exercise to TMC pastebin"))
-        .subcommand(SubCommand::with_name("submit").help("Submit exercises to TMC server"))
-        .subcommand(SubCommand::with_name("test").help("Run local exercise tests"))
-        .subcommand(SubCommand::with_name("update").help("Update exercises"))
+        .subcommand(SubCommand::with_name("about").about("List every command"))
+        .subcommand(SubCommand::with_name("info").about("Show info about the current directory"))
+        .subcommand(SubCommand::with_name("login").about("Login to TMC server"))
+        .subcommand(SubCommand::with_name("logout").about("Logout from TMC server"))
+        .subcommand(SubCommand::with_name("organization").about("Change organization"))
+        .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
+        .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
+        .subcommand(SubCommand::with_name("test").about("Run local exercise tests"))
+        .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .subcommand(
             SubCommand::with_name("adssada")
                 .about("controls testing features")
