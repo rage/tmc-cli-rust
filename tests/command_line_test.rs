@@ -48,11 +48,10 @@ fn command_version() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn command_test_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("tmc-cli-rust")?;
-    cmd.arg("test");
-    cmd.arg("--help");
-    cmd.assert().success().stdout(predicate::str::contains(
-        "tmc-cli-rust test",
-    ));
+    cmd.arg("test").arg("--help");
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("tmc-cli-rust test"));
 
     Ok(())
 }
