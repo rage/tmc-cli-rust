@@ -3,6 +3,7 @@ use clap::{App, Arg, SubCommand};
 fn main() {
     println!("Hello");
     let _matches = App::new("Test My Code client written in Rust")
+        .version("0.1.0")
         .about("Does awesome things")
         .subcommand(
             SubCommand::with_name("config")
