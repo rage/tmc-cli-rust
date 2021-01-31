@@ -55,7 +55,8 @@ fn command_test_help() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("test").arg("--help");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("tmc-cli-rust test"));
+        // check that the help info for command 'test' contains the words "tmc-cli-rust test" 
+        .stdout(predicate::str::contains(String::from(PKG_NAME.unwrap()) + " test"));
 
     Ok(())
 }
