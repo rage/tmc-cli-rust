@@ -1,8 +1,19 @@
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
+
+mod commands;
+
+pub use commands::command_handler;
 
 fn main() {
     println!("Hello");
-    let _matches = App::new("Test My Code client written in Rust")
+
+    let matches = get_matches();
+
+    command_handler::handle(&matches);
+}
+
+fn get_matches() -> ArgMatches<'static> {
+    let matches = App::new("Test My Code client written in Rust")
         .version("0.1.0")
         .about("Does awesome things")
         .subcommand(
@@ -21,7 +32,15 @@ fn main() {
         .subcommand(SubCommand::with_name("organization").about("Change organization"))
         .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
-        .subcommand(SubCommand::with_name("test").about("Run local exercise tests"))
+        .subcommand(
+            SubCommand::with_name("test")
+                .about("Run local exercise tests")
+                .arg(
+                    Arg::with_name("exercise")
+                        .value_name("exercise")
+                        .required(true),
+                ),
+        )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .subcommand(
             SubCommand::with_name("adssada")
@@ -41,4 +60,6 @@ fn main() {
                 .help("Disable auto update temporarily"),
         )
         .get_matches();
+
+    matches
 }
