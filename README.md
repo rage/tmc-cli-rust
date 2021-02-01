@@ -29,7 +29,42 @@ https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
 ### Installation
 
-Instructions for setting up the project
+#### Using the install script (Linux/OS X)
+
+```cd``` into the directory where you want to download tmc-cli-rust and run the following command:
+
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash
+
+#### Using the Windows installer
+
+Download the installer 'tmc-cli-rust.msi' at ... TODO
+
+### Manual installation
+
+If using the installers is not an option for you, you can download the [latest release](https://github.com/rage/tmc-cli-rust/releases/latest) manually. 
+
+Windows: tmc-cli-rust.exe
+
+Linux/OS X: tmc-cli-rust
+
+#### For Linux: 
+
+After downloading 'tmc-cli-rust', navigate to the directory it's located in and make it an executable with the command
+
+        chmod u+x ./tmc-cli-rust
+
+To use the software from any directory, you can add it to your environmental variables with the following command (substituting DIRECTORY for the location where tmc-cli-rust resides at.)
+
+        echo "alias tmc='DIRECTORY/tmc-cli-rust'" >> "$HOME/.bashrc"
+
+#### For Windows: 
+
+After downloading tmc-cli-rust.exe you can start using it from the command line by navigating to the directory it resides at. 
+
+To be able to use it from any directory, you can add it to your environmental variables with the following command. (substituting DIRECTORY for the directory where tmc-cli-rust.exe resides at)
+
+        set PATH=%PATH%;DIRECTORY
+
 
 ### Commands
 
@@ -67,7 +102,7 @@ Software will be developed during spring 2021 as a part of the course *Ohjelmist
 * Aleksis [Tykky](https://github.com/Tykky)
 * Arttu
 * Jaime
-* Joni
+* Joni [Nooblue](https://github.com/Nooblue/)
 * Juha [Robustic](https://github.com/Robustic/)
 * Miika
 * Tatu 
