@@ -1,15 +1,13 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 
-mod commands;
-
-pub use commands::command_handler;
+pub mod commands;
 
 fn main() {
     println!("Hello");
 
     let matches = get_matches();
 
-    command_handler::handle(&matches);
+    commands::handle(&matches);
 }
 
 fn get_matches() -> ArgMatches<'static> {
