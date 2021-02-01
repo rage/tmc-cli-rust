@@ -1,4 +1,3 @@
-use clap;
 use test_command::test;
 mod test_command;
 
