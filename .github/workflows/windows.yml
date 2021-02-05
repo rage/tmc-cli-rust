@@ -6,10 +6,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
 
+  debug:
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Install fmt and clippy
@@ -24,3 +23,29 @@ jobs:
       run: cargo fmt -- --check
     - name: Run clippy
       run: cargo clippy -- -D warnings
+
+  release:
+    needs: debug
+    if: github.ref == 'refs/heads/master' && github.event.pull_request.merged == true
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - name: Cargo build # crt-static is set with RUSTFLAGS to statically link MSVCRT (VCRUNTIME140.dll)
+        run: |
+          rustup target add i686-pc-windows-msvc
+          $env:RUSTFLAGS="-C target-feature=+crt-static"
+          cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
+      - name: Deploy
+        run: |
+          $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
+          $env:CLOUDSDK_PYTHON="C:\hostedtoolcache\windows\Python\$env:python_version\x64\python"
+          gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-$Env:TAG.exe
+
+    
