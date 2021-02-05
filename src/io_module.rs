@@ -1,4 +1,4 @@
-use std::io::{Write, BufRead};
+use std::io::{BufRead, Write};
 
 // Example use:
 
@@ -13,24 +13,17 @@ use std::io::{Write, BufRead};
 
 //io.print(&x);
 
-
-
-pub struct IO <'a>{
+pub struct IO<'a> {
     output: &'a mut dyn Write,
-    input: &'a mut dyn BufRead, 
+    input: &'a mut dyn BufRead,
 }
 
 impl IO<'_> {
-
-    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl BufRead)-> IO<'a> {
-        IO{
-            output,
-            input
-        }
+    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl BufRead) -> IO<'a> {
+        IO { output, input }
     }
 
-
-    pub fn read_line(self: &mut Self) -> String{
+    pub fn read_line(self: &mut Self) -> String {
         let mut x = String::new();
 
         self.input.read_line(&mut x).expect("moi");
@@ -40,5 +33,10 @@ impl IO<'_> {
 
     pub fn print(self: &mut Self, output: &String) {
         self.output.write(output.as_bytes()).expect("");
+    }
+
+    pub fn println(self: &mut Self, output: &String) {
+        self.print(output);
+        self.print(&"\n".to_string());
     }
 }
