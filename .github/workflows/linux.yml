@@ -4,6 +4,7 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
+  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
 
 jobs:
 
@@ -26,7 +27,7 @@ jobs:
 
   release:
     needs: debug
-    if: github.ref == 'refs/heads/master' && github.event.pull_request.merged == true
+    if: github.ref == 'refs/heads/master' && $TAG != ''
     runs-on: ubuntu-16.04
     strategy:
       matrix:
