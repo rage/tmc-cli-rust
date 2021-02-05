@@ -1,8 +1,15 @@
 use crate::io_module::IO;
 
 pub fn login(io: &mut IO) {
-    let x = String::from("moi");
+    io.print(&format!("{}", "username: "));
+    let mut username = io.read_line();
+    username = username.trim().to_string();
 
-    io.println(&x);
-    io.println(&x);
+    io.print(&"password: ".to_string());
+    let mut password = io.read_line();
+    password = password.trim().to_string();
+
+    io.println(&"You entered:".to_string());
+    io.println(&format!("\tusername: {}", username));
+    io.println(&format!("\tpassword: {}", password));
 }

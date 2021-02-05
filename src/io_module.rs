@@ -33,6 +33,7 @@ impl IO<'_> {
 
     pub fn print(self: &mut Self, output: &String) {
         self.output.write(output.as_bytes()).expect("");
+        self.output.flush().expect("Something went wrong");
     }
 
     pub fn println(self: &mut Self, output: &String) {
