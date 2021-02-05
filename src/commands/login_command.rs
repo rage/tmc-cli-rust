@@ -1,3 +1,1 @@
-pub fn login() {
-    println!("moi");
-}
+pub fn login() {}

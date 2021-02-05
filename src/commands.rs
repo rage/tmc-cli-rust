@@ -6,7 +6,7 @@ pub fn handle(matches: &clap::ArgMatches) {
 
     match matches.subcommand() {
         ("login", _) => login(),
-        (_, None) => (), // No subcommand was given
-        _ => unreachable!(),
+        (_, Some(_)) => (), // Not implemented yet
+        (_, None) => (),    // No subcommand was given
     }
 }
