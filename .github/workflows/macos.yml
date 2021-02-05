@@ -6,10 +6,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
 
+  debug:
     runs-on: macos-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Install fmt and clippy
@@ -24,3 +23,20 @@ jobs:
       run: cargo fmt -- --check
     - name: Run clippy
       run: cargo clippy -- -D warnings
+
+  release:
+    needs: debug
+    if: github.ref == 'refs/heads/master' && github.event.pull_request.merged == true
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - name: Cargo build
+        run: cargo build -p tmc-cli-rust --release --verbose
+      - name: Sign
+        run: codesign --force -s - target/release/tmc-cli-rust
+      - name: Deploy
+        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-$TAG
