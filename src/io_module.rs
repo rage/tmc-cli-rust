@@ -27,17 +27,16 @@ impl IO<'_> {
         let mut x = String::new();
 
         self.input.read_line(&mut x).expect("moi");
-
         x
     }
 
-    pub fn print(self: &mut Self, output: &String) {
-        self.output.write(output.as_bytes()).expect("");
+    pub fn print<S: Into<String>>(self: &mut Self, output: S) {
+        self.output.write(output.into().as_bytes()).expect("");
         self.output.flush().expect("Something went wrong");
     }
 
-    pub fn println(self: &mut Self, output: &String) {
+    pub fn println<S: Into<String>>(self: &mut Self, output: S) {
         self.print(output);
-        self.print(&"\n".to_string());
+        self.print("\n");
     }
 }

@@ -14,3 +14,4 @@ clap = "2.3.3"
 assert_cmd = "0.10"
 predicates = "1"
 tmc-langs-util = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
+tmc-client = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
