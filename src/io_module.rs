@@ -23,19 +23,19 @@ impl IO<'_> {
         IO { output, input }
     }
 
-    pub fn read_line(self: &mut Self) -> String {
+    pub fn read_line(&mut self) -> String {
         let mut x = String::new();
 
         self.input.read_line(&mut x).expect("moi");
         x
     }
 
-    pub fn print<S: Into<String>>(self: &mut Self, output: S) {
+    pub fn print<S: Into<String>>(&mut self, output: S) {
         self.output.write(output.into().as_bytes()).expect("");
         self.output.flush().expect("Something went wrong");
     }
 
-    pub fn println<S: Into<String>>(self: &mut Self, output: S) {
+    pub fn println<S: Into<String>>(&mut self, output: S) {
         self.print(output);
         self.print("\n");
     }
