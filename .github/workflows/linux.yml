@@ -4,7 +4,6 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
-  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
 
 jobs:
 
@@ -27,7 +26,7 @@ jobs:
 
   release:
     needs: debug
-    if: github.ref == 'refs/heads/master' && $TAG != ''
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-16.04
     strategy:
       matrix:
@@ -47,4 +46,4 @@ jobs:
           rustup target add i686-unknown-linux-gnu
           cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
       - name: Deploy
-        run: gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-$TAG
+        run: gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}
