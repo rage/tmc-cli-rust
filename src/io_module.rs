@@ -31,7 +31,7 @@ impl IO<'_> {
     }
 
     pub fn print<S: Into<String>>(&mut self, output: S) {
-        self.output.write(output.into().as_bytes()).expect("");
+        self.output.write_all(output.into().as_bytes()).expect("");
         self.output.flush().expect("Something went wrong");
     }
 

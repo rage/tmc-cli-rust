@@ -4,7 +4,7 @@ use tmc_client::{oauth2::TokenResponse, ClientError, TmcClient};
 use std::path::PathBuf;
 
 pub fn login(io: &mut IO) {
-    io.print(format!("{}", "username: "));
+    io.print("username: ");
     let mut username = io.read_line();
     username = username.trim().to_string();
 
@@ -33,9 +33,5 @@ pub fn login(io: &mut IO) {
 }
 
 fn explain_login_fail(error: ClientError) -> String {
-    match error {
-        _ => (),
-    }
-
     format!("{:#?}", error)
 }
