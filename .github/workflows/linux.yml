@@ -7,7 +7,7 @@ env:
 
 jobs:
 
-  debug:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,15 +24,19 @@ jobs:
     - name: Run clippy
       run: cargo clippy -- -D warnings
 
-  release:
-    needs: debug
+  deploy:
+    needs: test
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-16.04 
     strategy:
       matrix:
         target: [i686-unknown-linux-gnu, x86_64-unknown-linux-gnu]
     steps:
       - uses: actions/checkout@v2
+      - name: Fetch version
+        run: |
+          VER=$(cat VERSION)
+          echo "VERSION=$VER" >> $GITHUB_ENV
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -46,4 +50,4 @@ jobs:
           rustup target add i686-unknown-linux-gnu
           cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
       - name: Deploy
-        run: gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}
+        run: gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ env.VERSION }}

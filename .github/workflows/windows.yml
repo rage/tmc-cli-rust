@@ -7,7 +7,7 @@ env:
 
 jobs:
 
-  debug:
+  test:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,8 +24,8 @@ jobs:
     - name: Run clippy
       run: cargo clippy -- -D warnings
 
-  release:
-    needs: debug
+  deploy:
+    needs: test
     if: github.ref == 'refs/heads/master'
     runs-on: windows-latest
     strategy:
@@ -33,6 +33,10 @@ jobs:
         target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
     steps:
       - uses: actions/checkout@v2
+      - name: Fetch version
+        run: |
+          VER=$(cat VERSION)
+          echo "VERSION=$VER" >> $GITHUB_ENV
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -46,6 +50,6 @@ jobs:
         run: |
           $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
           $env:CLOUDSDK_PYTHON="C:\hostedtoolcache\windows\Python\$env:python_version\x64\python"
-          gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}
+          gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ env.VERSION }}
 
     

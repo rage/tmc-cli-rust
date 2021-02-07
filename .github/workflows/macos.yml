@@ -7,7 +7,7 @@ env:
 
 jobs:
 
-  debug:
+  test:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,12 +24,16 @@ jobs:
     - name: Run clippy
       run: cargo clippy -- -D warnings
 
-  release:
-    needs: debug
+  deploy:
+    needs: test
     if: github.ref == 'refs/heads/master'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Fetch version
+        run: |
+          VER=$(cat VERSION)
+          echo "VERSION=$VER" >> $GITHUB_ENV
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -39,4 +43,4 @@ jobs:
       - name: Sign
         run: codesign --force -s - target/release/tmc-cli-rust
       - name: Deploy
-        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin
+        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-${{ env.VERSION }}
