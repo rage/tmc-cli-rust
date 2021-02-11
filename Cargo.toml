@@ -13,5 +13,12 @@ license = "Apache-2.0"
 clap = "2.3.3"
 assert_cmd = "0.10"
 predicates = "1"
+anyhow = "1"
+serde = "1"
+serde_json = "1"
+log = "0.4"
+dirs = "3"
 tmc-langs-util = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
+tmc-langs-cli = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
+tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
 tmc-client = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }

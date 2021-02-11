@@ -1,6 +1,6 @@
 use crate::io_module::IO;
 use tmc_client::{oauth2::TokenResponse, ClientError, TmcClient};
-
+use crate::config::credentials::Credentials;
 use std::path::PathBuf;
 
 pub fn login(io: &mut IO) {

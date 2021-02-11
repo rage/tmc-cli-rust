@@ -2,6 +2,8 @@ use clap::{App, Arg, ArgMatches, SubCommand};
 //use std::io::{Write, Read};
 use std::io::{stdin, stdout};
 
+pub mod config;
+
 pub mod io_module;
 use io_module::IO;
 
