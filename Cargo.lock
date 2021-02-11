@@ -2190,6 +2190,7 @@ dependencies = [
  "dirs",
  "log",
  "predicates",
+ "rpassword",
  "serde",
  "serde_json",
  "tmc-client",

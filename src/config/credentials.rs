@@ -1,10 +1,10 @@
-use tmc_client::Token;
 use anyhow::{Context, Result};
 use file_util::create_file_lock;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
+use tmc_client::Token;
 use tmc_langs_framework::file_util;
 
 #[derive(Debug, Serialize, Deserialize)]

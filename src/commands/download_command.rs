@@ -4,7 +4,7 @@ use tmc_client::TmcClient;
 use std::path::PathBuf;
 
 pub fn download_or_update(io: &mut IO) {
-  // Pyydetään käyttäjältä Kurssin id ja tehtävien tallennus kansio
+    // Pyydetään käyttäjältä Kurssin id ja tehtävien tallennus kansio
     io.print("Course id: ");
     let course_id = io.read_line();
     let course_id: usize = course_id.trim().parse().unwrap();
@@ -19,14 +19,12 @@ pub fn download_or_update(io: &mut IO) {
     };
 
     let mut client = TmcClient::new(
-      PathBuf::from("./config"),
-      "https://tmc.mooc.fi".to_string(),
-      "vscode_plugin".to_string(),
-      "1.0.0".to_string(),
+        PathBuf::from("./config"),
+        "https://tmc.mooc.fi".to_string(),
+        "vscode_plugin".to_string(),
+        "1.0.0".to_string(),
     )
     .unwrap();
-
-
 
     //Väliaikainen viritelmä------
 
@@ -38,7 +36,9 @@ pub fn download_or_update(io: &mut IO) {
     let mut password = io.read_line();
     password = password.trim().to_string();
 
-    client.authenticate("vscode_plugin", username, password).unwrap();
+    client
+        .authenticate("vscode_plugin", username, password)
+        .unwrap();
 
     //----------------------------
 
@@ -52,5 +52,5 @@ pub fn download_or_update(io: &mut IO) {
         download_params.push((exercise.id, PathBuf::from(path)));
     }
 
-    client.download_or_update_exercises(download_params);
+    let _ = client.download_or_update_exercises(download_params);
 }

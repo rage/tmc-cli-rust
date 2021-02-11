@@ -1,7 +1,7 @@
-use login_command::login;
 use download_command::download_or_update;
-mod login_command;
+use login_command::login;
 mod download_command;
+mod login_command;
 
 use crate::io_module::IO;
 
