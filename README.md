@@ -100,7 +100,7 @@ Software will be developed during spring 2021 as a part of the course *Ohjelmist
 ### Original developers
 
 * Aleksis [Tykky](https://github.com/Tykky)
-* Arttu
+* Arttu [ShootingStar91](https://github.com/ShootingStar91)
 * Jaime
 * Joni [Nooblue](https://github.com/Nooblue/)
 * Juha [Robustic](https://github.com/Robustic/)
