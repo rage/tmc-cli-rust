@@ -1,5 +1,4 @@
 use crate::io_module::IO;
-use rpassword;
 use std::path::PathBuf;
 use tmc_client::{oauth2::TokenResponse, ClientError, TmcClient};
 
