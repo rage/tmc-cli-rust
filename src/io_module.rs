@@ -1,17 +1,17 @@
 use std::io::{BufRead, BufReader, Read, Write};
 
-// Example use:
-
-//let stdin = stdin();
-//let mut lock = stdin.lock();
-
-//let mut stdout = stdout();
-
-//let mut io = IO::new(&mut stdout, &mut lock);
-
-//let x = io.read_line();
-
-//io.print(&x);
+/// Example use:
+///
+///let stdin = stdin();
+///let mut lock = stdin.lock();
+///
+///let mut stdout = stdout();
+///
+///let mut io = IO::new(&mut stdout, &mut lock);
+///
+///let x = io.read_line();
+///
+///io.print(&x);
 
 pub struct IO<'a> {
     output: &'a mut dyn Write,
@@ -28,7 +28,7 @@ impl IO<'_> {
 
         let mut reader = BufReader::new(&mut self.input);
 
-        reader.read_line(&mut x).expect("moi");
+        reader.read_line(&mut x).unwrap();
         x
     }
 

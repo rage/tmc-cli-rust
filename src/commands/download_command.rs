@@ -1,7 +1,7 @@
-use crate::io_module::IO;
-use tmc_client::TmcClient;
 use crate::config::Credentials;
+use crate::io_module::IO;
 use std::path::PathBuf;
+use tmc_client::TmcClient;
 
 pub fn download_or_update(io: &mut IO) {
     // Ask user for course id and destination folder for exercises
@@ -34,7 +34,6 @@ pub fn download_or_update(io: &mut IO) {
         io.println("Not logged in!");
         return;
     }
-
 
     // Build a vector for exercise id and saving location pairs
     let mut download_params = Vec::new();

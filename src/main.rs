@@ -10,7 +10,6 @@ use io_module::IO;
 pub mod commands;
 
 fn main() {
-
     let mut stdin = stdin();
     //let mut input = stdin.lock();
 
