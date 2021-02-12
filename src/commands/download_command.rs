@@ -1,6 +1,6 @@
 use crate::io_module::IO;
 use tmc_client::TmcClient;
-
+use crate::config::Credentials;
 use std::path::PathBuf;
 
 pub fn download_or_update(io: &mut IO) {
@@ -26,21 +26,16 @@ pub fn download_or_update(io: &mut IO) {
     )
     .unwrap();
 
-    //Väliaikainen viritelmä------
+    // Lataa kirjautumistiedot olettaen että kirjautumistiedot sisältävä 
+    // tiedosto on olemassa. Kaatuu jos ei ole!
+    let mut credentials = Credentials::load("vscode_plugin").unwrap();
+    if let Some(credentials) = credentials {
+        client.set_token(credentials.token());
+    } else {
+        io.println("Not logged in!");
+        return;
+    }
 
-    io.print("username: ");
-    let mut username = io.read_line();
-    username = username.trim().to_string();
-
-    io.print("password: ");
-    let mut password = io.read_line();
-    password = password.trim().to_string();
-
-    client
-        .authenticate("vscode_plugin", username, password)
-        .unwrap();
-
-    //----------------------------
 
     //Rakennetaan vektori johon laitetaan tehtävä_id & tallennuslokaatio pareja
     let mut download_params = Vec::new();
