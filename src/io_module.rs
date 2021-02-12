@@ -1,4 +1,4 @@
-use std::io::{BufRead, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 
 // Example use:
 
@@ -15,18 +15,20 @@ use std::io::{BufRead, Write};
 
 pub struct IO<'a> {
     output: &'a mut dyn Write,
-    input: &'a mut dyn BufRead,
+    input: &'a mut dyn Read,
 }
 
 impl IO<'_> {
-    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl BufRead) -> IO<'a> {
+    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> IO<'a> {
         IO { output, input }
     }
 
     pub fn read_line(&mut self) -> String {
         let mut x = String::new();
 
-        self.input.read_line(&mut x).expect("moi");
+        let mut reader = BufReader::new(&mut self.input);
+
+        reader.read_line(&mut x).expect("moi");
         x
     }
 
@@ -38,5 +40,11 @@ impl IO<'_> {
     pub fn println<S: Into<String>>(&mut self, output: S) {
         self.print(output);
         self.print("\n");
+    }
+
+    pub fn read_password(&mut self) -> String {
+        rpassword::read_password().unwrap()
+        //let mut reader = BufReader::new(&mut self.input);
+        //read_password_with_reader(Some(&mut reader)).unwrap()
     }
 }

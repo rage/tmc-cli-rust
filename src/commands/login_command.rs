@@ -7,7 +7,9 @@ pub fn login(io: &mut IO) {
     let mut username = io.read_line();
     username = username.trim().to_string();
 
-    let password = rpassword::read_password_from_tty(Some("Password: ")).unwrap();
+    io.print("password: ");
+    let password = io.read_password();
+    //let password = rpassword::read_password_from_tty(Some("Password: ")).unwrap();
 
     let mut client = TmcClient::new(
         PathBuf::from("./config"),

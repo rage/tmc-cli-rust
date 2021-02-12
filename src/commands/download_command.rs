@@ -33,7 +33,7 @@ pub fn download_or_update(io: &mut IO) {
     username = username.trim().to_string();
 
     io.print("password: ");
-    let mut password = io.read_line();
+    let mut password = io.read_password();
     password = password.trim().to_string();
 
     client
