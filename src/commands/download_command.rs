@@ -4,7 +4,7 @@ use crate::config::Credentials;
 use std::path::PathBuf;
 
 pub fn download_or_update(io: &mut IO) {
-    // Pyydetään käyttäjältä Kurssin id ja tehtävien tallennus kansio
+    // Ask user for course id and destination folder for exercises
     io.print("Course id: ");
     let course_id = io.read_line();
     let course_id: usize = course_id.trim().parse().unwrap();
@@ -26,9 +26,8 @@ pub fn download_or_update(io: &mut IO) {
     )
     .unwrap();
 
-    // Lataa kirjautumistiedot olettaen että kirjautumistiedot sisältävä 
-    // tiedosto on olemassa. Kaatuu jos ei ole!
-    let mut credentials = Credentials::load("vscode_plugin").unwrap();
+    // Load login credentials if they exist in the file
+    let credentials = Credentials::load("vscode_plugin").unwrap();
     if let Some(credentials) = credentials {
         client.set_token(credentials.token());
     } else {
@@ -37,7 +36,7 @@ pub fn download_or_update(io: &mut IO) {
     }
 
 
-    //Rakennetaan vektori johon laitetaan tehtävä_id & tallennuslokaatio pareja
+    // Build a vector for exercise id and saving location pairs
     let mut download_params = Vec::new();
 
     let exercises = client.get_course_exercises(course_id).unwrap();

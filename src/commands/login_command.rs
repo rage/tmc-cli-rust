@@ -1,10 +1,10 @@
 use crate::io_module::IO;
 use std::path::PathBuf;
-use tmc_client::{oauth2::TokenResponse, ClientError, TmcClient};
+use tmc_client::{ClientError, TmcClient};
 use crate::config::Credentials;
 
 pub fn login(io: &mut IO) {
-    io.print("username: ");
+    io.print("email/username: ");
     let mut username = io.read_line();
     username = username.trim().to_string();
 
