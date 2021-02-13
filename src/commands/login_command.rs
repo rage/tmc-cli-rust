@@ -2,8 +2,9 @@ use crate::config::Credentials;
 use crate::io_module::IO;
 use std::path::PathBuf;
 use tmc_client::{ClientError, TmcClient};
+use super::command_util::*;
+use super::organization_command::set_organization;
 
-const PLUGIN: &str = "vscode_plugin";
 
 pub fn login(io: &mut IO) {
     if is_logged_in() {
@@ -11,7 +12,7 @@ pub fn login(io: &mut IO) {
         return;
     }
 
-    io.print("email / username: ");
+    io.print("Email / username: ");
     let mut username = io.read_line();
     username = username.trim().to_string();
 
@@ -20,13 +21,17 @@ pub fn login(io: &mut IO) {
         return;
     }
 
-    io.print("password: ");
+    io.print("Password: ");
     let mut password = io.read_password();
     password = password.trim().to_string();
 
     io.println("");
 
     io.println(authenticate(username, password));
+
+    set_organization(io);
+
+
 }
 
 fn authenticate(username: String, password: String) -> &'static str {
@@ -46,24 +51,6 @@ fn authenticate(username: String, password: String) -> &'static str {
     "Something funny happened"
 }
 
-fn get_client() -> TmcClient {
-    TmcClient::new(
-        PathBuf::from("./config"),
-        "https://tmc.mooc.fi".to_string(),
-        PLUGIN.to_string(),
-        "1.0.0".to_string(),
-    )
-    .unwrap()
-}
-
-fn get_credentials() -> Option<Credentials> {
-    // Load login credentials if they exist in the file
-    Credentials::load(PLUGIN).unwrap()
-}
-
-fn is_logged_in() -> bool {
-    get_credentials().is_some()
-}
 
 fn explain_login_fail(error: ClientError) -> &'static str {
     let res = format!("{:?}", error);
