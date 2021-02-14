@@ -4,7 +4,6 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
-  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
 
 jobs:
 
@@ -43,10 +42,14 @@ jobs:
           rustup target add i686-pc-windows-msvc
           $env:RUSTFLAGS="-C target-feature=+crt-static"
           cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
+      - name: Get the version
+        id: get_version
+        shell: bash
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Deploy
         run: |
           $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
           $env:CLOUDSDK_PYTHON="C:\hostedtoolcache\windows\Python\$env:python_version\x64\python"
-          gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-$Env:TAG.exe
+          gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}.exe
 
     

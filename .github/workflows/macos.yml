@@ -4,7 +4,6 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
-  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
 
 jobs:
 
@@ -39,5 +38,8 @@ jobs:
         run: cargo build -p tmc-cli-rust --release --verbose
       - name: Sign
         run: codesign --force -s - target/release/tmc-cli-rust
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Deploy
-        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-$TAG
+        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-${{ steps.get_version.outputs.VERSION }}
