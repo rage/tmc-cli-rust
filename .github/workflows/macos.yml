@@ -4,6 +4,7 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
+  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
 
 jobs:
 
@@ -26,7 +27,7 @@ jobs:
 
   deploy:
     needs: test
-    if: github.ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,4 +44,4 @@ jobs:
       - name: Sign
         run: codesign --force -s - target/release/tmc-cli-rust
       - name: Deploy
-        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-${{ env.VERSION }}
+        run: gsutil cp target/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-x86_64-apple-darwin-$TAG
