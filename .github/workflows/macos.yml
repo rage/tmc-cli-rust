@@ -4,7 +4,7 @@ on: push
 
 env:
   CARGO_TERM_COLOR: always
-  TAG: ${{ github.event.release.tag_name }} # had some issue using this directly on windows
+  TAG: ${GITHUB_REF#refs/*/} # had some issue using this directly on windows
 
 jobs:
 
