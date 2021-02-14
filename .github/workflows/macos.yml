@@ -26,15 +26,11 @@ jobs:
       run: cargo clippy -- -D warnings
 
   deploy:
-    needs: test
+    #needs: test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Fetch version
-        run: |
-          VER=$(cat VERSION)
-          echo "VERSION=$VER" >> $GITHUB_ENV
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
