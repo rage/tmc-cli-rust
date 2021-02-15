@@ -26,7 +26,6 @@ testexp="-test"
 regx="<Key>tmc-cli-rust/tmc-cli-rust-${platform}-unknown-linux-gnu-v[0-9]+\.[0-9]+\.[0-9]+${testexp}</Key>"
 
 if [[ $PAGE =~ $regx ]]; then
-  #echo "match: '${BASH_REMATCH[0]}'"
   echo "Found the file from mooc server"
 else
   exit
