@@ -1,10 +1,9 @@
+use super::command_util::*;
+use super::organization_command::set_organization;
 use crate::config::Credentials;
 use crate::io_module::IO;
 use std::path::PathBuf;
 use tmc_client::{ClientError, TmcClient};
-use super::command_util::*;
-use super::organization_command::set_organization;
-
 
 pub fn login(io: &mut IO) {
     if is_logged_in() {
@@ -30,8 +29,6 @@ pub fn login(io: &mut IO) {
     io.println(authenticate(username, password));
 
     set_organization(io);
-
-
 }
 
 fn authenticate(username: String, password: String) -> &'static str {
@@ -50,7 +47,6 @@ fn authenticate(username: String, password: String) -> &'static str {
 
     "Something funny happened"
 }
-
 
 fn explain_login_fail(error: ClientError) -> &'static str {
     let res = format!("{:?}", error);

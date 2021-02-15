@@ -1,11 +1,10 @@
-use crate::io_module::IO;
-use tmc_client::TmcClient;
-use crate::config::Credentials;
-use std::path::PathBuf;
 use super::command_util::*;
+use crate::config::Credentials;
+use crate::io_module::IO;
+use std::path::PathBuf;
+use tmc_client::TmcClient;
 
 pub fn download_or_update(io: &mut IO) {
-
     if !is_logged_in() {
         io.println("Not logged in. Login before downloading exerises");
         return;
@@ -29,7 +28,6 @@ pub fn download_or_update(io: &mut IO) {
     // Load login credentials if they exist in the file
     let credentials = get_credentials().unwrap();
     client.set_token(credentials.token()).unwrap();
-    
 
     // Build a vector for exercise id and saving location pairs
     let mut download_params = Vec::new();

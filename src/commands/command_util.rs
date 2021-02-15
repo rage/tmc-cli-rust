@@ -1,9 +1,8 @@
-use tmc_client::TmcClient;
 use crate::config::Credentials;
 use std::path::PathBuf;
+use tmc_client::TmcClient;
 
 pub const PLUGIN: &str = "vscode_plugin";
-
 
 pub fn get_client() -> TmcClient {
     TmcClient::new(
@@ -23,6 +22,3 @@ pub fn get_credentials() -> Option<Credentials> {
 pub fn is_logged_in() -> bool {
     get_credentials().is_some()
 }
-
-
-

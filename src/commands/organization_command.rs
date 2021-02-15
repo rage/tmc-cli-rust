@@ -1,15 +1,12 @@
-use crate::io_module::IO;
-use std::path::PathBuf;
 use super::command_util::*;
+use crate::io_module::IO;
+use anyhow::Result;
+use std::path::PathBuf;
 use tmc_langs_framework::file_util;
-use anyhow::{Result};
-
 
 pub fn get_organization_path(client_name: &str) -> Result<PathBuf> {
     crate::config::get_tmc_dir(client_name).map(|dir| dir.join("organization.json"))
 }
-
-
 
 // Returns none if no valid organization slug can be read from file,
 // otherwise organization slug as string
@@ -17,12 +14,10 @@ pub fn check_organization(client_name: String) -> Option<String> {
     // TBD Read organization from file
     // for now just return mooc
     Some("mooc".to_string())
-
 }
 
 // Asks for organization from user and saves it into file
 pub fn set_organization(io: &mut IO) -> Result<()> {
-
     // List all organizations
     for orgs in get_client().get_organizations() {
         for org in orgs {
@@ -39,7 +34,6 @@ pub fn set_organization(io: &mut IO) -> Result<()> {
     // TBD: Save organization into file here
     io.println("TBD: SAVING ORGANIZATION INTO FILE");
     Ok(())
-
 }
 
 // Check if logged in, then ask for organization

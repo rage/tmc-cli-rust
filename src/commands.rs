@@ -3,10 +3,10 @@ use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
 mod command_util;
-mod organization_command;
 mod download_command;
 mod login_command;
 mod logout_command;
+mod organization_command;
 
 use crate::io_module::IO;
 
