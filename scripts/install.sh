@@ -1,7 +1,4 @@
 #ji!/bin/bash
-
-filename="tmc-cli-rust-x86_64-unknown-linux-gnu-v0.0.1-test"
-
 set -euo pipefail
 
 echo "~ Installing TMC-CLI ~"
