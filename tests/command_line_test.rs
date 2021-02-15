@@ -7,16 +7,6 @@ use std::process::Command;
 const PKG_NAME: Option<&'static str> = option_env!("CARGO_PKG_NAME");
 
 #[test]
-fn command_hello() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains("Hello"));
-
-    Ok(())
-}
-
-#[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--help");
