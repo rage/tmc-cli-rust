@@ -25,7 +25,7 @@ jobs:
       run: cargo clippy -- -D warnings
 
   deploy:
-    #needs: test
+    needs: test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     strategy:
