@@ -1,8 +1,7 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 //use std::io::{Write, Read};
-use std::io::{stdin, stdout};
 use self_update::cargo_crate_version;
-
+use std::io::{stdin, stdout};
 
 pub mod config;
 
@@ -35,7 +34,9 @@ fn get_matches() -> ArgMatches<'static> {
         .subcommand(SubCommand::with_name("courses").about("List the available courses"))
         .subcommand(SubCommand::with_name("download").about("Sets the level of verbosity"))
         .subcommand(
-            SubCommand::with_name("exercises").about("List the exercises for a specific course"),
+            SubCommand::with_name("exercises")
+                .about("List the exercises for a specific course")
+                .arg(Arg::with_name("course").value_name("course").required(true)),
         )
         .subcommand(SubCommand::with_name("help").about("List every command"))
         .subcommand(SubCommand::with_name("info").about("Show info about the current directory"))
