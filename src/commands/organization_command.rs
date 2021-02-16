@@ -19,12 +19,10 @@ pub fn check_organization(client_name: String) -> Option<String> {
 // Asks for organization from user and saves it into file
 pub fn set_organization(io: &mut IO) -> Result<()> {
     // List all organizations
-    for orgs in get_client().get_organizations() {
-        for org in orgs {
-            io.print(org.name);
-            io.print(" Slug: ");
-            io.println(org.slug);
-        }
+    for org in get_client().get_organizations().unwrap() {
+        io.print(org.name);
+        io.print(" Slug: ");
+        io.println(org.slug);
     }
 
     io.print("Choose organization by writing its slug: ");
