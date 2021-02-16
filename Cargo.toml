@@ -23,3 +23,4 @@ tmc-langs-cli = { git = "https://github.com/rage/tmc-langs-rust", branch = "mast
 tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
 tmc-client = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
 rpassword = "5.0.1"
+self_update = "0.23.0"

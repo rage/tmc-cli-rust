@@ -1,6 +1,8 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 //use std::io::{Write, Read};
 use std::io::{stdin, stdout};
+use self_update::cargo_crate_version;
+
 
 pub mod config;
 
@@ -10,6 +12,7 @@ use io_module::IO;
 pub mod commands;
 
 fn main() {
+    check_for_update();
     let mut stdin = stdin();
     //let mut input = stdin.lock();
 
@@ -71,4 +74,16 @@ fn get_matches() -> ArgMatches<'static> {
         .get_matches();
 
     matches
+}
+fn check_for_update() -> Result<(), Box<::std::error::Error>> {
+    let status = self_update::backends::github::Update::configure()
+        .repo_owner("rage")
+        .repo_name("tmc-cli-rust")
+        .bin_name("github")
+        .show_download_progress(true)
+        .current_version(cargo_crate_version!())
+        .build()?
+        .update()?;
+    println!("Update status: `{}`!", status.version());
+    Ok(())
 }
