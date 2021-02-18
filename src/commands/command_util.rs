@@ -23,6 +23,7 @@ pub fn is_logged_in() -> bool {
     get_credentials().is_some()
 }
 
+// Returns slug of organization as String (if successful)
 #[allow(dead_code)]
 pub fn get_organization() -> Option<String> {
     let config = Config::load(PLUGIN).unwrap();
@@ -31,7 +32,7 @@ pub fn get_organization() -> Option<String> {
 }
 
 pub fn set_organization(org: &str) -> Result<(), &'static str> {
-    let mut config = Config::load(PLUGIN).unwrap();
+    let mut config = Config::new(PLUGIN);
 
     if let Err(_err) = config.change_value("organization", org) {
         return Err("Organization could not be changed");

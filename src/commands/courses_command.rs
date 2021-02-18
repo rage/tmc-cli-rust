@@ -12,14 +12,10 @@ pub fn list_courses(io: &mut IO) {
     let credentials = get_credentials().unwrap();
     client.set_token(credentials.token()).unwrap();
 
-    /*-- START [Temporary fix] until slug is saved in config --*/
-    io.print("(temporary) Choose organization by writing its slug: ");
-    let mut slugs = io.read_line();
-    let slug = slugs.trim();
-    /*-- END [Temporary fix] --*/
+    let slug = get_organization().unwrap();
 
     // Listing courses
-    for course in client.list_courses(slug).unwrap() {
+    for course in client.list_courses(&slug).unwrap() {
         io.println(&course.name);
     }
 }

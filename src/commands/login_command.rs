@@ -3,6 +3,8 @@ use super::organization_command::set_organization;
 use crate::config::Credentials;
 use crate::io_module::IO;
 use std::path::PathBuf;
+use std::result::Result;
+use std::string::String;
 use tmc_client::{ClientError, TmcClient};
 
 pub fn login(io: &mut IO) {
@@ -26,26 +28,31 @@ pub fn login(io: &mut IO) {
 
     io.println("");
 
-    io.println(authenticate(username, password));
+    match authenticate(username, password) {
+        Ok(message) => {
+            io.println(message);
+            set_organization(io);
+        },
+        Err(message) => io.println(message)
+    }
 
-    set_organization(io);
 }
 
-fn authenticate(username: String, password: String) -> &'static str {
+fn authenticate(username: String, password: String) -> Result<String, String> {
     let mut client = get_client();
 
     let token;
 
     match client.authenticate(PLUGIN, username, password) {
         Ok(x) => token = x,
-        Err(x) => return explain_login_fail(x),
+        Err(x) => return Err(explain_login_fail(x).to_string()),
     }
 
     if Credentials::save(PLUGIN, token).is_ok() {
-        return "Succesfully logged in!";
+        return Ok("Succesfully logged in!".to_string());
     };
 
-    "Something funny happened"
+    Err("Something funny happened".to_string())
 }
 
 fn explain_login_fail(error: ClientError) -> &'static str {

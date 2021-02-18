@@ -16,6 +16,14 @@ pub struct Config {
 }
 
 impl Config {
+
+    pub fn new(client_name: &str) -> Self {
+        Config {
+            path: Self::get_config_path(client_name).unwrap(),
+            settings: serde_json::json!({}),
+        }
+    }
+
     fn get_config_path(client_name: &str) -> anyhow::Result<PathBuf> {
         super::get_tmc_dir(client_name).map(|dir| dir.join("config.json"))
     }

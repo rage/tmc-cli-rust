@@ -12,16 +12,12 @@ pub fn list_excercises(io: &mut IO, course_name: String) {
     let credentials = get_credentials().unwrap();
     client.set_token(credentials.token()).unwrap();
 
-    /*-- START [Temporary fix] until slug is saved in config --*/
-    io.print("(temporary) Choose organization by writing its slug: ");
-    let mut slugs = io.read_line();
-    let slug = slugs.trim();
-    /*-- END [Temporary fix] --*/
+    let slug = get_organization().unwrap();
 
     // Match course name to an id
     let mut course_id = 0;
     let mut found = false;
-    let courses = client.list_courses(slug).unwrap();
+    let courses = client.list_courses(&slug).unwrap();
     for course in courses {
         if course.name == course_name {
             course_id = course.id;
