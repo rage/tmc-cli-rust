@@ -1,8 +1,7 @@
-use super::command_util::*;
+use super::command_util;
 use crate::io_module::IO;
 use anyhow::Result;
 use std::path::PathBuf;
-use tmc_langs_framework::file_util;
 
 pub fn get_organization_path(client_name: &str) -> Result<PathBuf> {
     crate::config::get_tmc_dir(client_name).map(|dir| dir.join("organization.json"))
@@ -19,7 +18,7 @@ pub fn check_organization(client_name: String) -> Option<String> {
 // Asks for organization from user and saves it into file
 pub fn set_organization(io: &mut IO) -> Result<()> {
     // List all organizations
-    for org in get_client().get_organizations().unwrap() {
+    for org in command_util::get_client().get_organizations().unwrap() {
         io.print(org.name);
         io.print(" Slug: ");
         io.println(org.slug);
@@ -29,17 +28,16 @@ pub fn set_organization(io: &mut IO) -> Result<()> {
     let mut slug = io.read_line();
     slug = slug.trim().to_string();
 
-    // TBD: Save organization into file here
-    io.println("TBD: SAVING ORGANIZATION INTO FILE");
+    command_util::set_organization(&slug).unwrap();
     Ok(())
 }
 
 // Check if logged in, then ask for organization
 pub fn organization(io: &mut IO) {
-    if !is_logged_in() {
+    if !command_util::is_logged_in() {
         io.println("No login found. You need to be logged in to set organization.");
         return;
     }
 
-    set_organization(io);
+    set_organization(io).unwrap();
 }

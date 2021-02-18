@@ -1,4 +1,4 @@
-use crate::config::Credentials;
+use crate::config::{Credentials, Config};
 use std::path::PathBuf;
 use tmc_client::TmcClient;
 
@@ -21,4 +21,24 @@ pub fn get_credentials() -> Option<Credentials> {
 
 pub fn is_logged_in() -> bool {
     get_credentials().is_some()
+}
+
+#[allow(dead_code)]
+pub fn get_organization() -> Option<String> {
+    let config = Config::load(PLUGIN).unwrap();
+    
+    Some(config.get_value("organization").unwrap())
+}
+
+pub fn set_organization(org: &str) -> Result<(), &'static str> {
+    let mut config = Config::load(PLUGIN).unwrap();
+
+    if let Err(_err) = config.change_value("organization", org) {
+        return Err("Organization could not be changed");
+    }
+
+    if let Err(_err) = config.save() {
+        return Err("Problem saving configurations");
+    }
+    Ok(())
 }
