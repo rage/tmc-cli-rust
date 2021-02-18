@@ -32,10 +32,9 @@ pub fn login(io: &mut IO) {
         Ok(message) => {
             io.println(message);
             set_organization(io);
-        },
-        Err(message) => io.println(message)
+        }
+        Err(message) => io.println(message),
     }
-
 }
 
 fn authenticate(username: String, password: String) -> Result<String, String> {

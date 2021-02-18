@@ -1,4 +1,4 @@
-use crate::config::{Credentials, Config};
+use crate::config::{Config, Credentials};
 use std::path::PathBuf;
 use tmc_client::TmcClient;
 
@@ -27,7 +27,7 @@ pub fn is_logged_in() -> bool {
 #[allow(dead_code)]
 pub fn get_organization() -> Option<String> {
     let config = Config::load(PLUGIN).unwrap();
-    
+
     Some(config.get_value("organization").unwrap())
 }
 

@@ -16,7 +16,6 @@ pub struct Config {
 }
 
 impl Config {
-
     pub fn new(client_name: &str) -> Self {
         Config {
             path: Self::get_config_path(client_name).unwrap(),
@@ -90,8 +89,6 @@ impl Config {
 
     pub fn save(&self) -> anyhow::Result<()> {
         let config_path = &self.path;
-
-        println!("{:?}", config_path);
 
         if let Some(p) = config_path.parent() {
             fs::create_dir_all(p)
