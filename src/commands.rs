@@ -19,7 +19,27 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut IO) {
 
     match matches.subcommand() {
         ("login", _) => login(io),
-        ("download", _) => download_or_update(io),
+        ("download", args) => {
+            if let Some(a) = args {
+                let mut course;
+                let mut download_folder;
+                if let Some(c) = a.value_of("course") {
+                    course = String::from(c);
+                } else {
+                    io.println("argument for course not found");
+                    return;
+                }
+                if let Some(d) = a.value_of("download_folder") {
+                    download_folder = String::from(d);
+                } else {
+                    io.println("argument for downloda folder not found");
+                    return;
+                }
+                download_or_update(io, course, download_folder);
+            } else {
+                io.println("arguments not found");
+            }
+        }
         ("organization", _) => organization(io),
         ("courses", _) => list_courses(io),
         ("exercises", args) => {

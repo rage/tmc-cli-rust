@@ -4,30 +4,44 @@ use crate::io_module::IO;
 use std::path::PathBuf;
 use tmc_client::TmcClient;
 
-pub fn download_or_update(io: &mut IO) {
+pub fn download_or_update(io: &mut IO, course_name: String, download_folder: String) {
+    let mut client = get_client();
+    // Login functinality
     if !is_logged_in() {
         io.println("Not logged in. Login before downloading exerises");
         return;
     }
 
-    // Ask user for course id and destination folder for exercises
-    io.print("Course id: ");
-    let course_id = io.read_line();
-    let course_id: usize = course_id.trim().parse().unwrap();
-
-    io.print("Destination Folder: ");
-    let mut filepath = io.read_line();
-    filepath = filepath.trim().to_string();
-    filepath = if filepath.ends_with('/') {
-        filepath
-    } else {
-        format!("./{}/", filepath)
-    };
-
-    let mut client = get_client();
     // Load login credentials if they exist in the file
     let credentials = get_credentials().unwrap();
     client.set_token(credentials.token()).unwrap();
+
+    let slug = get_organization().unwrap();
+
+    // Match course name to an id
+    let mut course_id = 0;
+    let mut found = false;
+    let courses = client.list_courses(&slug).unwrap();
+    for course in courses {
+        if course.name == course_name {
+            course_id = course.id;
+            found = true;
+            //break;
+        }
+    }
+    if !found {
+        io.println("Could not find course by name");
+        return;
+    }
+
+    //io.print("Destination Folder: ");
+    //let mut filepath = io.read_line();
+    let mut filepath = download_folder.trim().to_string();
+    filepath = if filepath.ends_with('/') {
+        filepath
+    } else {
+        format!("{}/", filepath)
+    };
 
     // Build a vector for exercise id and saving location pairs
     let mut download_params = Vec::new();

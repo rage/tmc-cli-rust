@@ -32,7 +32,12 @@ fn get_matches() -> ArgMatches<'static> {
                 .about("Set/unset TMC-CLI properties and change settings"),
         )
         .subcommand(SubCommand::with_name("courses").about("List the available courses"))
-        .subcommand(SubCommand::with_name("download").about("Sets the level of verbosity"))
+        .subcommand(
+            SubCommand::with_name("download")
+                .about("Sets the level of verbosity")
+                .arg(Arg::with_name("course").value_name("course").required(true))
+                .arg(Arg::with_name("download_folder").value_name("download_folder").required(true)),
+        )
         .subcommand(
             SubCommand::with_name("exercises")
                 .about("List the exercises for a specific course")
