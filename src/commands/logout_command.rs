@@ -1,7 +1,7 @@
 use super::command_util::*;
-use crate::io_module::IO;
+use crate::io_module::Io;
 
-pub fn logout(io: &mut IO) {
+pub fn logout(io: &mut Io) {
     if !is_logged_in() {
         io.println("No login found");
         return;

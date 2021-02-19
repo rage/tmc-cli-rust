@@ -13,14 +13,14 @@ use std::io::{BufRead, BufReader, Read, Write};
 ///
 ///io.print(&x);
 
-pub struct IO<'a> {
+pub struct Io<'a> {
     output: &'a mut dyn Write,
     input: &'a mut dyn Read,
 }
 
-impl IO<'_> {
-    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> IO<'a> {
-        IO { output, input }
+impl Io<'_> {
+    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> Io<'a> {
+        Io { output, input }
     }
 
     pub fn read_line(&mut self) -> String {

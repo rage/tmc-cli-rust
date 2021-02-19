@@ -1,9 +1,9 @@
 use super::command_util::*;
-use crate::io_module::IO;
+use crate::io_module::Io;
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn download_or_update(io: &mut IO, course_name: String, download_folder: String) {
+pub fn download_or_update(io: &mut Io, course_name: String, download_folder: String) {
     // Get a client that has credentials
     let client_result = get_logged_client();
     if client_result.is_none() {
@@ -42,7 +42,7 @@ pub fn download_or_update(io: &mut IO, course_name: String, download_folder: Str
     }
 }
 
-fn parse_download_result(io: &mut IO, result: Result<(), ClientError>) {
+fn parse_download_result(io: &mut Io, result: Result<(), ClientError>) {
     match result {
         Ok(()) => io.println("Download was successful!"),
         Err(ClientError::IncompleteDownloadResult {

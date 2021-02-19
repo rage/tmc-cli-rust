@@ -1,9 +1,9 @@
 use super::command_util::*;
-use crate::io_module::IO;
+use crate::io_module::Io;
 
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn list_excercises(io: &mut IO, course_name: String) {
+pub fn list_excercises(io: &mut Io, course_name: String) {
     // Get a client that has credentials
     let client_result = get_logged_client();
     if client_result.is_none() {
@@ -29,7 +29,7 @@ pub fn list_excercises(io: &mut IO, course_name: String) {
     }
 }
 
-fn print_exercises(io: &mut IO, course_name: String, exercises: Vec<CourseExercise>) {
+fn print_exercises(io: &mut Io, course_name: String, exercises: Vec<CourseExercise>) {
     // Print exercises
     io.println("");
     io.print("Course name: ");

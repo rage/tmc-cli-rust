@@ -1,12 +1,12 @@
 use super::command_util::*;
 use super::organization_command::set_organization;
 use crate::config::Credentials;
-use crate::io_module::IO;
+use crate::io_module::Io;
 use std::result::Result;
 use std::string::String;
 use tmc_client::{ClientError};
 
-pub fn login(io: &mut IO) {
+pub fn login(io: &mut Io) {
     if is_logged_in() {
         io.println("Already logged in!");
         return;

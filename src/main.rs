@@ -6,7 +6,7 @@ use std::io::{stdin, stdout};
 pub mod config;
 
 pub mod io_module;
-use io_module::IO;
+use io_module::Io;
 
 pub mod commands;
 
@@ -15,7 +15,7 @@ fn main() {
     //let mut input = stdin.lock();
     let mut output = stdout();
 
-    let mut io = IO::new(&mut output, &mut stdin);
+    let mut io = Io::new(&mut output, &mut stdin);
 
     if let Err(_err) = check_for_update() {
         io.println("TMC CLI could not be updated");

@@ -1,10 +1,10 @@
 use super::command_util;
-use crate::io_module::IO;
+use crate::io_module::Io;
 use anyhow::Result;
 use tmc_client::Organization;
 
 // Asks for organization from user and saves it into file
-pub fn set_organization(io: &mut IO) -> Result<Organization> {
+pub fn set_organization(io: &mut Io) -> Result<Organization> {
     // List all organizations
     let orgs = command_util::get_client().get_organizations().unwrap();
     for org in &orgs {
@@ -26,7 +26,7 @@ pub fn set_organization(io: &mut IO) -> Result<Organization> {
 }
 
 // Check if logged in, then ask for organization
-pub fn organization(io: &mut IO) {
+pub fn organization(io: &mut Io) {
     if !command_util::is_logged_in() {
         io.println("No login found. You need to be logged in to set organization.");
         return;

@@ -1,8 +1,8 @@
 use super::command_util::*;
-use crate::io_module::IO;
+use crate::io_module::Io;
 use tmc_client::ClientError;
 
-pub fn list_courses(io: &mut IO) {
+pub fn list_courses(io: &mut Io) {
     // Get a client that has credentials
     let client_result = get_logged_client();
     if client_result.is_none() {

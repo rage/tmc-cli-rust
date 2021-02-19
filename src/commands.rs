@@ -12,9 +12,9 @@ mod login_command;
 mod logout_command;
 mod organization_command;
 
-use crate::io_module::IO;
+use crate::io_module::Io;
 
-pub fn handle(matches: &clap::ArgMatches, io: &mut IO) {
+pub fn handle(matches: &clap::ArgMatches, io: &mut Io) {
     //println!("{:#?}", matches.subcommand());
 
     match matches.subcommand() {
