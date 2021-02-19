@@ -32,7 +32,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut Io) {
                 if let Some(d) = a.value_of("download_folder") {
                     download_folder = String::from(d);
                 } else {
-                    io.println("argument for downloda folder not found");
+                    io.println("argument for download folder not found");
                     return;
                 }
                 download_or_update(io, course, download_folder);
