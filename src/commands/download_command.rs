@@ -49,11 +49,9 @@ fn parse_download_result(io: &mut IO, result: Result<(), ClientError>) {
             downloaded: successful,
             failed: fail,
         }) => {
-            io.print("Incomplete download: [");
-            io.print(successful.len().to_string());
-            io.print(" / ");
-            io.print((successful.len() + fail.len()).to_string());
-            io.println("] exercises downloaded. (ie.Target folder already exists)");
+            let done = successful.len().to_string();
+            let total = (successful.len() + fail.len()).to_string();
+            io.print(format!("Incomplete download. [{}, {}] exercises downloaded. (ie. Target folder already exists)", done, total));
         }
         _ => io.println("Some errors may have happened during the download."),
     }
