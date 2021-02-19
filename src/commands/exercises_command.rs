@@ -1,45 +1,43 @@
 use super::command_util::*;
 use crate::io_module::IO;
-use tmc_client::TmcClient;
+
+use tmc_client::{ClientError, CourseExercise};
 
 pub fn list_excercises(io: &mut IO, course_name: String) {
-    // Login functinality
-    let mut client = get_client();
-    if !is_logged_in() {
-        io.println("No login found. You need to be logged in to set organization.");
+    // Get a client that has credentials
+    let client_result = get_logged_client();
+    if client_result.is_none() {
+        io.println("No login found. You need to be logged in to list exercises.");
         return;
     }
-    let credentials = get_credentials().unwrap();
-    client.set_token(credentials.token()).unwrap();
+    let client = client_result.unwrap();
 
-    let slug = get_organization().unwrap();
-
-    // Match course name to an id
-    let mut course_id = 0;
-    let mut found = false;
-    let courses = client.list_courses(&slug).unwrap();
-    for course in courses {
-        if course.name == course_name {
-            course_id = course.id;
-            found = true;
-            //break;
-        }
-    }
-    if !found {
+    // Get course by id
+    let course_result = get_course_id_by_name(&client, course_name.clone());
+    if course_result.is_none() {
         io.println("Could not find course by name");
         return;
     }
+    let course_id = course_result.unwrap();
 
-    // Get and print exercises with course_id
-    let exercises = client.get_course_exercises(course_id).unwrap();
+    match client.get_course_exercises(course_id) {
+        Ok(exercises) => print_exercises(io, course_name, exercises),
+        Err(ClientError::NotLoggedIn) => {
+            io.println("Login token is invalid. Please try logging in again.")
+        }
+        _ => io.println("Unknown error. Please try again."),
+    }
+}
 
+fn print_exercises(io: &mut IO, course_name: String, exercises: Vec<CourseExercise>) {
+    // Print exercises
     io.println("");
     io.print("Course name: ");
     io.println(course_name);
 
     let mut prev_deadline = "".to_string();
     for exercise in exercises {
-        // Some duplicity
+        // Print deadline if it exists
         if let Some(dl) = exercise.deadline {
             if prev_deadline != dl {
                 io.print("Deadline: ");
@@ -54,21 +52,15 @@ pub fn list_excercises(io: &mut IO, course_name: String) {
             }
         }
 
-        let avail_points = exercise.available_points;
-        let award_points = exercise.awarded_points;
-
+        // Print the status of an exercise
         let mut completed = true;
         let mut attempted = false;
-        for point in avail_points {
-            if !award_points.contains(&point.name) {
+        for point in exercise.available_points {
+            if !exercise.awarded_points.contains(&point.name) {
                 completed = false;
             } else {
                 attempted = true;
             }
-            /*io.print("        Point: ");
-            io.print(&point.name);
-            io.print(": ");
-            io.println(award_points.contains(&point.name).to_string());*/
         }
 
         io.print("  ");
@@ -79,7 +71,6 @@ pub fn list_excercises(io: &mut IO, course_name: String) {
         } else {
             io.print("Not completed: ");
         }
-
         io.println(&exercise.name);
     }
 }

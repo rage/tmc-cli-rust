@@ -1,6 +1,6 @@
 use crate::config::{Config, Credentials};
 use std::path::PathBuf;
-use tmc_client::TmcClient;
+use tmc_client::{ClientError, TmcClient};
 
 pub const PLUGIN: &str = "vscode_plugin";
 
@@ -12,6 +12,17 @@ pub fn get_client() -> TmcClient {
         "1.0.0".to_string(),
     )
     .unwrap()
+}
+
+pub fn get_logged_client() -> Option<TmcClient> {
+    let mut client = get_client();
+
+    if let Some(credentials) = get_credentials() {
+        client.set_token(credentials.token());
+        return Some(client);
+    }
+
+    None
 }
 
 pub fn get_credentials() -> Option<Credentials> {
@@ -42,4 +53,21 @@ pub fn set_organization(org: &str) -> Result<(), &'static str> {
         return Err("Problem saving configurations");
     }
     Ok(())
+}
+
+pub fn get_course_id_by_name(client: &TmcClient, course_name: String) -> Option<usize> {
+    let slug = get_organization().unwrap();
+
+    match client.list_courses(&slug) {
+        Ok(courses) => {
+            for course in courses {
+                if course.name == course_name {
+                    return Some(course.id);
+                }
+            }
+            return None;
+        }
+        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
+        _ => None,
+    }
 }
