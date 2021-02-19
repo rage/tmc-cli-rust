@@ -10,7 +10,7 @@ use io_module::Io;
 
 pub mod commands;
 
-fn main() {    
+fn main() {
     let mut stdin = stdin();
     //let mut input = stdin.lock();
     let mut output = stdout();

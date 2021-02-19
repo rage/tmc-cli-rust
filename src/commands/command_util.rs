@@ -1,6 +1,6 @@
 use crate::config::{Config, Credentials};
 use std::path::PathBuf;
-use tmc_client::{TmcClient};
+use tmc_client::TmcClient;
 
 pub const PLUGIN: &str = "vscode_plugin";
 

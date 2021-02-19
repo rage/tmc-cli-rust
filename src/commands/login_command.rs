@@ -4,7 +4,7 @@ use crate::config::Credentials;
 use crate::io_module::Io;
 use std::result::Result;
 use std::string::String;
-use tmc_client::{ClientError};
+use tmc_client::ClientError;
 
 pub fn login(io: &mut Io) {
     if is_logged_in() {
