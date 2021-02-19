@@ -1,0 +1,15 @@
+app-id: org.flatpak.tmc
+runtime: org.freedesktop.Platform
+runtime-version: '19.08'
+sdk: org.freedesktop.Sdk
+command: tmc
+modules:
+  - name: tmc
+    buildsystem: simple
+    build-commands:
+      - install -D tmc /app/bin/tmc
+    sources:
+      - type: file
+        url: https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v0.0.1-test
+        sha256: 79b381131e7d9451a48366f8bf19ebb9d9edf03fe8a2cac8d16515b14803f7a0
+        dest-filename: tmc
