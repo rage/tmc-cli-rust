@@ -13,7 +13,7 @@ pub fn download_or_update(io: &mut IO, course_name: String, download_folder: Str
     let client = client_result.unwrap();
 
     // Get course by id
-    let course_result = get_course_id_by_name(&client, course_name.clone());
+    let course_result = get_course_id_by_name(&client, course_name);
     if course_result.is_none() {
         io.println("Could not find course by name");
         return;

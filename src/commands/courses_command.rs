@@ -13,8 +13,8 @@ pub fn list_courses(io: &mut IO) {
 
     // Listing courses
     match client.list_courses(&get_organization().unwrap()) {
-        Ok(exercises) => {
-            for course in client.list_courses(&get_organization().unwrap()).unwrap() {
+        Ok(courses) => {
+            for course in courses {
                 io.println(&course.name);
             }
         }
