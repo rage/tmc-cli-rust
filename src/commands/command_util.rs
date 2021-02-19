@@ -18,7 +18,11 @@ pub fn get_logged_client() -> Option<TmcClient> {
     let mut client = get_client();
 
     if let Some(credentials) = get_credentials() {
-        client.set_token(credentials.token());
+        if let Err(_err) = client.set_token(credentials.token()) {
+            println!("Could not got logged client");
+            return None;
+        }
+        //client.set_token(credentials.token());
         return Some(client);
     }
 
