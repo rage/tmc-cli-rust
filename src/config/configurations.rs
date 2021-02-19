@@ -75,7 +75,7 @@ impl Config {
 
     pub fn get_value(&self, key: &str) -> anyhow::Result<String> {
         let value: String = serde_json::from_value(self.settings[key].clone())?;
-        return Ok(value);
+        Ok(value)
     }
 
     pub fn change_value(&mut self, key: &str, new_val: &str) -> anyhow::Result<()> {

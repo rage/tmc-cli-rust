@@ -10,14 +10,16 @@ use io_module::IO;
 
 pub mod commands;
 
-fn main() {
-    check_for_update();
+fn main() {    
     let mut stdin = stdin();
     //let mut input = stdin.lock();
-
     let mut output = stdout();
 
     let mut io = IO::new(&mut output, &mut stdin);
+
+    if let Err(_err) = check_for_update() {
+        io.println("TMC CLI could not be updated");
+    }
 
     let matches = get_matches();
     commands::handle(&matches, &mut io);
@@ -85,7 +87,7 @@ fn get_matches() -> ArgMatches<'static> {
 
     matches
 }
-fn check_for_update() -> Result<(), Box<::std::error::Error>> {
+fn check_for_update() -> Result<(), Box<dyn (::std::error::Error)>> {
     let status = self_update::backends::github::Update::configure()
         .repo_owner("rage")
         .repo_name("tmc-cli-rust")

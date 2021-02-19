@@ -1,8 +1,5 @@
 use super::command_util::*;
-use crate::config::Credentials;
 use crate::io_module::IO;
-use std::path::PathBuf;
-use tmc_client::TmcClient;
 
 pub fn logout(io: &mut IO) {
     if !is_logged_in() {

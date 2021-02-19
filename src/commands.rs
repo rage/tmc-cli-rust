@@ -21,8 +21,8 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut IO) {
         ("login", _) => login(io),
         ("download", args) => {
             if let Some(a) = args {
-                let mut course;
-                let mut download_folder;
+                let course;
+                let download_folder;
                 if let Some(c) = a.value_of("course") {
                     course = String::from(c);
                 } else {

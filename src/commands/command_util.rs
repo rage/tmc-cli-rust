@@ -1,6 +1,6 @@
 use crate::config::{Config, Credentials};
 use std::path::PathBuf;
-use tmc_client::{ClientError, TmcClient};
+use tmc_client::{TmcClient};
 
 pub const PLUGIN: &str = "vscode_plugin";
 
@@ -65,7 +65,7 @@ pub fn get_course_id_by_name(client: &TmcClient, course_name: String) -> Option<
                     return Some(course.id);
                 }
             }
-            return None;
+            None
         }
         //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
         _ => None,
