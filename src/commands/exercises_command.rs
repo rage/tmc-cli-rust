@@ -40,19 +40,16 @@ fn print_exercises(io: &mut IO, course_name: String, exercises: Vec<CourseExerci
         // Print deadline if it exists
         if let Some(dl) = exercise.deadline {
             if prev_deadline != dl {
-                io.print("Deadline: ");
-                io.println(&dl);
+                io.println(format!("Deadline: {}", &dl));
                 prev_deadline = dl;
             }
         } else if let Some(dl) = exercise.soft_deadline {
             if prev_deadline != dl {
-                io.print("Soft deadline: ");
-                io.println(&dl);
+                io.println(format!("Soft deadline: {}", &dl));
                 prev_deadline = dl;
             }
         }
 
-        // Print the status of an exercise
         let mut completed = true;
         let mut attempted = false;
         for point in exercise.available_points {
@@ -63,14 +60,14 @@ fn print_exercises(io: &mut IO, course_name: String, exercises: Vec<CourseExerci
             }
         }
 
-        io.print("  ");
-        if completed {
-            io.print("Completed: ");
+        let completion_status = if completed {
+            "Completed"
         } else if attempted {
-            io.print("Attempted: ");
+            "Attempted"
         } else {
-            io.print("Not completed: ");
-        }
-        io.println(&exercise.name);
+            "Not completed"
+        };
+
+        io.println(format!("  {}: {}", completion_status, &exercise.name));
     }
 }
