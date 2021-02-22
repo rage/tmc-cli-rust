@@ -52,11 +52,11 @@ fn parse_download_result(io: &mut Io, result: Result<(), ClientError>) {
             let done = successful.len().to_string();
             let total = (successful.len() + fail.len()).to_string();
             io.print(format!(
-                "Incomplete download. [{} / {}] exercises downloaded.",
+                "[{} / {}] exercises downloaded.",
                 done, total
             ));
         }
-        _ => io.println("Some errors may have happened during the download."),
+        _ => io.println("Something unexpected may have happened."),
     }
 }
 
