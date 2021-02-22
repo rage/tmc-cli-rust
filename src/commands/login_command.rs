@@ -107,7 +107,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn mytest() {
+    fn empty_username_test() {
         let mut v: Vec<String> = Vec::new();
         let mut io = IoTest { list: &mut v };
 
@@ -116,9 +116,12 @@ mod tests {
         login(&mut io);
 
         assert_eq!(2, io.buffer_length());
-        assert!(io
-            .buffer_get(1)
-            .to_string()
-            .eq(&"Username cannot be empty!".to_string()));
+
+        if io.buffer_length() == 2 {
+            assert!(io
+                .buffer_get(1)
+                .to_string()
+                .eq(&"Username cannot be empty!".to_string()));
+        }
     }
 }
