@@ -24,3 +24,4 @@ tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust", branch =
 tmc-client = { git = "https://github.com/rage/tmc-langs-rust", branch = "master" }
 rpassword = "5.0.1"
 self_update = "0.23.0"
+mockall = "0.9.0"

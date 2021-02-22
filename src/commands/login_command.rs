@@ -64,3 +64,61 @@ fn explain_login_fail(error: ClientError) -> &'static str {
 
     "Something funny happened"
 }
+
+#[cfg(test)]
+pub struct IoTest<'a> {
+    list: &'a mut Vec<String>,
+}
+
+#[cfg(test)]
+impl IoTest<'_> {
+    pub fn buffer_length(&mut self) -> usize {
+        self.list.len()
+    }
+
+    pub fn buffer_get(&mut self, index: usize) -> String {
+        self.list[index].to_string()
+    }
+}
+
+#[cfg(test)]
+impl Io for IoTest<'_> {
+    fn read_line(&mut self) -> String {
+        "".to_string()
+    }
+
+    fn print(&mut self, output: String) {
+        print!("{}", output);
+        self.list.push(output);
+    }
+
+    fn println(&mut self, output: String) {
+        println!("{}", output);
+        self.list.push(output);
+    }
+
+    fn read_password(&mut self) -> String {
+        "".to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mytest() {
+        let mut v: Vec<String> = Vec::new();
+        let mut io = IoTest { list: &mut v };
+
+        assert!(io.read_line().eq(""));
+
+        login(&mut io);
+
+        assert_eq!(2, io.buffer_length());
+        assert!(io
+            .buffer_get(1)
+            .to_string()
+            .eq(&"Username cannot be empty!".to_string()));
+    }
+}
