@@ -14,7 +14,7 @@ mod organization_command;
 
 use crate::io_module::Io;
 
-pub fn handle(matches: &clap::ArgMatches, io: &mut Io) {
+pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     //println!("{:#?}", matches.subcommand());
 
     match matches.subcommand() {
@@ -26,18 +26,18 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut Io) {
                 if let Some(c) = a.value_of("course") {
                     course = String::from(c);
                 } else {
-                    io.println("argument for course not found");
+                    io.println("argument for course not found".to_string());
                     return;
                 }
                 if let Some(d) = a.value_of("download_folder") {
                     download_folder = String::from(d);
                 } else {
-                    io.println("argument for download folder not found");
+                    io.println("argument for download folder not found".to_string());
                     return;
                 }
                 download_or_update(io, course, download_folder);
             } else {
-                io.println("arguments not found");
+                io.println("arguments not found".to_string());
             }
         }
         ("organization", _) => organization(io),
@@ -47,10 +47,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut Io) {
                 if let Some(c) = a.value_of("course") {
                     list_excercises(io, String::from(c));
                 } else {
-                    io.println("argument for course not found");
+                    io.println("argument for course not found".to_string());
                 }
             } else {
-                io.println("arguments not found");
+                io.println("arguments not found".to_string());
             }
         }
         ("logout", _) => logout(io),

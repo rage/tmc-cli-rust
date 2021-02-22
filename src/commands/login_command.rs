@@ -6,32 +6,32 @@ use std::result::Result;
 use std::string::String;
 use tmc_client::ClientError;
 
-pub fn login(io: &mut Io) {
+pub fn login(io: &mut dyn Io) {
     if is_logged_in() {
-        io.println("Already logged in!");
+        io.println("Already logged in!".to_string());
         return;
     }
 
-    io.print("Email / username: ");
+    io.print("Email / username: ".to_string());
     let mut username = io.read_line();
     username = username.trim().to_string();
 
     if username.is_empty() {
-        io.println("Username cannot be empty!");
+        io.println("Username cannot be empty!".to_string());
         return;
     }
 
-    io.print("Password: ");
+    io.print("Password: ".to_string());
     let mut password = io.read_password();
     password = password.trim().to_string();
 
-    io.println("");
+    io.println("".to_string());
 
     match authenticate(username, password) {
         Ok(message) => {
             io.println(message);
             if let Err(_err) = set_organization(io) {
-                io.println("Could not set organization");
+                io.println("Could not set organization".to_string());
             }
         }
         Err(message) => io.println(message),

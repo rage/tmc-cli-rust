@@ -3,11 +3,11 @@ use crate::io_module::Io;
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn download_or_update(io: &mut Io, course_name: String, download_folder: String) {
+pub fn download_or_update(io: &mut dyn Io, course_name: String, download_folder: String) {
     // Get a client that has credentials
     let client_result = get_logged_client();
     if client_result.is_none() {
-        io.println("Not logged in. Login before downloading exerises.");
+        io.println("Not logged in. Login before downloading exerises.".to_string());
         return;
     }
     let client = client_result.unwrap();
@@ -15,7 +15,7 @@ pub fn download_or_update(io: &mut Io, course_name: String, download_folder: Str
     // Get course by id
     let course_result = get_course_id_by_name(&client, course_name);
     if course_result.is_none() {
-        io.println("Could not find course by name");
+        io.println("Could not find course by name".to_string());
         return;
     }
     let course_id = course_result.unwrap();
@@ -29,22 +29,22 @@ pub fn download_or_update(io: &mut Io, course_name: String, download_folder: Str
         format!("{}/", filepath)
     };
 
-    io.println("");
+    io.println("".to_string());
     match client.get_course_exercises(course_id) {
         Ok(exercises) => parse_download_result(
             io,
             client.download_or_update_exercises(get_download_params(filepath, exercises)),
         ),
         Err(ClientError::NotLoggedIn) => {
-            io.println("Login token is invalid. Please try logging in again.")
+            io.println("Login token is invalid. Please try logging in again.".to_string())
         }
-        _ => io.println("Unknown error. Please try again."),
+        _ => io.println("Unknown error. Please try again.".to_string()),
     }
 }
 
-fn parse_download_result(io: &mut Io, result: Result<(), ClientError>) {
+fn parse_download_result(io: &mut dyn Io, result: Result<(), ClientError>) {
     match result {
-        Ok(()) => io.println("Download was successful!"),
+        Ok(()) => io.println("Download was successful!".to_string()),
         Err(ClientError::IncompleteDownloadResult {
             downloaded: successful,
             failed: fail,
@@ -56,7 +56,7 @@ fn parse_download_result(io: &mut Io, result: Result<(), ClientError>) {
                 done, total
             ));
         }
-        _ => io.println("Something unexpected may have happened."),
+        _ => io.println("Something unexpected may have happened.".to_string()),
     }
 }
 

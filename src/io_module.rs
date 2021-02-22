@@ -12,18 +12,29 @@ use std::io::{BufRead, BufReader, Read, Write};
 ///let x = io.read_line();
 ///
 ///io.print(&x);
+/// 
 
-pub struct Io<'a> {
+pub struct IoProduction<'a> {
     output: &'a mut dyn Write,
     input: &'a mut dyn Read,
 }
 
-impl Io<'_> {
-    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> Io<'a> {
-        Io { output, input }
-    }
+pub trait Io {
+    fn read_line(&mut self) -> String;
+    fn print(&mut self, output: String);
+    fn println(&mut self, output: String);
+    fn read_password(&mut self) -> String;
+}
 
-    pub fn read_line(&mut self) -> String {
+impl IoProduction<'_> {
+    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> IoProduction<'a> {
+        IoProduction { output, input }
+    }
+}
+
+impl Io for IoProduction<'_> {
+
+    fn read_line(&mut self) -> String {
         let mut x = String::new();
 
         let mut reader = BufReader::new(&mut self.input);
@@ -32,17 +43,17 @@ impl Io<'_> {
         x
     }
 
-    pub fn print<S: Into<String>>(&mut self, output: S) {
-        self.output.write_all(output.into().as_bytes()).expect("");
+    fn print(&mut self, output: String) {
+        self.output.write_all(output.as_bytes()).expect("");
         self.output.flush().expect("Something went wrong");
     }
 
-    pub fn println<S: Into<String>>(&mut self, output: S) {
+    fn println(&mut self, output: String) {
         self.print(output);
-        self.print("\n");
+        self.print("\n".to_string());
     }
 
-    pub fn read_password(&mut self) -> String {
+    fn read_password(&mut self) -> String {
         rpassword::read_password().unwrap()
         //let mut reader = BufReader::new(&mut self.input);
         //read_password_with_reader(Some(&mut reader)).unwrap()

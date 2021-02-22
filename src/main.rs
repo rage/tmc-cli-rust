@@ -6,7 +6,7 @@ use std::io::{stdin, stdout};
 pub mod config;
 
 pub mod io_module;
-use io_module::Io;
+use io_module::{Io, IoProduction};
 
 pub mod commands;
 
@@ -15,10 +15,10 @@ fn main() {
     //let mut input = stdin.lock();
     let mut output = stdout();
 
-    let mut io = Io::new(&mut output, &mut stdin);
+    let mut io = IoProduction::new(&mut output, &mut stdin);
 
     if let Err(_err) = check_for_update() {
-        io.println("TMC CLI could not be updated");
+        io.println("TMC CLI could not be updated".to_string());
     }
 
     let matches = get_matches();

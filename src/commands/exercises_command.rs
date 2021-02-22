@@ -3,11 +3,11 @@ use crate::io_module::Io;
 
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn list_excercises(io: &mut Io, course_name: String) {
+pub fn list_excercises(io: &mut dyn Io, course_name: String) {
     // Get a client that has credentials
     let client_result = get_logged_client();
     if client_result.is_none() {
-        io.println("No login found. You need to be logged in to list exercises.");
+        io.println("No login found. You need to be logged in to list exercises.".to_string());
         return;
     }
     let client = client_result.unwrap();
@@ -15,7 +15,7 @@ pub fn list_excercises(io: &mut Io, course_name: String) {
     // Get course by id
     let course_result = get_course_id_by_name(&client, course_name.clone());
     if course_result.is_none() {
-        io.println("Could not find course by name");
+        io.println("Could not find course by name".to_string());
         return;
     }
     let course_id = course_result.unwrap();
@@ -23,16 +23,16 @@ pub fn list_excercises(io: &mut Io, course_name: String) {
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
         Err(ClientError::NotLoggedIn) => {
-            io.println("Login token is invalid. Please try logging in again.")
+            io.println("Login token is invalid. Please try logging in again.".to_string())
         }
-        _ => io.println("Unknown error. Please try again."),
+        _ => io.println("Unknown error. Please try again.".to_string()),
     }
 }
 
-fn print_exercises(io: &mut Io, course_name: String, exercises: Vec<CourseExercise>) {
+fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseExercise>) {
     // Print exercises
-    io.println("");
-    io.print("Course name: ");
+    io.println("".to_string());
+    io.print("Course name: ".to_string());
     io.println(course_name);
 
     let mut prev_deadline = "".to_string();
