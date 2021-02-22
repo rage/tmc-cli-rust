@@ -12,7 +12,7 @@ use std::io::{BufRead, BufReader, Read, Write};
 ///let x = io.read_line();
 ///
 ///io.print(&x);
-/// 
+///
 
 pub struct IoProduction<'a> {
     output: &'a mut dyn Write,
@@ -33,7 +33,6 @@ impl IoProduction<'_> {
 }
 
 impl Io for IoProduction<'_> {
-
     fn read_line(&mut self) -> String {
         let mut x = String::new();
 

@@ -51,10 +51,7 @@ fn parse_download_result(io: &mut dyn Io, result: Result<(), ClientError>) {
         }) => {
             let done = successful.len().to_string();
             let total = (successful.len() + fail.len()).to_string();
-            io.print(format!(
-                "[{} / {}] exercises downloaded.",
-                done, total
-            ));
+            io.print(format!("[{} / {}] exercises downloaded.", done, total));
         }
         _ => io.println("Something unexpected may have happened.".to_string()),
     }
@@ -63,9 +60,11 @@ fn parse_download_result(io: &mut dyn Io, result: Result<(), ClientError>) {
 fn get_download_params(filepath: String, exercises: Vec<CourseExercise>) -> Vec<(usize, PathBuf)> {
     let mut download_params = Vec::new();
     for exercise in exercises {
-        let mut path = filepath.clone();
-        path.push_str(&exercise.name);
-        download_params.push((exercise.id, PathBuf::from(path)));
+        if !exercise.disabled && exercise.unlocked {
+            let mut path = filepath.clone();
+            path.push_str(&exercise.name);
+            download_params.push((exercise.id, PathBuf::from(path)));
+        }
     }
     download_params
 }
