@@ -5,6 +5,13 @@ echo "~ Installing TMC-CLI ~"
 echo "(If your shell is not bash, you may have to do the installation manually.)"
 echo ""
 
+if [ $# -eq 0 ]
+then
+    echo "You need to give architecture (x86_64, i686) as an argument"
+    exit
+fi
+
+
 echo "Fetching latest version URL from https://download.mooc.fi"
 if ! PAGE=$(curl -s https://download.mooc.fi); then
 	echo "Failed to reach download.mooc.fi" >&2
@@ -14,16 +21,9 @@ fi
 # Adding spaces so ${PAGE[@]} will work.
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
 
-# Choosing the right platform
-platform=""
-echo "Which platform are you on?"
-	select yn in "x86_64" "i686"; do
-		case $yn in
-			x86_64 ) platform="x86_64"; break;;
-			i686 )   platform="i686"; break;;
-		esac
-done
-
+# Get platform-string from first argument
+platform=$1
+    
 testexp="-test" # TODO: remove after first official release
 
 fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
