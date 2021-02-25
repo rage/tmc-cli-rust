@@ -3,17 +3,15 @@ use crate::io_module::Io;
 
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn list_excercises(io: &mut dyn Io, course_name: String) {
-    // Get a client that has credentials
-    let client_result = get_logged_client();
-    if client_result.is_none() {
-        io.println("No login found. You need to be logged in to list exercises.".to_string());
+pub fn list_exercises(io: &mut dyn Io, client: &mut Client, course_name: String) {
+
+    if let Err(error) = client.load_login() {
+        io.println(error);
         return;
-    }
-    let client = client_result.unwrap();
+    };
 
     // Get course by id
-    let course_result = get_course_id_by_name(&client, course_name.clone());
+    let course_result = get_course_id_by_name(client, course_name.clone());
     if course_result.is_none() {
         io.println("Could not find course by name".to_string());
         return;
@@ -22,10 +20,8 @@ pub fn list_excercises(io: &mut dyn Io, course_name: String) {
 
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
-        Err(ClientError::NotLoggedIn) => {
-            io.println("Login token is invalid. Please try logging in again.".to_string())
-        }
-        _ => io.println("Unknown error. Please try again.".to_string()),
+        // TODO: Get a more detailed error from get_course_exercises and print it
+        _ => io.println("Failed to download course exercises".to_string()),
     }
 }
 
@@ -52,6 +48,7 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 
         let mut completed = true;
         let mut attempted = false;
+
         for point in exercise.available_points {
             if !exercise.awarded_points.contains(&point.name) {
                 completed = false;

@@ -27,6 +27,9 @@ fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+
+   
 /*
 #[test]
 fn command_version() -> Result<(), Box<dyn std::error::Error>> {

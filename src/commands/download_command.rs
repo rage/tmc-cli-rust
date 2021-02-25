@@ -3,17 +3,18 @@ use crate::io_module::Io;
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
 
-pub fn download_or_update(io: &mut dyn Io, course_name: String, download_folder: String) {
+pub fn download_or_update(io: &mut dyn Io, client: &mut Client, course_name: String, download_folder: String) {
     // Get a client that has credentials
-    let client_result = get_logged_client();
-    if client_result.is_none() {
-        io.println("Not logged in. Login before downloading exerises.".to_string());
+
+
+    if let Err(error) = client.load_login() {
+        io.println(error);
         return;
-    }
-    let client = client_result.unwrap();
+    };
+
 
     // Get course by id
-    let course_result = get_course_id_by_name(&client, course_name);
+    let course_result = get_course_id_by_name(client, course_name);
     if course_result.is_none() {
         io.println("Could not find course by name".to_string());
         return;
@@ -30,15 +31,13 @@ pub fn download_or_update(io: &mut dyn Io, course_name: String, download_folder:
     };
 
     io.println("".to_string());
+
     match client.get_course_exercises(course_id) {
-        Ok(exercises) => parse_download_result(
-            io,
-            client.download_or_update_exercises(get_download_params(filepath, exercises)),
-        ),
-        Err(ClientError::NotLoggedIn) => {
-            io.println("Login token is invalid. Please try logging in again.".to_string())
-        }
-        _ => io.println("Unknown error. Please try again.".to_string()),
+        Ok(exercises) => match client.download_or_update_exercises(get_download_params(filepath, exercises)) {
+            Ok(msg) => io.println(msg),
+            Err(error) => io.println(error),
+        },
+        Err(error) => io.println(error),
     }
 }
 

@@ -1,9 +1,10 @@
 use courses_command::list_courses;
 use download_command::download_or_update;
-use exercises_command::list_excercises;
+use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
+use command_util::Client;
 mod command_util;
 mod courses_command;
 mod download_command;
@@ -17,8 +18,10 @@ use crate::io_module::Io;
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     //println!("{:#?}", matches.subcommand());
 
+    let mut client = Client::new(matches.is_present("testmode"));
+
     match matches.subcommand() {
-        ("login", _) => login(io),
+        ("login", _) => login(io, &mut client),
         ("download", args) => {
             if let Some(a) = args {
                 let course;
@@ -35,17 +38,17 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     io.println("argument for download folder not found".to_string());
                     return;
                 }
-                download_or_update(io, course, download_folder);
+                download_or_update(io, &mut client, course, download_folder);
             } else {
                 io.println("arguments not found".to_string());
             }
         }
-        ("organization", _) => organization(io),
-        ("courses", _) => list_courses(io),
+        ("organization", _) => organization(io, &mut client),
+        ("courses", _) => list_courses(io, &mut client),
         ("exercises", args) => {
             if let Some(a) = args {
                 if let Some(c) = a.value_of("course") {
-                    list_excercises(io, String::from(c));
+                    list_exercises(io, &mut client, String::from(c));
                 } else {
                     io.println("argument for course not found".to_string());
                 }
@@ -53,7 +56,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 io.println("arguments not found".to_string());
             }
         }
-        ("logout", _) => logout(io),
+        ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given
     }

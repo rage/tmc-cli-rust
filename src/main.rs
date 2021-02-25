@@ -83,6 +83,11 @@ fn get_matches() -> ArgMatches<'static> {
                 .long("no-update")
                 .help("Disable auto update temporarily"),
         )
+        .arg(
+            Arg::with_name("testmode")
+            .long("testmode")
+            .help("Only for internal testing, disables server connection"),
+        )
         .get_matches();
 
     matches
