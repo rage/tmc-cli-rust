@@ -1,4 +1,4 @@
-#ji!/bin/bash
+#!/bin/bash
 set -euo pipefail
 
 echo "~ Installing TMC-CLI ~"
@@ -11,6 +11,8 @@ then
     exit
 fi
 
+# Get platform-string from first argument
+platform=$1
 
 echo "Fetching latest version URL from https://download.mooc.fi"
 if ! PAGE=$(curl -s https://download.mooc.fi); then
@@ -20,9 +22,6 @@ fi
 
 # Adding spaces so ${PAGE[@]} will work.
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
-
-# Get platform-string from first argument
-platform=$1
     
 testexp="-test" # TODO: remove after first official release
 
@@ -35,8 +34,8 @@ regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
 
 # Finding the latest version of the executable
 version="0.0.0"
-for aString in ${PAGE[@]}; do
-    if [[ ${aString} =~ $regx ]]; then        
+for entry in ${PAGE[@]}; do
+    if [[ ${entry} =~ $regx ]]; then        
         noprefix="${BASH_REMATCH[0]#$prefx}" #remove prefix
         newversion="${noprefix%$suffx}" #remove suffix
         
@@ -83,5 +82,9 @@ sed -i '/alias tmc=/d' "$HOME/.bashrc"
 # Saves new alias to .bashrc
 echo "alias tmc='$PWD/$filename'" >> "$HOME/.bashrc"
 
+echo ""
+
 echo "Installation complete. Please restart the terminal."
+echo "After opening a new terminal, you can try using TMC-CLI from the command line with:"
+echo "  'tmc login'"
 exit
