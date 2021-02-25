@@ -11,8 +11,11 @@ if ! PAGE=$(curl -s https://download.mooc.fi); then
 	exit
 fi
 
-platform=""
+# Adding spaces so ${PAGE[@]} will work.
+PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
 
+# Choosing the right platform
+platform=""
 echo "Which platform are you on?"
 	select yn in "x86_64" "i686"; do
 		case $yn in
@@ -21,40 +24,64 @@ echo "Which platform are you on?"
 		esac
 done
 
+testexp="-test" # TODO: remove after first official release
 
-testexp="-test"
-regx="<Key>tmc-cli-rust/tmc-cli-rust-${platform}-unknown-linux-gnu-v[0-9]+\.[0-9]+\.[0-9]+${testexp}</Key>"
+fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
+prefx="<Key>tmc-cli-rust/$fileprefx"
+suffx="${testexp}</Key>"
 
-if [[ $PAGE =~ $regx ]]; then
-  echo "Found the file from mooc server"
-else
-  exit
-fi
 
-bashmatch="${BASH_REMATCH[0]#<Key>tmc-cli-rust/}"
-filename="${bashmatch%</Key>}"
+regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
 
-echo ""
-echo "Downloading the following file to '$PWD', overwriting existing files in the process: $filename "
+# Finding the latest version of the executable
+version="0.0.0"
+for aString in ${PAGE[@]}; do
+    if [[ ${aString} =~ $regx ]]; then        
+        noprefix="${BASH_REMATCH[0]#$prefx}" #remove prefix
+        newversion="${noprefix%$suffx}" #remove suffix
+        
+        IFS=. verold=(${version##*-})
+        IFS=. vernew=(${newversion##*-})
 
-echo "Are you sure you want to continue?"
-	select yn in "Yes" "No"; do
-		case $yn in
-			Yes ) break;;
-			No ) echo "Download interrupted"; exit;;
-		esac
+        if ((${vernew[0]} > ${verold[0]} )); then
+            version=$newversion
+        elif ((${vernew[0]} >= ${verold[0]} )) && ((${vernew[1]} > ${verold[1]} )) ; then
+            version=$newversion
+        elif ((${vernew[0]} >= ${verold[0]} )) && ((${vernew[1]} >= ${verold[1]} )) && ((${vernew[2]} > ${verold[2]} )) ; then
+            version=$newversion
+        fi
+    fi
 done
 
-curl -LO "https://download.mooc.fi/tmc-cli-rust/$filename" > ./$filename || true
+if [[ $version == "0.0.0" ]]; then 
+    echo "Could not find version";
+    exit
+fi
+echo "Latest version: $version" 
 
-if [ ! -f ./$filename ]; then
+filename="${fileprefx}${version}${testexp}"
+URL="https://download.mooc.fi/tmc-cli-rust/$filename"
+
+echo ""
+echo "Downloading TMC-CLI from the following address"
+echo "$URL"
+echo
+
+curl -L "$URL" > "$PWD/$filename"
+
+if [ ! -f "$PWD/$filename" ]; then
 	echo "Error downloading TMC-CLI"
 	exit 1
 fi
 
-chmod u+x ./$filename
+# Gives execution privileges for the file
+chmod u+x "$PWD/$filename"
 
-# TODO here: Remove old alias tmc= from $HOME/.bashrc
+# Removes old aliases
+sed -i '/alias tmc=/d' "$HOME/.bashrc"
 
+# Saves new alias to .bashrc
 echo "alias tmc='$PWD/$filename'" >> "$HOME/.bashrc"
+
 echo "Installation complete. Please restart the terminal."
+exit
