@@ -33,7 +33,13 @@ https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
 ```cd``` into the directory where you want to download tmc-cli-rust and run the following command:
 
-        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash
+64 bit:
+
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s x86_64
+        
+32 bit:
+    
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s i686
 
 #### Using the Windows installer
 
