@@ -3,7 +3,7 @@ use crate::io_module::Io;
 
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(error);
+        io.println(&error);
         return;
     }
 
@@ -12,9 +12,9 @@ pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     match courses_result {
         Ok(course_list) => {
             for course in course_list {
-                io.println(course.name.to_string());
+                io.println(&course.name);
             }
         }
-        Err(error) => io.println(error),
+        Err(error) => io.println(&error),
     }
 }

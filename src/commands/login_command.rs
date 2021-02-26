@@ -4,33 +4,33 @@ use crate::io_module::Io;
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
     if let Ok(()) = client.load_login() {
-        io.println("You are already logged in.".to_string());
+        io.println("You are already logged in.");
         return;
     };
 
-    io.print("Email / username: ".to_string());
+    io.print("Email / username: ");
     let mut username = io.read_line();
     username = username.trim().to_string();
 
     if username.is_empty() {
-        io.println("Username cannot be empty!".to_string());
+        io.println("Username cannot be empty!");
         return;
     }
 
-    io.print("Password: ".to_string());
+    io.print("Password: ");
     let mut password = io.read_password();
     password = password.trim().to_string();
 
-    io.println("".to_string());
+    io.println("");
 
     match client.try_login(username, password) {
         Ok(message) => {
-            io.println(message);
+            io.println(&message);
             if let Err(_err) = set_organization(io, client) {
-                io.println("Could not set organization".to_string());
+                io.println("Could not set organization");
             }
         }
-        Err(message) => io.println(message),
+        Err(message) => io.println(&message),
     }
 }
 
@@ -65,14 +65,14 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: String) {
+        fn print(&mut self, output: &str) {
             print!("{}", output);
-            self.list.push(output);
+            self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: String) {
+        fn println(&mut self, output: &str) {
             println!("{}", output);
-            self.list.push(output);
+            self.list.push(output.to_string());
         }
 
         fn read_password(&mut self) -> String {

@@ -12,14 +12,14 @@ pub fn download_or_update(
     // Get a client that has credentials
 
     if let Err(error) = client.load_login() {
-        io.println(error);
+        io.println(&error);
         return;
     };
 
     // Get course by id
     let course_result = get_course_id_by_name(client, course_name);
     if course_result.is_none() {
-        io.println("Could not find course by name".to_string());
+        io.println("Could not find course by name");
         return;
     }
     let course_id = course_result.unwrap();
@@ -33,13 +33,13 @@ pub fn download_or_update(
         format!("{}/", filepath)
     };
 
-    io.println("".to_string());
+    io.println("");
 
     match client.get_course_exercises(course_id) {
-        Ok(exercises) => io.println(parse_download_result(
+        Ok(exercises) => io.println(&parse_download_result(
             client.download_or_update_exercises(get_download_params(filepath, exercises)),
         )),
-        Err(error) => io.println(error),
+        Err(error) => io.println(&error),
     }
 }
 

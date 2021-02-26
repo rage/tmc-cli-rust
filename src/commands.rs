@@ -29,18 +29,18 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 if let Some(c) = a.value_of("course") {
                     course = String::from(c);
                 } else {
-                    io.println("argument for course not found".to_string());
+                    io.println("argument for course not found");
                     return;
                 }
                 if let Some(d) = a.value_of("download_folder") {
                     download_folder = String::from(d);
                 } else {
-                    io.println("argument for download folder not found".to_string());
+                    io.println("argument for download folder not found");
                     return;
                 }
                 download_or_update(io, &mut client, course, download_folder);
             } else {
-                io.println("arguments not found".to_string());
+                io.println("arguments not found");
             }
         }
         ("organization", _) => organization(io, &mut client),
@@ -50,10 +50,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 if let Some(c) = a.value_of("course") {
                     list_exercises(io, &mut client, String::from(c));
                 } else {
-                    io.println("argument for course not found".to_string());
+                    io.println("argument for course not found");
                 }
             } else {
-                io.println("arguments not found".to_string());
+                io.println("arguments not found");
             }
         }
         ("logout", _) => logout(io, &mut client),

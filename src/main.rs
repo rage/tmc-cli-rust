@@ -18,7 +18,7 @@ fn main() {
     let mut io = IoProduction::new(&mut output, &mut stdin);
 
     if let Err(_err) = check_for_update() {
-        io.println("TMC CLI could not be updated".to_string());
+        io.println("TMC CLI could not be updated");
     }
 
     let matches = get_matches();

@@ -7,12 +7,12 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<Stri
     // List all organizations
     let orgs = client.get_organizations().unwrap();
     for org in &orgs {
-        io.print(org.name.to_string());
-        io.print(" Slug: ".to_string());
-        io.println(org.slug.to_string());
+        io.print(&org.name);
+        io.print(" Slug: ");
+        io.println(&org.slug);
     }
 
-    io.print("\nChoose organization by writing its slug: ".to_string());
+    io.print("\nChoose organization by writing its slug: ");
     let mut slug = io.read_line();
     slug = slug.trim().to_string();
 
@@ -27,12 +27,12 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<Stri
 // Check if logged in, then ask for organization
 pub fn organization(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(error);
+        io.println(&error);
         return;
     };
 
     match set_organization(io, client) {
-        Ok(org) => io.println(format!("Selected {} as organization.", org)),
-        Err(msg) => io.println(msg),
+        Ok(org) => io.println(&format!("Selected {} as organization.", org)),
+        Err(msg) => io.println(&msg),
     }
 }

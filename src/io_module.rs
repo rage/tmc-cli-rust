@@ -21,8 +21,8 @@ pub struct IoProduction<'a> {
 
 pub trait Io {
     fn read_line(&mut self) -> String;
-    fn print(&mut self, output: String);
-    fn println(&mut self, output: String);
+    fn print(&mut self, output: &str);
+    fn println(&mut self, output: &str);
     fn read_password(&mut self) -> String;
 }
 
@@ -42,14 +42,14 @@ impl Io for IoProduction<'_> {
         x
     }
 
-    fn print(&mut self, output: String) {
+    fn print(&mut self, output: &str) {
         self.output.write_all(output.as_bytes()).expect("");
         self.output.flush().expect("Something went wrong");
     }
 
-    fn println(&mut self, output: String) {
+    fn println(&mut self, output: &str) {
         self.print(output);
-        self.print("\n".to_string());
+        self.print("\n");
     }
 
     fn read_password(&mut self) -> String {
