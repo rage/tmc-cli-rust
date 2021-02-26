@@ -1,10 +1,10 @@
+use command_util::ClientProduction;
 use courses_command::list_courses;
 use download_command::download_or_update;
 use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
-use command_util::Client;
 mod command_util;
 mod courses_command;
 mod download_command;
@@ -18,7 +18,7 @@ use crate::io_module::Io;
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     //println!("{:#?}", matches.subcommand());
 
-    let mut client = Client::new(matches.is_present("testmode"));
+    let mut client = ClientProduction::new(matches.is_present("testmode"));
 
     match matches.subcommand() {
         ("login", _) => login(io, &mut client),

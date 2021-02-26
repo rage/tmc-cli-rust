@@ -1,10 +1,9 @@
 use super::command_util::*;
 use crate::io_module::Io;
 
-use tmc_client::{ClientError, CourseExercise};
+use tmc_client::CourseExercise;
 
-pub fn list_exercises(io: &mut dyn Io, client: &mut Client, course_name: String) {
-
+pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
     if let Err(error) = client.load_login() {
         io.println(error);
         return;

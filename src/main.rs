@@ -85,8 +85,8 @@ fn get_matches() -> ArgMatches<'static> {
         )
         .arg(
             Arg::with_name("testmode")
-            .long("testmode")
-            .help("Only for internal testing, disables server connection"),
+                .long("testmode")
+                .help("Only for internal testing, disables server connection"),
         )
         .get_matches();
 
