@@ -31,7 +31,7 @@ pub trait Client {
     fn download_or_update_exercises(
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
-    ) -> Result<String, String>;
+    ) -> Result<(), ClientError>;
 }
 
 impl ClientProduction {
@@ -161,17 +161,12 @@ impl Client for ClientProduction {
     fn download_or_update_exercises(
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
-    ) -> Result<String, String> {
+    ) -> Result<(), ClientError> {
         if self.test_mode {
-            return Err("Test feature not yet implemented".to_string());
+            panic!("Test feature not yet implemented");
         }
-        match self
-            .tmc_client
+        self.tmc_client
             .download_or_update_exercises(download_params)
-        {
-            Ok(()) => Ok("Downloaded exercises successfully".to_string()),
-            _ => Err("Downloading exercises failed".to_string()),
-        }
     }
 }
 
