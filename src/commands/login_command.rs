@@ -76,7 +76,7 @@ mod tests {
         }
 
         fn read_password(&mut self) -> String {
-            "".to_string()
+            self.read_line()
         }
     }
 
