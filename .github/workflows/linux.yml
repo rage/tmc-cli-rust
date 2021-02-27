@@ -41,6 +41,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc-multilib libssl-dev pkg-config # required to build for 32-bit arch
+      - name: debug
+        run: |
+          tree /usr/include | egrep openssl
       - name: Cargo build
         run: |
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib32 # required to build for 32-bit arch
