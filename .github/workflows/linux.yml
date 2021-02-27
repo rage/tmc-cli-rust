@@ -45,6 +45,7 @@ jobs:
         run: |
           tree /usr/include | egrep openssl
           ls -la /usr
+          tree /usr/bin32 | egrep openssl
       - name: Cargo build
         run: |
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib32 # required to build for 32-bit arch
