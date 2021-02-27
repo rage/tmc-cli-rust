@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y gcc-multilib # required to build for 32-bit arch
+          sudo apt install -y gcc-multilib libssl-dev # required to build for 32-bit arch
       - name: Cargo build
         run: |
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib32 # required to build for 32-bit arch
