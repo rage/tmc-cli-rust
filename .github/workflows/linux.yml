@@ -39,6 +39,7 @@ jobs:
       #    service_account_key: ${{ secrets.GCP_SA_KEY }}
       - name: Install dependencies
         run: |
+          sudo dpkg --add-architecture i386
           sudo apt update
           sudo apt install -y gcc-multilib libssl-dev:i386 # required to build for 32-bit arch
       - name: debug
