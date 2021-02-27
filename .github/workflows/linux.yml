@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y gcc-multilib libssl-dev build-essential # required to build for 32-bit arch
+          sudo apt install -y gcc-multilib libssl-dev:i386 # required to build for 32-bit arch
       - name: debug
         run: |
           tree /usr/include | egrep openssl
