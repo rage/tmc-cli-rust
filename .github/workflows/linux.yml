@@ -5,7 +5,7 @@ on: push
 env:
   CARGO_TERM_COLOR: always
 
-#jobs:
+jobs:
 #
 #  test:
 #    runs-on: ubuntu-latest
