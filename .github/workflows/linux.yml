@@ -50,8 +50,8 @@ jobs:
           find /usr/include | egrep ssl
       - name: Cargo build
         run: |
-          export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu # required to build for 32-bit arch
-          export I686_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/openssl/openssl # required to build for 32-bit arch
+          export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu # required to build for 32-bit arch
+          export I686_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/i386-linux-gnu # required to build for 32-bit arch
           rustup target add i686-unknown-linux-gnu
           cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
       - name: Get the version
