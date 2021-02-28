@@ -65,8 +65,9 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // tmc-cli-rust --testmode courses
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("--testmode").arg("courses")
-        .arg("--no-update");
+    cmd.arg("--testmode")
+        .arg("--no-update")
+        .arg("courses");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("test-tmc-test-course"));
