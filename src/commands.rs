@@ -44,7 +44,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("organization", _) => organization(io, &mut client),
-        ("courses", _) => list_courses(io, &mut client),
+        ("courses", _) => match list_courses(io, &mut client) {
+            Ok(()) => {}
+            Err(error) => io.println(&error),
+        },
         ("exercises", args) => {
             if let Some(a) = args {
                 if let Some(c) = a.value_of("course") {
