@@ -5,7 +5,7 @@ use std::io::{stdin, stdout};
 pub mod config;
 
 pub mod io_module;
-use io_module::{Io, IoProduction};
+use io_module::IoProduction;
 pub mod commands;
 mod updater;
 
