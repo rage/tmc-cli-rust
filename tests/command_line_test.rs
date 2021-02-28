@@ -9,8 +9,7 @@ const PKG_NAME: Option<&'static str> = option_env!("CARGO_PKG_NAME");
 #[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("--help")
-        .arg("--no-update");
+    cmd.arg("--help").arg("--no-update");
     cmd.assert().success().stdout(predicate::str::contains(
         "Test My Code client written in Rust",
     ));
@@ -21,8 +20,7 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("--wrong_argument")
-        .arg("--no-update");
+    cmd.arg("--wrong_argument").arg("--no-update");
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("error: Found argument '--wrong_argument' which wasn't expected, or isn't valid in this context"));
@@ -65,9 +63,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // tmc-cli-rust --testmode courses
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("--testmode")
-        .arg("--no-update")
-        .arg("courses");
+    cmd.arg("--testmode").arg("--no-update").arg("courses");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("test-tmc-test-course"));
