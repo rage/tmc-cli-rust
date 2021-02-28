@@ -1,14 +1,13 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 //use std::io::{Write, Read};
-use self_update::cargo_crate_version;
 use std::io::{stdin, stdout};
 
 pub mod config;
 
 pub mod io_module;
 use io_module::{Io, IoProduction};
-
 pub mod commands;
+mod updater;
 
 fn main() {
     let mut stdin = stdin();
@@ -17,11 +16,16 @@ fn main() {
 
     let mut io = IoProduction::new(&mut output, &mut stdin);
 
-    if let Err(_err) = check_for_update() {
-        io.println("TMC CLI could not be updated");
-    }
-
     let matches = get_matches();
+    match matches.occurrences_of("no-update") {
+        0 => {
+            let os = std::env::consts::OS;
+            if os == "windows" {
+                updater::check_for_update();
+            }
+        }
+        _ => println!("No Auto-Updates"),
+    }
     commands::handle(&matches, &mut io);
 }
 
@@ -91,16 +95,4 @@ fn get_matches() -> ArgMatches<'static> {
         .get_matches();
 
     matches
-}
-fn check_for_update() -> Result<(), Box<dyn (::std::error::Error)>> {
-    let status = self_update::backends::github::Update::configure()
-        .repo_owner("rage")
-        .repo_name("tmc-cli-rust")
-        .bin_name("github")
-        .show_download_progress(true)
-        .current_version(cargo_crate_version!())
-        .build()?
-        .update()?;
-    println!("Update status: `{}`!", status.version());
-    Ok(())
 }
