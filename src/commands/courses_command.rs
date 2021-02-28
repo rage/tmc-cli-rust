@@ -142,7 +142,7 @@ mod tests {
             );
             assert!(
                 io.list[2].eq("course of sorts"),
-                format!("Expected 'course of sorts', got {}", io.list[1])
+                format!("Expected 'course of sorts', got {}", io.list[2])
             );
         }
 

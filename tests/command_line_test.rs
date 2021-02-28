@@ -28,6 +28,67 @@ fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[test]
+fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
+    // Logout to make sure old login doesn't exist
+    /*
+        // tmc-cli-rust --testmode logout
+        let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+        cmd.arg("--testmode")
+        .arg("logout");
+
+
+        // tmc-cli-rust --testmode login
+        cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+        cmd.arg("--testmode")
+        .arg("login")
+        .with_stdin()
+        .buffer("testusername\ntestpassword\ntest\n")
+        .assert()
+            .success()
+            .stdout(predicate::str::contains("Imaginary test organization"));
+    */
+    // tmc-cli-rust --testmode organization
+    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("organization")
+        .with_stdin()
+        .buffer("test\n")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Selected test organization as organization.",
+        ));
+
+    // tmc-cli-rust --testmode courses
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode").arg("courses");
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("test-tmc-test-course"));
+
+    // tmc-cli-rust --testmode exercises test-tmc-test-course
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("exercises")
+        .arg("test-tmc-test-course");
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Imaginary test exercise"));
+
+    // tmc-cli-rust --testmode download test-tmc-test-course folder_for_download
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("download")
+        .arg("test-tmc-test-course")
+        .arg("folder_for_download");
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Download was successful!"));
+
+    Ok(())
+}
+
 /*
 #[test]
 fn command_version() -> Result<(), Box<dyn std::error::Error>> {

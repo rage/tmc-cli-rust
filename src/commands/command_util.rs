@@ -69,6 +69,16 @@ impl ClientProduction {
 
 impl Client for ClientProduction {
     fn load_login(&mut self) -> Result<(), String> {
+        if self.test_mode {
+            return Ok(());
+            /* This code is stashed until tests write proper input
+            if let Some(_credentials) = get_credentials() {
+                return Ok(());
+            } else {
+                return Err("No login found. You need to be logged in to use this command".to_string());
+            }
+            */
+        }
         if let Some(credentials) = get_credentials() {
             match self.tmc_client.set_token(credentials.token()) {
                 Ok(()) => return Ok(()),
@@ -101,9 +111,18 @@ impl Client for ClientProduction {
 
     fn list_courses(&mut self) -> Result<Vec<Course>, String> {
         if self.test_mode {
-            // TODO return a mock list of courses for test mode
-            return Err("Test feature not yet implemented".to_string());
+            return Ok(vec![
+                Course {
+                    name: "test-tmc-test-course".to_string(),
+                    id: 0,
+                },
+                Course {
+                    name: "imaginary-test-course".to_string(),
+                    id: 1,
+                },
+            ]);
         }
+
         match self.tmc_client.list_courses(&get_organization().unwrap()) {
             Ok(courses) => {
                 let mut course_list: Vec<Course> = Vec::new();
@@ -124,7 +143,16 @@ impl Client for ClientProduction {
 
     fn get_organizations(&mut self) -> Result<Vec<Organization>, String> {
         if self.test_mode {
-            return Err("Test feature not yet implemented".to_string());
+            return Ok(vec![
+                Organization {
+                    name: "test organization".to_string(),
+                    slug: "test".to_string(),
+                },
+                Organization {
+                    name: "imaginary test organization".to_string(),
+                    slug: "imag".to_string(),
+                },
+            ]);
         }
         let result = self.tmc_client.get_organizations();
         match result {
@@ -149,6 +177,20 @@ impl Client for ClientProduction {
     }
 
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String> {
+        if self.test_mode {
+            return Ok(vec![CourseExercise {
+                id: 0,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "Imaginary test exercise".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: false,
+                unlocked: true,
+            }]);
+        }
         match self.tmc_client.get_course_exercises(course_id) {
             Ok(exercises) => Ok(exercises),
             Err(ClientError::NotLoggedIn) => {
@@ -163,7 +205,7 @@ impl Client for ClientProduction {
         download_params: Vec<(usize, PathBuf)>,
     ) -> Result<(), ClientError> {
         if self.test_mode {
-            panic!("Test feature not yet implemented");
+            return Ok(());
         }
         self.tmc_client
             .download_or_update_exercises(download_params)
