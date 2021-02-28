@@ -3,46 +3,68 @@ use crate::io_module::Io;
 
 use tmc_client::CourseExercise;
 
-pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
+pub fn list_exercises(
+    io: &mut dyn Io,
+    client: &mut dyn Client,
+    course_name: String,
+) -> Result<(), String> {
     if let Err(error) = client.load_login() {
-        io.println(&error);
-        return;
+        return Err(error);
     };
 
     // Get course by id
     let course_result = get_course_id_by_name(client, course_name.clone());
     if course_result.is_none() {
-        io.println("Could not find course by name");
-        return;
+        //io.println("Could not find course by name");
+        return Err(format!(
+            "Could not find a course with name '{}'",
+            course_name
+        ));
     }
     let course_id = course_result.unwrap();
 
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
-        // TODO: Get a more detailed error from get_course_exercises and print it
-        _ => io.println("Failed to download course exercises"),
+        Err(error) => return Err(error),
     }
+
+    Ok(())
 }
 
 fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseExercise>) {
     // Print exercises
     io.println("");
-    io.print("Course name: ");
-    io.println(&course_name);
+    io.println(&format!("Course name: {}", course_name));
 
+    let none = "none".to_string();
     let mut prev_deadline = "".to_string();
+    let mut prev_soft_deadline = "".to_string();
     for exercise in exercises {
+        // Skip locked and disabled exercises
+        if exercise.disabled || !exercise.unlocked {
+            continue;
+        }
+
         // Print deadline if it exists
         if let Some(dl) = exercise.deadline {
             if prev_deadline != dl {
                 io.println(&format!("Deadline: {}", &dl));
-                prev_deadline = dl;
+                prev_deadline = dl.clone();
             }
-        } else if let Some(dl) = exercise.soft_deadline {
-            if prev_deadline != dl {
+        } else if prev_deadline != none {
+            io.println(&format!("Deadline: {}", &none));
+            prev_deadline = none.clone();
+        }
+
+        // TODO: Do we need soft deadline?
+        if let Some(dl) = exercise.soft_deadline {
+            if prev_soft_deadline != dl {
                 io.println(&format!("Soft deadline: {}", &dl));
-                prev_deadline = dl;
+                prev_soft_deadline = dl.clone();
             }
+        } else if prev_soft_deadline != none {
+            io.println(&format!("Soft deadline: {}", &none));
+            prev_soft_deadline = none.clone();
         }
 
         let mut completed = true;
@@ -65,5 +87,278 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
         };
 
         io.println(&format!("  {}: {}", completion_status, &exercise.name));
+    }
+}
+
+// TODO: clean up tests
+#[cfg(test)]
+mod tests {
+    use tmc_client::{ClientError, CourseExercise /*, ExercisePoint*/};
+
+    use std::path::PathBuf;
+
+    use super::*;
+    use std::slice::Iter;
+    pub struct IoTest<'a> {
+        list: &'a mut Vec<String>,
+        input: &'a mut Iter<'a, &'a str>,
+    }
+
+    #[cfg(test)]
+    impl IoTest<'_> {}
+
+    #[cfg(test)]
+    impl Io for IoTest<'_> {
+        fn read_line(&mut self) -> String {
+            match self.input.next() {
+                Some(string) => string,
+                None => "",
+            }
+            .to_string()
+        }
+
+        fn print(&mut self, output: &str) {
+            print!("{}", output);
+            self.list.push(output.to_string());
+        }
+
+        fn println(&mut self, output: &str) {
+            println!("{}", output);
+            self.list.push(output.to_string());
+        }
+
+        fn read_password(&mut self) -> String {
+            self.read_line()
+        }
+    }
+
+    #[cfg(test)]
+    pub struct ClientTest {}
+
+    #[cfg(test)]
+    impl ClientTest {}
+
+    #[cfg(test)]
+    impl Client for ClientTest {
+        fn load_login(&mut self) -> Result<(), String> {
+            Ok(())
+        }
+        fn try_login(&mut self, _username: String, _password: String) -> Result<String, String> {
+            Ok("ok".to_string())
+        }
+        fn list_courses(&mut self) -> Result<Vec<Course>, String> {
+            Ok(vec![
+                Course {
+                    id: 0,
+                    name: "name".to_string(),
+                },
+                Course {
+                    id: 88,
+                    name: "course_name".to_string(),
+                },
+            ])
+        }
+        fn get_organizations(&mut self) -> Result<Vec<Organization>, String> {
+            Ok(vec![])
+        }
+        fn logout(&mut self) {}
+        fn get_course_exercises(
+            &mut self,
+            _course_id: usize,
+        ) -> Result<Vec<CourseExercise>, String> {
+            /*TODO: ExercisePoint is in private module*/
+            //let points = vec![];
+            //let awarded_points = vec![/*"1.1".to_string()*/];
+
+            let exercise1 = CourseExercise {
+                id: 0,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "part01-01_example_exercise".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: false,
+                unlocked: true,
+            };
+            let exercise2 = CourseExercise {
+                id: 24,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "part01-02_example_disabled".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: true,
+                unlocked: true,
+            };
+            let exercise3 = CourseExercise {
+                id: 578,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "part02-01_example_not_unlocked".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: false,
+                unlocked: false,
+            };
+
+            let exercise4 = CourseExercise {
+                id: 578,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "part02-02_example_disabled2".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: true,
+                unlocked: false,
+            };
+
+            let exercise5 = CourseExercise {
+                id: 578,
+                available_points: vec![],
+                awarded_points: vec![],
+                name: "part02-03_example_valid".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: false,
+                unlocked: true,
+            };
+
+            let exercises = vec![exercise1, exercise2, exercise3, exercise4, exercise5];
+            Ok(exercises)
+        }
+        fn download_or_update_exercises(
+            &mut self,
+            _download_params: Vec<(usize, PathBuf)>,
+        ) -> Result<(), ClientError> {
+            Ok(())
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn list_exercises_test() {
+            let mut v: Vec<String> = Vec::new();
+            let input = vec![];
+            let mut input = input.iter();
+
+            let mut io = IoTest {
+                list: &mut v,
+                input: &mut input,
+            };
+
+            let points = vec![
+                //TODO: ExercisePoint is in private module
+                /*ExercisePoint {
+                    id: 0,
+                    exercise_id: 0,
+                    name: "1.1".to_string(),
+                    requires_review: true,
+                }*/
+            ];
+            let awarded_points = vec![/*"1.1".to_string()*/];
+
+            let exercises = vec![CourseExercise {
+                id: 0,
+                available_points: points,
+                awarded_points: awarded_points,
+                name: "part01-01_example_exercise".to_string(),
+                publish_time: None,
+                solution_visible_after: None,
+                deadline: None,
+                soft_deadline: None,
+                disabled: false,
+                unlocked: true,
+            }];
+
+            print_exercises(&mut io, "course_name".to_string(), exercises);
+            assert!(io.list[0].eq(""), "first line should be empty");
+            let course_string = "Course name: course_name";
+            assert!(
+                io.list[1].eq(course_string),
+                format!("Expected '{}', got '{}'", course_string, io.list[1])
+            );
+            let deadline_string = "Deadline: none";
+            let soft_deadline_string = "Soft deadline: none";
+            assert!(
+                io.list[2].eq(deadline_string),
+                format!("Expected '{}', got '{}'", deadline_string, io.list[2])
+            );
+            assert!(
+                io.list[3].eq(soft_deadline_string),
+                format!("Expected '{}', got '{}'", soft_deadline_string, io.list[3])
+            );
+
+            let exercise_string = "  Completed: part01-01_example_exercise";
+            assert!(
+                io.list[4].eq(exercise_string),
+                format!("Expected '{}', got '{}'", exercise_string, io.list[4])
+            );
+        }
+
+        #[test]
+        fn list_exercises_with_client_test() {
+            let mut v: Vec<String> = Vec::new();
+            let input = vec![];
+            let mut input = input.iter();
+
+            let mut io = IoTest {
+                list: &mut v,
+                input: &mut input,
+            };
+            let mut client = ClientTest {};
+
+            if let Err(err) = list_exercises(&mut io, &mut client, "course_name".to_string()) {
+                assert!(false, format!("Should not give error '{}'", err));
+            }
+
+            assert!(io.list[0].eq(""), "first line should be empty");
+            let course_string = "Course name: course_name";
+            assert!(
+                io.list[1].eq(course_string),
+                format!("Expected '{}', got '{}'", course_string, io.list[1])
+            );
+
+            let deadline_string = "Deadline: none";
+            let soft_deadline_string = "Soft deadline: none";
+            assert!(
+                io.list[2].eq(deadline_string),
+                format!("Expected '{}', got '{}'", deadline_string, io.list[2])
+            );
+            assert!(
+                io.list[3].eq(soft_deadline_string),
+                format!("Expected '{}', got '{}'", soft_deadline_string, io.list[3])
+            );
+
+            let exercise_string_1 = "  Completed: part01-01_example_exercise";
+            assert!(
+                io.list[4].eq(exercise_string_1),
+                format!("Expected '{}', got '{}'", exercise_string_1, io.list[4])
+            );
+
+            let exercise_string_2 = "  Completed: part02-03_example_valid";
+            assert!(
+                io.list[5].eq(exercise_string_2),
+                format!("Expected '{}', got '{}'", exercise_string_2, io.list[5])
+            );
+
+            let expected_size = 6;
+            assert!(
+                io.list.len().eq(&expected_size),
+                format!("Expected size '{}', got {}", expected_size, io.list.len())
+            );
+        }
     }
 }

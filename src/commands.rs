@@ -51,7 +51,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         ("exercises", args) => {
             if let Some(a) = args {
                 if let Some(c) = a.value_of("course") {
-                    list_exercises(io, &mut client, String::from(c));
+                    match list_exercises(io, &mut client, String::from(c)) {
+                        Ok(()) => {}
+                        Err(error) => io.println(&error),
+                    }
                 } else {
                     io.println("argument for course not found");
                 }
