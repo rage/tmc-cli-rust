@@ -39,10 +39,13 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
       - name: Install dependencies
         run: |
+          sudo dpkg --add-architecture i386
           sudo apt update
-          sudo apt install -y gcc-multilib # required to build for 32-bit arch
+          sudo apt install -y gcc-multilib libssl-dev:i386 # required to build for 32-bit arch
       - name: Cargo build
         run: |
+          export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu # required to build for 32-bit arch
+          export I686_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/i386-linux-gnu # required to build for 32-bit arch
           rustup target add i686-unknown-linux-gnu
           cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
       - name: Get the version
