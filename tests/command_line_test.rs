@@ -53,7 +53,6 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("organization")
-        .arg("--noninteractive")
         .with_stdin()
         .buffer("test\n")
         .assert()
