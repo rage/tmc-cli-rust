@@ -42,12 +42,6 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt update
           sudo apt install -y gcc-multilib libssl-dev:i386 # required to build for 32-bit arch
-      - name: debug
-        run: |
-          tree /usr/include | egrep openssl
-          ls -la /usr
-          find /usr/lib | egrep libssl
-          find /usr/include | egrep ssl
       - name: Cargo build
         run: |
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu # required to build for 32-bit arch
