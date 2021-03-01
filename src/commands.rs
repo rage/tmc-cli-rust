@@ -43,7 +43,15 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 io.println("arguments not found");
             }
         }
-        ("organization", _) => organization(io, &mut client),
+        ("organization", args) => {
+            if let Some(a) = args {
+                if a.is_present("noninteractive") {
+                    organization(io, &mut client, false)
+                } else {
+                    organization(io, &mut client, true)
+                }
+            }
+        }
         ("courses", _) => match list_courses(io, &mut client) {
             Ok(()) => {}
             Err(error) => io.println(&error),

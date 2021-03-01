@@ -56,14 +56,21 @@ pub fn set_organization_interactive(client: &mut dyn Client) -> Result<String, S
 }
 
 // Check if logged in, then ask for organization
-pub fn organization(io: &mut dyn Io, client: &mut dyn Client) {
+pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive: bool) {
     if let Err(error) = client.load_login() {
         io.println(&error);
         return;
     };
 
-    match set_organization_interactive(client) {
-        Ok(org) => io.println(&format!("Selected {} as organization.", org)),
-        Err(msg) => io.println(&msg),
+    if interactive {
+        match set_organization_interactive(client) {
+            Ok(org) => io.println(&format!("Selected {} as organization.", org)),
+            Err(msg) => io.println(&msg),
+        }
+    } else {
+        match set_organization(io, client) {
+            Ok(org) => io.println(&format!("Selected {} as organization.", org)),
+            Err(msg) => io.println(&msg),
+        }
     }
 }
