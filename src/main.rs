@@ -66,7 +66,7 @@ fn get_matches() -> ArgMatches<'static> {
                 .arg(
                     Arg::with_name("exercise")
                         .value_name("exercise")
-                        .required(true),
+                        .required(false),
                 ),
         )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))

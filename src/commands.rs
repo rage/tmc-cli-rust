@@ -5,6 +5,7 @@ use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
+use test_command::test;
 mod command_util;
 mod courses_command;
 mod download_command;
@@ -12,6 +13,7 @@ mod exercises_command;
 mod login_command;
 mod logout_command;
 mod organization_command;
+mod test_command;
 
 use crate::io_module::Io;
 
@@ -57,6 +59,16 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     }
                 } else {
                     io.println("argument for course not found");
+                }
+            } else {
+                io.println("arguments not found");
+            }
+        }
+        ("test", args) => {
+            if let Some(a) = args {
+                match test(io, a.value_of("exercise")) {
+                    Ok(()) => {}
+                    Err(error) => io.println(&error),
                 }
             } else {
                 io.println("arguments not found");
