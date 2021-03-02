@@ -42,8 +42,10 @@ fn test_exercises(io: &mut dyn Io, paths: Vec<PathBuf>) -> Result<(), String> {
     for exercise_path in paths {
         io.println("");
         io.println("-----");
-        if test_exercise(io, exercise_path.as_path()).is_err() {
+        if let Err(err) = test_exercise(io, exercise_path.as_path()) {
             // TODO: what to do with results?
+            // Exiting on first fail might not be the best idea
+            return Err(err);
         }
     }
 
