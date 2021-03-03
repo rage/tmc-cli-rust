@@ -16,7 +16,7 @@ use std::io::{BufRead, BufReader, Read, Write};
 
 pub struct IoProduction<'a> {
     output: &'a mut dyn Write,
-    input: &'a mut dyn Read,
+    input: BufReader<&'a mut dyn Read>,
 }
 
 pub trait Io {
@@ -27,8 +27,12 @@ pub trait Io {
 }
 
 impl IoProduction<'_> {
-    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut impl Read) -> IoProduction<'a> {
-        IoProduction { output, input }
+    pub fn new<'a>(output: &'a mut impl Write, input: &'a mut dyn Read) -> IoProduction<'a> {
+        let reader = BufReader::new(input);
+        IoProduction {
+            output,
+            input: reader,
+        }
     }
 }
 
@@ -36,9 +40,7 @@ impl Io for IoProduction<'_> {
     fn read_line(&mut self) -> String {
         let mut x = String::new();
 
-        let mut reader = BufReader::new(&mut self.input);
-
-        reader.read_line(&mut x).unwrap();
+        self.input.read_line(&mut x).unwrap();
         x
     }
 
