@@ -7,7 +7,7 @@ use std::env;
 use std::path::PathBuf;
 
 pub mod configurations;
-pub use self::configurations::Config;
+pub use self::configurations::{ConfigValue, TmcConfig};
 
 // base directory for a given plugin's settings files
 pub fn get_tmc_dir(client_name: &str) -> Result<PathBuf, Error> {

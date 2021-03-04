@@ -1,126 +1,197 @@
-use anyhow::Context;
-use file_util::create_file_lock;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::collections::HashMap;
-use std::fs;
-use std::ops::Deref;
-use std::path::PathBuf;
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
+use std::{borrow::Cow, fs};
 use tmc_langs_framework::file_util;
+use toml::{value::Table, Value};
 
 /// Save configurations, like organization, in JSON
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
-    path: PathBuf,
-    settings: Value,
+#[serde(rename_all = "kebab-case")]
+pub struct TmcConfig {
+    pub projects_dir: PathBuf,
+    #[serde(flatten)]
+    pub table: Table,
+    client_name: String,
 }
 
-impl Config {
-    pub fn new(client_name: &str) -> Self {
-        Config {
-            path: Self::get_config_path(client_name).unwrap(),
-            settings: serde_json::json!({}),
-        }
-    }
-
-    fn get_config_path(client_name: &str) -> anyhow::Result<PathBuf> {
+impl TmcConfig {
+    fn get_config_path(client_name: &str) -> Result<PathBuf> {
         super::get_tmc_dir(client_name).map(|dir| dir.join("config.json"))
     }
 
-    /// ### Returns
-    /// - Ok(Some) if a config file exists and can be deserialized,
-    /// - Ok(None) if no config file exists, and
-    /// - Err if a config file exists but cannot be deserialized.
-    ///
-    /// On Err, the file is deleted.
-    ///
-    pub fn load(client_name: &str) -> anyhow::Result<Self> {
-        let config_path = Self::get_config_path(client_name).unwrap();
-        if !config_path.exists() {
-            anyhow::bail!("Config file path does not exist!");
+    pub fn get(&self, key: &str) -> ConfigValue {
+        match key {
+            "projects-dir" => ConfigValue::Path(Cow::Borrowed(&self.projects_dir)),
+            _ => ConfigValue::Value(self.table.get(key).map(Cow::Borrowed)),
         }
+    }
 
-        if let Ok(config_str) = file_util::read_file_to_string(&config_path) {
-            let result = match serde_json::from_str(&config_str) {
-                Ok(json) => Ok(Config {
-                    path: config_path,
-                    settings: json,
-                }),
-                Err(e) => {
-                    log::error!(
-                        "Failed to deserialize credentials.json due to \"{}\", deleting",
-                        e
-                    );
-                    fs::remove_file(&config_path).with_context(|| {
-                        format!(
-                            "Failed to remove malformed credentials.json file {}",
-                            config_path.display()
-                        )
-                    })?;
-                    anyhow::bail!(
-                        "Failed to deserialize credentials file at {}; removed the file, please try again.",
-                        config_path.display()
-                        )
+    pub fn insert(&mut self, key: String, value: Value) -> Result<()> {
+        match key.as_str() {
+            "projects-dir" => {
+                if let Value::String(value) = value {
+                    let path = PathBuf::from(value);
+                    self.set_projects_dir(path)?;
+                } else {
+                    anyhow::bail!("The value for projects-dir must be a string.")
                 }
-            };
-
-            return result;
+            }
+            _ => {
+                self.table.insert(key, value);
+            }
         }
-
-        Ok(Config {
-            path: config_path,
-            settings: serde_json::json!({}),
-        })
-    }
-
-    pub fn get_value(&self, key: &str) -> anyhow::Result<String> {
-        let value: String = serde_json::from_value(self.settings[key].clone())?;
-        Ok(value)
-    }
-
-    pub fn change_value(&mut self, key: &str, new_val: &str) -> anyhow::Result<()> {
-        let mut config: HashMap<String, Value> = serde_json::from_value(self.settings.clone())?;
-
-        config.insert(key.to_string(), Value::from(new_val));
-
-        self.settings = serde_json::to_value(config)?;
         Ok(())
     }
 
-    pub fn save(&self) -> anyhow::Result<()> {
-        let config_path = &self.path;
-
-        if let Some(p) = config_path.parent() {
-            fs::create_dir_all(p)
-                .with_context(|| format!("Failed to create directory {}", p.display()))?;
+    pub fn remove(&mut self, key: &str) -> Result<Option<Value>> {
+        match key {
+            "projects-dir" => anyhow::bail!("projects-dir must always be defined"),
+            _ => Ok(self.table.remove(key)),
         }
+    }
 
-        let mut config_file = create_file_lock(&config_path)
-            .with_context(|| format!("Failed to create file at {}", config_path.display()))?;
-        let guard = config_file.lock()?;
+    pub fn set_projects_dir(&mut self, mut target: PathBuf) -> Result<PathBuf> {
+        // check if the directory is empty or not
+        if fs::read_dir(&target)
+            .with_context(|| format!("Failed to read directory at {}", target.display()))?
+            .next()
+            .is_some()
+        {
+            anyhow::bail!("Cannot set projects-dir to a non-empty directory.");
+        }
+        std::mem::swap(&mut self.projects_dir, &mut target);
+        Ok(target)
+    }
 
-        // write token
-        if let Err(e) = serde_json::to_writer(guard.deref(), &self.settings) {
-            // failed to write token, removing config file
-            fs::remove_file(&config_path).with_context(|| {
+    pub fn save(self) -> Result<()> {
+        let path = TmcConfig::get_config_path(&self.client_name).unwrap();
+        if let Some(parent) = path.parent() {
+            file_util::create_dir_all(parent)?;
+        }
+        let mut lock = file_util::create_file_lock(&path)?;
+        let mut guard = lock.lock()?;
+
+        let toml = toml::to_string_pretty(&self).context("Failed to serialize HashMap")?;
+        guard
+            .write_all(toml.as_bytes())
+            .with_context(|| format!("Failed to write TOML to {}", path.display()))?;
+        Ok(())
+    }
+
+    pub fn reset(client_name: &'static str) -> Result<()> {
+        let path = Self::get_location(client_name)?;
+        Self::init_at(client_name, &path)?; // init locks the file
+        Ok(())
+    }
+
+    pub fn load(client_name: &'static str) -> Result<TmcConfig> {
+        // try to open config file
+
+        let path = TmcConfig::get_config_path(client_name).unwrap();
+        let config = match file_util::open_file_lock(&path) {
+            Ok(mut lock) => {
+                // found config file, lock and read
+                let mut guard = lock.lock()?;
+                let mut buf = vec![];
+                let _bytes = guard.read_to_end(&mut buf)?;
+                match toml::from_slice(&buf) {
+                    // successfully read file, try to deserialize
+                    Ok(config) => config, // successfully read and deserialized the config
+                    Err(_) => {
+                        log::error!(
+                            "Failed to deserialize config at {}, resetting",
+                            path.display()
+                        );
+                        Self::init_at(client_name, &path)?
+                    }
+                }
+            }
+            Err(e) => {
+                // failed to open config file, create new one
+                log::info!(
+                    "could not open config file at {} due to {}, initializing a new config file",
+                    path.display(),
+                    e
+                );
+                // todo: check the cause to make sure this makes sense, might be necessary to propagate some error kinds
+                Self::init_at(client_name, &path)?
+            }
+        };
+
+        if !config.projects_dir.exists() {
+            fs::create_dir_all(&config.projects_dir).with_context(|| {
                 format!(
-                    "Failed to remove empty config file after failing to write {}",
-                    config_path.display()
+                    "Failed to create projects-dir at {}",
+                    config.projects_dir.display()
                 )
             })?;
-            Err(e)
-                .with_context(|| format!("Failed to write config to {}", config_path.display()))?;
         }
-        Ok(())
+        Ok(config)
     }
 
-    //pub fn remove(self) -> Result<()> {
-    //file_util::lock!(&self.path);
+    // initializes the default configuration file at the given path
+    fn init_at(client_name: &'static str, path: &Path) -> Result<TmcConfig> {
+        if let Some(parent) = path.parent() {
+            file_util::create_dir_all(parent)?;
+        }
 
-    //fs::remove_file(&self.path)
-    //.with_context(|| format!("Failed to remove config at {}", self.path.display()))?;
-    //Ok(())
-    //}
-    //Ok(())
-    //}
+        let mut lock = file_util::create_file_lock(path)
+            .with_context(|| format!("Failed to create new config file at {}", path.display()))?;
+        let mut guard = lock.lock()?;
+
+        let default_project_dir = dirs::data_local_dir()
+            .context("Failed to find local data directory")?
+            .join("tmc")
+            .join(Self::get_client_stub(client_name));
+        fs::create_dir_all(&default_project_dir).with_context(|| {
+            format!(
+                "Failed to create the TMC default project directory in {}",
+                default_project_dir.display()
+            )
+        })?;
+
+        let config = TmcConfig {
+            projects_dir: default_project_dir,
+            table: Table::new(),
+            client_name: client_name.to_string(),
+        };
+
+        let toml = toml::to_string_pretty(&config).context("Failed to serialize config")?;
+        guard
+            .write_all(toml.as_bytes())
+            .with_context(|| format!("Failed to write default config to {}", path.display()))?;
+        Ok(config)
+    }
+
+    // path to the configuration file
+    pub fn get_location(client_name: &str) -> Result<PathBuf> {
+        super::get_tmc_dir(client_name).map(|dir| dir.join("config.toml"))
+    }
+
+    // some clients use a different name for the directory
+    fn get_client_stub(client: &str) -> &str {
+        match client {
+            "vscode_plugin" => "vscode",
+            s => s,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(untagged)]
+pub enum ConfigValue<'a> {
+    Value(Option<Cow<'a, Value>>),
+    Path(Cow<'a, Path>),
+}
+
+impl ConfigValue<'_> {
+    pub fn into_owned(self) -> ConfigValue<'static> {
+        match self {
+            Self::Value(Some(v)) => ConfigValue::Value(Some(Cow::Owned(v.into_owned()))),
+            Self::Value(None) => ConfigValue::Value(None),
+            Self::Path(p) => ConfigValue::Path(Cow::Owned(p.into_owned())),
+        }
+    }
 }

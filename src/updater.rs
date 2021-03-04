@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{ConfigValue, TmcConfig};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Url};
@@ -29,15 +29,10 @@ pub fn check_for_update() {
 }
 
 fn is_it_time_yet() -> bool {
-    let config = Config::load(PLUGIN).unwrap();
-    let last_check: u128 = match config.get_value("update-last-checked") {
-        Ok(s) => match s.trim().parse() {
-            Ok(n) => n,
-            Err(_) => {
-                return true;
-            }
-        },
-        Err(_) => {
+    let config = TmcConfig::load(PLUGIN).unwrap();
+    let last_check = match config.get("update-last-checked") {
+        ConfigValue::Value(Some(s)) => toml::Value::as_integer(&s).unwrap(),
+        _ => {
             return true;
         }
     };
@@ -46,21 +41,24 @@ fn is_it_time_yet() -> bool {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis();
-    if now - last_check > DELAY {
+    if now - last_check as u128 > DELAY {
         return true;
     }
     false
 }
 
 fn generate_time_stamp() {
-    let mut config = Config::load(PLUGIN).unwrap();
+    let mut config = TmcConfig::load(PLUGIN).unwrap();
     let now = SystemTime::now();
     let since_the_epoch = now
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis();
 
-    if let Err(_err) = config.change_value("update-last-checked", &since_the_epoch.to_string()) {
+    if let Err(_err) = config.insert(
+        "update-last-checked".to_string(),
+        toml::Value::String(since_the_epoch.to_string()),
+    ) {
         println!("timestamp could not be changed");
     }
     if let Err(_err) = config.save() {
@@ -144,8 +142,8 @@ fn update(version: String) -> Result<(), Box<dyn std::error::Error>> {
     let mut downloaded = 0;
     let pb = ProgressBar::new(size);
     pb.set_style(ProgressStyle::default_bar()
-    .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")
-    .progress_chars("#>-"));
+                 .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+                 .progress_chars("#>-"));
     while downloaded < size {
         let n = {
             let buf = src.fill_buf()?;

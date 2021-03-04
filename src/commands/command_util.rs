@@ -1,4 +1,4 @@
-use crate::config::{Config, Credentials};
+use crate::config::{ConfigValue, Credentials, TmcConfig};
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise, TmcClient, Token};
 
@@ -73,9 +73,9 @@ impl Client for ClientProduction {
             return Ok(());
             /* This code is stashed until tests write proper input
             if let Some(_credentials) = get_credentials() {
-                return Ok(());
+            return Ok(());
             } else {
-                return Err("No login found. You need to be logged in to use this command".to_string());
+            return Err("No login found. You need to be logged in to use this command".to_string());
             }
             */
         }
@@ -220,15 +220,22 @@ pub fn get_credentials() -> Option<Credentials> {
 // Returns slug of organization as String (if successful)
 #[allow(dead_code)]
 pub fn get_organization() -> Option<String> {
-    let config = Config::load(PLUGIN).unwrap();
+    let config = TmcConfig::load(PLUGIN).unwrap();
 
-    Some(config.get_value("organization").unwrap())
+    // convert the toml::Value to String (if possible)
+    match config.get("organization") {
+        ConfigValue::Value(Some(value)) => Some(toml::Value::as_str(&value).unwrap().to_string()),
+        _ => None,
+    }
 }
 
 pub fn set_organization(org: &str) -> Result<(), &'static str> {
-    let mut config = Config::new(PLUGIN);
+    let mut config = TmcConfig::load(PLUGIN).unwrap();
 
-    if let Err(_err) = config.change_value("organization", org) {
+    if let Err(_err) = config.insert(
+        "organization".to_string(),
+        toml::Value::String(org.to_string()),
+    ) {
         return Err("Organization could not be changed");
     }
 

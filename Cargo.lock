@@ -2405,6 +2405,7 @@ dependencies = [
  "tmc-langs-cli",
  "tmc-langs-framework",
  "tmc-langs-util",
+ "toml",
 ]
 
 [[package]]
