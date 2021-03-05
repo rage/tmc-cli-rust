@@ -30,25 +30,50 @@ fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
-    // Logout to make sure old login doesn't exist
     /*
-        // tmc-cli-rust --testmode logout
-        let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-        cmd.arg("--testmode")
-        .arg("logout");
+        Basic test "pipeline" to run all commands to quickly test if anything obvious has broken.
+        Update this comment if you change/add tests in this function.
+        Write also what input command is given. Run logout first to remove possible old test-login.
 
+        tmc-cli-rust --testmode --no-update logout
+        tmc-cli-rust --testmode --no-update login
+            testusername
+            testpassword
+            imag
+        tmc-cli-rust --testmode --no-update organization
+            test
+        tmc-cli-rust --testmode --no-update courses
+        tmc-cli-rust --testmode --no-update exercises test-tmc-test-course
+        tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
+        tmc-cli-rust --testmode --no-update test folder/nonexistant_ex
+        tmc-cli-rust --testmode --no-update logout
+        tmc-cli-rust --testmode --no-update login
+            totallywrongname
+            cantrememberpasswordeither
+            imag
+    */
 
-        // tmc-cli-rust --testmode login
-        cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-        cmd.arg("--testmode")
+    // tmc-cli-rust --testmode --no-update logout
+    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode").arg("--no-update").arg("logout");
+    cmd.assert();
+
+    // tmc-cli-rust --testmode --no-update login
+    // testusername testpassword imag
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("--no-update")
         .arg("login")
         .with_stdin()
-        .buffer("testusername\ntestpassword\ntest\n")
+        .buffer("testusername\ntestpassword\nimag\n")
         .assert()
-            .success()
-            .stdout(predicate::str::contains("Imaginary test organization"));
-    */
-    // tmc-cli-rust --testmode organization
+        .success()
+        .stdout(predicate::str::contains(
+            "Choose organization by writing its slug: ",
+        ));
+
+    // tmc-cli-rust --testmode --no-update organization
+    // test
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
@@ -61,14 +86,14 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
             "Selected test organization as organization.",
         ));
 
-    // tmc-cli-rust --testmode courses
+    // tmc-cli-rust --testmode --no-update courses
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode").arg("--no-update").arg("courses");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("test-tmc-test-course"));
 
-    // tmc-cli-rust --testmode exercises test-tmc-test-course
+    // tmc-cli-rust --testmode --no-update exercises test-tmc-test-course
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
@@ -78,7 +103,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .success()
         .stdout(predicate::str::contains("Imaginary test exercise"));
 
-    // tmc-cli-rust --testmode download test-tmc-test-course folder_for_download
+    // tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
@@ -89,32 +114,34 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .success()
         .stdout(predicate::str::contains("Download was successful!"));
 
-    Ok(())
-}
-
-/*
-#[test]
-fn command_version() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("--version");
+    // tmc-cli-rust --testmode --no-update test folder/nonexistant_ex
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("--no-update")
+        .arg("test")
+        .arg("folder/nonexistant_ex");
     cmd.assert().success().stdout(predicate::str::contains(
-        "Test My Code client written in Rust 0.1.0",
+        "Specified folder is not an exercise",
     ));
 
-    Ok(())
-}
-
-#[test]
-fn command_test_help() -> Result<(), Box<dyn std::error::Error>> {
+    // tmc-cli-rust --testmode --no-update logout
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
-    cmd.arg("test").arg("--help");
+    cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert()
         .success()
-        // check that the help info for command 'test' contains the words "tmc-cli-rust test"
-        .stdout(predicate::str::contains(
-            String::from(PKG_NAME.unwrap()) + " test",
-        ));
+        .stdout(predicate::str::contains("Logged out successfully"));
+
+    // tmc-cli-rust --testmode --no-update login
+    // totallywrongname cantrememberpasswordeither imag
+    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd.arg("--testmode")
+        .arg("--no-update")
+        .arg("login")
+        .with_stdin()
+        .buffer("totallywrongname\ncantrememberpasswordeither\nimag\n")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Wrong username or password"));
 
     Ok(())
 }
-*/

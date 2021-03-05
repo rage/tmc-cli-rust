@@ -35,6 +35,7 @@ pub trait Client {
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
     ) -> Result<(), ClientError>;
+    fn is_test_mode(&mut self) -> bool;
 }
 
 impl ClientProduction {
@@ -50,6 +51,10 @@ impl ClientProduction {
             tmc_client,
             test_mode,
         }
+    }
+    #[allow(dead_code)]
+    pub fn is_test_mode(&mut self) -> bool {
+        self.test_mode
     }
 
     fn authenticate(&mut self, username: String, password: String) -> Result<Token, String> {
@@ -71,16 +76,27 @@ impl ClientProduction {
 }
 
 impl Client for ClientProduction {
+    fn is_test_mode(&mut self) -> bool {
+        self.test_mode
+    }
     fn load_login(&mut self) -> Result<(), String> {
         if self.test_mode {
-            return Ok(());
-            /* This code is stashed until tests write proper input
-            if let Some(_credentials) = get_credentials() {
-            return Ok(());
+            //return Ok(());
+            /* This code below is stashed until tests write proper input */
+            let config = TmcConfig::load(PLUGIN).unwrap();
+            let test_login_exists = match config.get("test_login") {
+                ConfigValue::Value(Some(value)) => {
+                    toml::Value::as_str(&value).unwrap() == "test_logged_in"
+                }
+                _ => false,
+            };
+            if test_login_exists {
+                return Ok(());
             } else {
-            return Err("No login found. You need to be logged in to use this command".to_string());
+                return Err(
+                    "No login found. You need to be logged in to use this command".to_string(),
+                );
             }
-            */
         }
         if let Some(credentials) = get_credentials() {
             match self.tmc_client.set_token(credentials.token()) {
@@ -96,6 +112,19 @@ impl Client for ClientProduction {
 
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
+                let mut config = TmcConfig::load(PLUGIN).unwrap();
+
+                if let Err(_err) = config.insert(
+                    "test_login".to_string(),
+                    toml::Value::String("test_logged_in".to_string()),
+                ) {
+                    return Err("Test login value could not be changed in config file".to_string());
+                }
+
+                if let Err(_err) = config.save() {
+                    return Err("Problem saving login".to_string());
+                }
+
                 return Ok(SUCCESSFUL_LOGIN.to_string());
             }
             return Err(WRONG_LOGIN.to_string());
@@ -174,6 +203,18 @@ impl Client for ClientProduction {
     }
 
     fn logout(&mut self) {
+        if self.test_mode {
+            // Remove test login from config file
+            let mut config = TmcConfig::load(PLUGIN).unwrap();
+            if let Err(_err) = config.remove("test_login") {
+                panic!("Could not remove test login from config in test mode");
+            }
+            if let Err(_err) = config.save() {
+                panic!("Could not save config after removing test login in test mode");
+            }
+            return;
+        }
+
         let credentials = get_credentials().unwrap();
 
         credentials.remove().unwrap();

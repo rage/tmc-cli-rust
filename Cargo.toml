@@ -11,7 +11,7 @@ license = "Apache-2.0"
 
 [dependencies]
 clap = "2.3.3"
-assert_cmd = "1.0.3"
+assert_cmd = "0.10"
 predicates = "1"
 anyhow = "1"
 serde = "1"
