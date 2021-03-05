@@ -1,5 +1,5 @@
 use super::command_util::Client;
-use super::organization_command::set_organization;
+use super::organization_command;
 use crate::io_module::Io;
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
@@ -26,7 +26,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
     match client.try_login(username, password) {
         Ok(message) => {
             io.println(&message);
-            if let Err(_err) = set_organization(io, client) {
+            if let Err(_err) = organization_command::set_organization(io, client) {
                 io.println("Could not set organization");
             }
         }
@@ -38,9 +38,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
 mod tests {
     use super::super::command_util::*;
     use super::*;
-    use std::path::PathBuf;
     use std::slice::Iter;
-    use tmc_client::{ClientError, CourseExercise};
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -81,97 +79,139 @@ mod tests {
         }
     }
 
-    pub struct ClientTest {}
+    #[test]
+    fn login_when_already_logged_in_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec!["test_that_buffer_for_test_input_works"];
+        let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+        assert!(io.read_line().eq("test_that_buffer_for_test_input_works"));
 
-    impl ClientTest {}
+        let mut mock = MockClient::new();
+        mock.expect_load_login().times(1).returning(|| Ok(()));
 
-    impl Client for ClientTest {
-        fn load_login(&mut self) -> Result<(), String> {
-            Err("Not logged in".to_string())
-        }
-        fn try_login(&mut self, _username: String, _password: String) -> Result<String, String> {
-            Ok("Logged in successfully!".to_string())
-        }
-        fn list_courses(&mut self) -> Result<Vec<Course>, String> {
-            Ok(vec![
-                Course {
-                    name: "Kurssi1".to_string(),
-                    id: 101,
-                },
-                Course {
-                    name: "Kurssi2".to_string(),
-                    id: 102,
-                },
-            ])
-        }
-        fn get_organizations(&mut self) -> Result<Vec<Organization>, String> {
-            Ok(vec![
-                Organization {
-                    name: "Organisaatio 1".to_string(),
-                    slug: "Org 1".to_string(),
-                },
-                Organization {
-                    name: "Organisaatio 2".to_string(),
-                    slug: "Org 2".to_string(),
-                },
-            ])
-        }
-        fn logout(&mut self) {}
-        fn get_course_exercises(
-            &mut self,
-            _course_id: usize,
-        ) -> Result<Vec<CourseExercise>, String> {
-            // let mut exercise_list: Vec<CourseExercise> = Vec::new();
-            // exercise_list.push(CourseExercise {
-            //     id: 1010,
-            //     available_points: Vec<ExercisePoint>,
-            //     awarded_points: Vec<String>,
-            //     name: "Harjoitus 1".to_string(),
-            //     publish_time: Option<String>,
-            //     solution_visible_after: Option<String>,
-            //     deadline: Option<String>,
-            //     soft_deadline: Option<String>,
-            //     disabled: bool,
-            //     unlocked: bool,
-            // });
-            // exercise_list.push(CourseExercise {
-            //     name: "Harjoitus 2".to_string(),
-            //     id: 1020,
-            // });
-            // Ok(exercise_list)
-            Ok(vec![])
-        }
-        fn download_or_update_exercises(
-            &mut self,
-            _download_params: Vec<(usize, PathBuf)>,
-        ) -> Result<(), ClientError> {
-            Ok(())
+        login(&mut io, &mut mock);
+
+        assert_eq!(1, io.buffer_length());
+        if io.buffer_length() == 1 {
+            assert!(io
+                .buffer_get(0)
+                .to_string()
+                .eq(&"You are already logged in.".to_string()));
         }
     }
 
     #[test]
-    fn empty_username_test() {
+    fn login_when_empty_username_test() {
         let mut v: Vec<String> = Vec::new();
-        let input = vec!["moi"];
+        let input = vec![];
         let mut input = input.iter();
         let mut io = IoTest {
             list: &mut v,
             input: &mut input,
         };
 
-        let mut client = ClientTest {};
+        let mut mock = MockClient::new();
+        mock.expect_load_login()
+            .times(1)
+            .returning(|| Err("".to_string()));
 
-        assert!(io.read_line().eq("moi"));
-
-        login(&mut io, &mut client);
+        login(&mut io, &mut mock);
 
         assert_eq!(2, io.buffer_length());
-
         if io.buffer_length() == 2 {
             assert!(io
                 .buffer_get(1)
                 .to_string()
                 .eq(&"Username cannot be empty!".to_string()));
+        }
+    }
+
+    #[test]
+    fn login_with_incorrect_username_or_password_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec!["test_username", "test_password"];
+        let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+
+        let mut mock = MockClient::new();
+        mock.expect_load_login().returning(|| Err("".to_string()));
+
+        let _username = String::from("test_username");
+        let _password = String::from("test_password");
+
+        mock.expect_try_login()
+            .returning(|_username, _password| Err("error_message".to_string()));
+
+        login(&mut io, &mut mock);
+
+        assert_eq!(4, io.buffer_length());
+        if io.buffer_length() == 4 {
+            assert!(io
+                .buffer_get(3)
+                .to_string()
+                .eq(&"error_message".to_string()));
+        }
+    }
+
+    #[test]
+    fn login_with_correct_username_and_password_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec!["test_username", "test_password", "wrong_slug"];
+        let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+
+        let mut mock = MockClient::new();
+        mock.expect_load_login().returning(|| Err("".to_string()));
+
+        let _username = String::from("test_username");
+        let _password = String::from("test_password");
+
+        mock.expect_try_login()
+            .returning(|_username, _password| Ok("ok_message_for_try_login".to_string()));
+
+        mock.expect_get_organizations().returning(|| {
+            Ok(vec![
+                Organization {
+                    name: "org1".to_string(),
+                    slug: "slug_org1".to_string(),
+                },
+                Organization {
+                    name: "org2".to_string(),
+                    slug: "slug_org2".to_string(),
+                },
+            ])
+        });
+
+        login(&mut io, &mut mock);
+
+        assert_eq!(12, io.buffer_length());
+
+        if io.buffer_length() == 12 {
+            assert!(io
+                .buffer_get(3)
+                .to_string()
+                .eq(&"ok_message_for_try_login".to_string()));
+            assert!(io.buffer_get(7).to_string().eq(&"org2".to_string()));
+            assert!(io.buffer_get(8).to_string().eq(&" Slug: ".to_string()));
+            assert!(io.buffer_get(9).to_string().eq(&"slug_org2".to_string()));
+            assert!(io
+                .buffer_get(10)
+                .to_string()
+                .eq(&"\nChoose organization by writing its slug: ".to_string()));
+            assert!(io
+                .buffer_get(11)
+                .to_string()
+                .eq(&"Could not set organization".to_string()));
         }
     }
 }

@@ -136,13 +136,11 @@ mod tests {
             print_courses(&mut io, courses);
 
             assert!(io.list[0].eq(""));
-            assert!(
-                io.list[1].eq("name"),
-                format!("Expected 'name', got {}", io.list[1])
-            );
+            assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);
             assert!(
                 io.list[2].eq("course of sorts"),
-                format!("Expected 'course of sorts', got {}", io.list[2])
+                "Expected 'course of sorts', got {}",
+                io.list[2]
             );
         }
 
@@ -165,13 +163,11 @@ mod tests {
             );
 
             assert!(io.list[0].eq(""), "first line should be empty");
-            assert!(
-                io.list[1].eq("name"),
-                format!("Expected 'name', got {}", io.list[1])
-            );
+            assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);
             assert!(
                 io.list[2].eq("mooc-tutustumiskurssi"),
-                format!("Expected 'mooc-tutustumiskurssi', got '{}'", io.list[2])
+                "Expected 'mooc-tutustumiskurssi', got '{}'",
+                io.list[2]
             );
         }
     }
