@@ -20,18 +20,15 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
     io.print("Password: ");
 
     let mut password;
+
+    // Read password without rpassword if ran in --testmode, because rpassword
+    // is not able to read mock stdin input in binary tests
     if client.is_test_mode() {
         password = io.read_line();
     } else {
         password = io.read_password();
     }
     password = password.trim().to_string();
-
-    /* io.println("");
-    io.println("debbuggig***********");
-    io.println(&format!("username: {}", username));
-    io.println(&format!("password: {}", password));
-    io.println("debugging end!!!!!!!!!!!!!");*/
 
     match client.try_login(username, password) {
         Ok(message) => {

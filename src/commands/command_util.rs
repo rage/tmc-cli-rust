@@ -81,8 +81,7 @@ impl Client for ClientProduction {
     }
     fn load_login(&mut self) -> Result<(), String> {
         if self.test_mode {
-            //return Ok(());
-            /* This code below is stashed until tests write proper input */
+            // Test login exists if config-file has key-value pair test_login = "test_logged_in"
             let config = TmcConfig::load(PLUGIN).unwrap();
             let test_login_exists = match config.get("test_login") {
                 ConfigValue::Value(Some(value)) => {
@@ -98,6 +97,7 @@ impl Client for ClientProduction {
                 );
             }
         }
+
         if let Some(credentials) = get_credentials() {
             match self.tmc_client.set_token(credentials.token()) {
                 Ok(()) => return Ok(()),
@@ -273,18 +273,18 @@ pub fn get_organization() -> Option<String> {
     }
 }
 
-pub fn set_organization(org: &str) -> Result<(), &'static str> {
+pub fn set_organization(org: &str) -> Result<(), String> {
     let mut config = TmcConfig::load(PLUGIN).unwrap();
 
     if let Err(_err) = config.insert(
         "organization".to_string(),
         toml::Value::String(org.to_string()),
     ) {
-        return Err("Organization could not be changed");
+        return Err("Organization could not be changed".to_string());
     }
 
     if let Err(_err) = config.save() {
-        return Err("Problem saving configurations");
+        return Err("Problem saving configurations".to_string());
     }
     Ok(())
 }
