@@ -5,14 +5,14 @@ echo "~ Installing TMC-CLI ~"
 echo "(If your shell is not bash, you may have to do the installation manually.)"
 echo ""
 
-if [ $# -eq 0 ]
-then
-    echo "You need to give architecture (x86_64, i686) as an argument"
-    exit
+if (( $# < 2 )); then
+    echo "You need to give architecture (x86_64/i686) and OS (mac, linux) as arguments."
+    exit 1
 fi
 
-# Get platform-string from first argument
+# Get platform-string from first argument, OS from the second
 platform=$1
+os=$2
 
 echo "Fetching latest version URL from https://download.mooc.fi"
 if ! PAGE=$(curl -s https://download.mooc.fi); then
@@ -22,13 +22,19 @@ fi
 
 # Adding spaces so ${PAGE[@]} will work.
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
-    
+
 testexp="-test" # TODO: remove after first official release
 
-fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
+fileprefx=""
+if [[ "$os" == "mac" ]]; then
+    fileprefx="tmc-cli-rust-${platform}-apple-darwin-v"
+else
+    fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
+fi
+
+
 prefx="<Key>tmc-cli-rust/$fileprefx"
 suffx="${testexp}</Key>"
-
 
 regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
 
@@ -54,7 +60,7 @@ done
 
 if [[ $version == "0.0.0" ]]; then 
     echo "Could not find version";
-    exit
+    exit 1
 fi
 echo "Latest version: $version" 
 
