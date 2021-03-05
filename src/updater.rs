@@ -30,11 +30,17 @@ pub fn check_for_update() {
 
 fn is_it_time_yet() -> bool {
     let config = TmcConfig::load(PLUGIN).unwrap();
+
     let last_check = match config.get("update-last-checked") {
-        ConfigValue::Value(Some(s)) => toml::Value::as_integer(&s).unwrap(),
+        ConfigValue::Value(Some(s)) => toml::Value::as_str(&s).unwrap().to_string(),
         _ => {
             return true;
         }
+    };
+
+    let last_check = match last_check.parse::<u128>() {
+        Ok(time) => time,
+        _ => return true,
     };
     let now = SystemTime::now();
     let now = now
