@@ -288,23 +288,31 @@ mod tests {
             let course_string = "Course name: course_name";
             assert!(
                 io.list[1].eq(course_string),
-                format!("Expected '{}', got '{}'", course_string, io.list[1])
+                "Expected '{}', got '{}'",
+                course_string,
+                io.list[1]
             );
             let deadline_string = "Deadline: none";
             let soft_deadline_string = "Soft deadline: none";
             assert!(
                 io.list[2].eq(deadline_string),
-                format!("Expected '{}', got '{}'", deadline_string, io.list[2])
+                "Expected '{}', got '{}'",
+                deadline_string,
+                io.list[2]
             );
             assert!(
                 io.list[3].eq(soft_deadline_string),
-                format!("Expected '{}', got '{}'", soft_deadline_string, io.list[3])
+                "Expected '{}', got '{}'",
+                soft_deadline_string,
+                io.list[3]
             );
 
             let exercise_string = "  Completed: part01-01_example_exercise";
             assert!(
                 io.list[4].eq(exercise_string),
-                format!("Expected '{}', got '{}'", exercise_string, io.list[4])
+                "Expected '{}', got '{}'",
+                exercise_string,
+                io.list[4]
             );
         }
 
@@ -321,43 +329,55 @@ mod tests {
             let mut client = ClientTest {};
 
             if let Err(err) = list_exercises(&mut io, &mut client, "course_name".to_string()) {
-                assert!(false, format!("Should not give error '{}'", err));
+                assert!(false, "Should not give error '{}'", err);
             }
 
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";
             assert!(
                 io.list[1].eq(course_string),
-                format!("Expected '{}', got '{}'", course_string, io.list[1])
+                "Expected '{}', got '{}'",
+                course_string,
+                io.list[1]
             );
 
             let deadline_string = "Deadline: none";
             let soft_deadline_string = "Soft deadline: none";
             assert!(
                 io.list[2].eq(deadline_string),
-                format!("Expected '{}', got '{}'", deadline_string, io.list[2])
+                "Expected '{}', got '{}'",
+                deadline_string,
+                io.list[2]
             );
             assert!(
                 io.list[3].eq(soft_deadline_string),
-                format!("Expected '{}', got '{}'", soft_deadline_string, io.list[3])
+                "Expected '{}', got '{}'",
+                soft_deadline_string,
+                io.list[3]
             );
 
             let exercise_string_1 = "  Completed: part01-01_example_exercise";
             assert!(
                 io.list[4].eq(exercise_string_1),
-                format!("Expected '{}', got '{}'", exercise_string_1, io.list[4])
+                "Expected '{}', got '{}'",
+                exercise_string_1,
+                io.list[4]
             );
 
             let exercise_string_2 = "  Completed: part02-03_example_valid";
             assert!(
                 io.list[5].eq(exercise_string_2),
-                format!("Expected '{}', got '{}'", exercise_string_2, io.list[5])
+                "Expected '{}', got '{}'",
+                exercise_string_2,
+                io.list[5]
             );
 
             let expected_size = 6;
             assert!(
                 io.list.len().eq(&expected_size),
-                format!("Expected size '{}', got {}", expected_size, io.list.len())
+                "Expected size '{}', got {}",
+                expected_size,
+                io.list.len()
             );
         }
     }

@@ -21,6 +21,9 @@ pub struct Course {
     pub id: usize,
 }
 
+use mockall::predicate::*;
+use mockall::*;
+#[automock]
 pub trait Client {
     fn load_login(&mut self) -> Result<(), String>;
     fn try_login(&mut self, username: String, password: String) -> Result<String, String>;
