@@ -80,7 +80,7 @@ mod tests {
     }
 
     #[test]
-    fn already_logged_in_test() {
+    fn login_when_already_logged_in_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec!["test_that_buffer_for_test_input_works"];
         let mut input = input.iter();
@@ -105,7 +105,7 @@ mod tests {
     }
 
     #[test]
-    fn empty_username_test() {
+    fn login_when_empty_username_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec![];
         let mut input = input.iter();
@@ -195,10 +195,6 @@ mod tests {
         login(&mut io, &mut mock);
 
         assert_eq!(12, io.buffer_length());
-
-        for i in 0..io.buffer_length() {
-            println!("{}: {}", i, io.buffer_get(i));
-        }
 
         if io.buffer_length() == 12 {
             assert!(io
