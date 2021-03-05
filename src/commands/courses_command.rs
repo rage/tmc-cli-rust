@@ -72,6 +72,9 @@ mod tests {
 
     #[cfg(test)]
     impl Client for ClientTest {
+        fn is_test_mode(&mut self) -> bool {
+            false
+        }
         fn load_login(&mut self) -> Result<(), String> {
             Ok(())
         }
