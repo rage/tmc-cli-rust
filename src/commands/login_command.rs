@@ -80,7 +80,7 @@ mod tests {
     }
 
     #[test]
-    fn already_logged_in() {
+    fn already_logged_in_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec!["test_that_buffer_for_test_input_works"];
         let mut input = input.iter();
@@ -114,7 +114,7 @@ mod tests {
             list: &mut v,
             input: &mut input,
         };
-        
+
         let mut mock = MockClient::new();
         mock.expect_load_login()
             .times(1)
