@@ -55,8 +55,8 @@ fn test_exercises(io: &mut dyn Io, paths: Vec<PathBuf>) -> Result<(), String> {
 fn test_exercise(io: &mut dyn Io, path: &Path) -> Result<(), String> {
     // TODO: A more specific layout to print the results in
     io.println("");
-    let errors = &mut vec![];
-    match run_tests(path, errors) {
+    //let errors = &mut vec![];
+    match run_tests(path) {
         Ok(run_result) => {
             match run_result.status {
                 RunStatus::Passed => {
