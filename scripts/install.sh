@@ -87,6 +87,7 @@ sed -i '/alias tmc=/d' "$HOME/.bashrc"
 
 # Saves new alias to .bashrc
 echo "alias tmc='$PWD/$filename'" >> "$HOME/.bashrc"
+echo "export TMC_LANGS_CONFIG_DIR='$HOME/tmc-config'" >> "$HOME/.bashrc"
 
 echo ""
 
