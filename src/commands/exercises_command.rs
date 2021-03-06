@@ -3,36 +3,32 @@ use crate::io_module::Io;
 
 use tmc_client::CourseExercise;
 
-pub fn list_exercises(
-    io: &mut dyn Io,
-    client: &mut dyn Client,
-    course_name: String,
-) -> Result<(), String> {
+/// Lists exercises for a given course
+pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
     if let Err(error) = client.load_login() {
-        return Err(error);
+        io.println(&error);
+        return;
     };
 
     // Get course by id
     let course_result = get_course_id_by_name(client, course_name.clone());
     if course_result.is_none() {
-        //io.println("Could not find course by name");
-        return Err(format!(
+        io.println(&format!(
             "Could not find a course with name '{}'",
             course_name
         ));
+        return;
     }
     let course_id = course_result.unwrap();
 
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
-        Err(error) => return Err(error),
+        Err(error) => io.println(&error),
     }
-
-    Ok(())
 }
 
+/// Prints information about given exercises
 fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseExercise>) {
-    // Print exercises
     io.println("");
     io.println(&format!("Course name: {}", course_name));
 
@@ -90,7 +86,6 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
     }
 }
 
-// TODO: clean up tests
 #[cfg(test)]
 mod tests {
     use tmc_client::{ClientError, CourseExercise /*, ExercisePoint*/};
@@ -330,10 +325,7 @@ mod tests {
                 input: &mut input,
             };
             let mut client = ClientTest {};
-
-            if let Err(err) = list_exercises(&mut io, &mut client, "course_name".to_string()) {
-                assert!(false, "Should not give error '{}'", err);
-            }
+            list_exercises(&mut io, &mut client, "course_name".to_string());
 
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";

@@ -1,21 +1,22 @@
 use super::command_util::*;
 use crate::io_module::Io;
 
-pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) -> Result<(), String> {
+/// Lists available courses from clients organization
+pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        return Err(error);
+        io.println(&error);
+        return;
     }
 
     let courses_result = client.list_courses();
 
     match courses_result {
         Ok(course_list) => print_courses(io, course_list),
-        Err(error) => return Err(error),
+        Err(error) => io.println(&error),
     }
-
-    Ok(())
 }
 
+/// Prints course names
 fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
     io.println("");
     for course in course_list {
@@ -159,11 +160,7 @@ mod tests {
             };
 
             let mut client = ClientTest {};
-
-            assert!(
-                !list_courses(&mut io, &mut client).is_err(),
-                "list_courses should return Ok()"
-            );
+            list_courses(&mut io, &mut client);
 
             assert!(io.list[0].eq(""), "first line should be empty");
             assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);

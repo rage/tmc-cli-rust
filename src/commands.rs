@@ -46,22 +46,16 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("organization", _) => organization(io, &mut client),
-        ("courses", _) => match list_courses(io, &mut client) {
-            Ok(()) => {}
-            Err(error) => io.println(&error),
-        },
+        ("courses", _) => list_courses(io, &mut client),
         ("exercises", args) => {
             if let Some(a) = args {
                 if let Some(c) = a.value_of("course") {
-                    match list_exercises(io, &mut client, String::from(c)) {
-                        Ok(()) => {}
-                        Err(error) => io.println(&error),
-                    }
+                    list_exercises(io, &mut client, String::from(c));
                 } else {
                     io.println("argument for course not found");
                 }
             } else {
-                io.println("arguments not found");
+                io.println("argument not found for course");
             }
         }
         ("test", args) => {

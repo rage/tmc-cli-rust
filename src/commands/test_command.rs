@@ -2,9 +2,7 @@ use crate::io_module::Io;
 use std::env;
 use std::path::{Path, PathBuf};
 use tmc_langs_framework::domain::RunResult;
-use tmc_langs_util::task_executor::{
-    find_exercise_directories, is_exercise_root_directory, run_tests,
-};
+use tmc_langs_util::task_executor;
 
 /// Executes tmc tests for exercise(s)
 pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
@@ -14,7 +12,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
                 // Specific exercise folder was given as an argument, so we only do tests for it.
                 pathbuf.push(exercise);
                 let path = pathbuf.as_path();
-                if is_exercise_root_directory(path) {
+                if task_executor::is_exercise_root_directory(path) {
                     test_exercise_path(io, path)
                 } else {
                     Err("Specified folder is not an exercise".to_string())
@@ -23,11 +21,11 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
             None => {
                 let path = pathbuf.as_path();
                 // If current directory is an excercise, its tests will be done.
-                if is_exercise_root_directory(path) {
+                if task_executor::is_exercise_root_directory(path) {
                     test_exercise_path(io, path)
                 } else {
                     // Otherwise we will find exercises under this directory recursively.
-                    match find_exercise_directories(path) {
+                    match task_executor::find_exercise_directories(path) {
                         Ok(exercises) => test_exercises(io, exercises),
                         Err(error) => Err(error.to_string()),
                     }
@@ -84,7 +82,7 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<b
         }
     }
 
-    match run_tests(path) {
+    match task_executor::run_tests(path) {
         Ok(run_result) => Ok(print_result_test(
             io,
             run_result,
