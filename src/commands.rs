@@ -66,12 +66,9 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("test", args) => {
             if let Some(a) = args {
-                match test(io, a.value_of("exercise")) {
-                    Ok(()) => {}
-                    Err(error) => io.println(&error),
-                }
+                test(io, a.value_of("exercise"));
             } else {
-                io.println("arguments not found");
+                test(io, None);
             }
         }
         ("logout", _) => logout(io, &mut client),
