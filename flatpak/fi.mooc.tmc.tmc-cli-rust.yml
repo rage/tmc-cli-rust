@@ -1,8 +1,11 @@
-app-id: org.flatpak.tmc
+app-id: fi.mooc.tmc.tmc-cli-rust
 runtime: org.freedesktop.Platform
 runtime-version: '19.08'
 sdk: org.freedesktop.Sdk
 command: tmc
+finish-args:
+    - --share=network
+    - --filesystem=host
 modules:
   - name: tmc
     buildsystem: simple
@@ -24,10 +27,10 @@ modules:
           - arch=$(uname -m)
           - if [ $arch == "x86_64" ]
           - then
-          -  /app/bin/tmc-x86_64
+          -  /app/bin/tmc-x86_64 "$@"
           - elif [ $arch == "i686" ]
           - then
-          -  /app/bin/tmc-i686
+          -  /app/bin/tmc-i686 "$@"
           - else
           - echo "No executable found for $arch"
           - fi
