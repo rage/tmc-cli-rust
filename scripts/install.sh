@@ -23,8 +23,6 @@ fi
 # Adding spaces so ${PAGE[@]} will work.
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
 
-testexp="-test" # TODO: remove after first official release
-
 fileprefx=""
 if [[ "$os" == "mac" ]]; then
     fileprefx="tmc-cli-rust-${platform}-apple-darwin-v"
@@ -34,7 +32,7 @@ fi
 
 
 prefx="<Key>tmc-cli-rust/$fileprefx"
-suffx="${testexp}</Key>"
+suffx="</Key>"
 
 regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
 
@@ -64,7 +62,7 @@ if [[ $version == "0.0.0" ]]; then
 fi
 echo "Latest version: $version" 
 
-filename="${fileprefx}${version}${testexp}"
+filename="${fileprefx}${version}"
 URL="https://download.mooc.fi/tmc-cli-rust/$filename"
 
 echo ""
