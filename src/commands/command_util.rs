@@ -205,7 +205,10 @@ impl Client for ClientProduction {
     fn logout(&mut self) {
         if self.test_mode {
             // Remove test login from config file
-            let mut config = TmcConfig::load(PLUGIN).unwrap();
+            let mut config = match TmcConfig::load(PLUGIN) {
+                Ok(config) => config,
+                _ => panic!("Could not load the config"),
+            };
             if let Err(_err) = config.remove("test_login") {
                 panic!("Could not remove test login from config in test mode");
             }
@@ -258,23 +261,31 @@ impl Client for ClientProduction {
 
 pub fn get_credentials() -> Option<Credentials> {
     // Load login credentials if they exist in the file
-    Credentials::load(PLUGIN).unwrap()
+    Credentials::load(PLUGIN).unwrap_or(None)
 }
 
 // Returns slug of organization as String (if successful)
 #[allow(dead_code)]
 pub fn get_organization() -> Option<String> {
-    let config = TmcConfig::load(PLUGIN).unwrap();
-
-    // convert the toml::Value to String (if possible)
-    match config.get("organization") {
-        ConfigValue::Value(Some(value)) => Some(toml::Value::as_str(&value).unwrap().to_string()),
+    match TmcConfig::load(PLUGIN) {
+        Ok(config) => {
+            // convert the toml::Value to String (if possible)
+            match config.get("organization") {
+                ConfigValue::Value(Some(value)) => {
+                    Some(toml::Value::as_str(&value).unwrap().to_string())
+                }
+                _ => None,
+            }
+        }
         _ => None,
     }
 }
 
 pub fn set_organization(org: &str) -> Result<(), String> {
-    let mut config = TmcConfig::load(PLUGIN).unwrap();
+    let mut config = match TmcConfig::load(PLUGIN) {
+        Ok(config) => config,
+        _ => return Err("Config could not be loaded".to_string()),
+    };
 
     if let Err(_err) = config.insert(
         "organization".to_string(),
