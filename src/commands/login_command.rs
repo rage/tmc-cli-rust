@@ -86,7 +86,7 @@ mod tests {
         }
     }
 
-    //#[test]
+    #[test]
     fn login_when_already_logged_in_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec!["test_that_buffer_for_test_input_works"];
@@ -111,7 +111,7 @@ mod tests {
         }
     }
 
-    //#[test]
+    #[test]
     fn login_when_empty_username_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec![];
@@ -137,7 +137,7 @@ mod tests {
         }
     }
 
-    //#[test]
+    #[test]
     fn login_with_incorrect_username_or_password_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec!["test_username", "test_password"];
@@ -149,6 +149,7 @@ mod tests {
 
         let mut mock = MockClient::new();
         mock.expect_load_login().returning(|| Err("".to_string()));
+        mock.expect_is_test_mode().returning(|| true);
 
         let _username = String::from("test_username");
         let _password = String::from("test_password");
@@ -158,16 +159,16 @@ mod tests {
 
         login(&mut io, &mut mock);
 
-        assert_eq!(4, io.buffer_length());
-        if io.buffer_length() == 4 {
+        assert_eq!(3, io.buffer_length());
+        if io.buffer_length() == 3 {
             assert!(io
-                .buffer_get(3)
+                .buffer_get(2)
                 .to_string()
                 .eq(&"error_message".to_string()));
         }
     }
 
-    //#[test]
+    #[test]
     fn login_with_correct_username_and_password_test() {
         let mut v: Vec<String> = Vec::new();
         let input = vec!["test_username", "test_password", "wrong_slug"];
@@ -179,6 +180,7 @@ mod tests {
 
         let mut mock = MockClient::new();
         mock.expect_load_login().returning(|| Err("".to_string()));
+        mock.expect_is_test_mode().returning(|| true);
 
         let _username = String::from("test_username");
         let _password = String::from("test_password");
@@ -201,22 +203,22 @@ mod tests {
 
         login(&mut io, &mut mock);
 
-        assert_eq!(12, io.buffer_length());
+        assert_eq!(11, io.buffer_length());
 
-        if io.buffer_length() == 12 {
+        if io.buffer_length() == 11 {
             assert!(io
-                .buffer_get(3)
+                .buffer_get(2)
                 .to_string()
                 .eq(&"ok_message_for_try_login".to_string()));
-            assert!(io.buffer_get(7).to_string().eq(&"org2".to_string()));
-            assert!(io.buffer_get(8).to_string().eq(&" Slug: ".to_string()));
-            assert!(io.buffer_get(9).to_string().eq(&"slug_org2".to_string()));
+            assert!(io.buffer_get(6).to_string().eq(&"org2".to_string()));
+            assert!(io.buffer_get(7).to_string().eq(&" Slug: ".to_string()));
+            assert!(io.buffer_get(8).to_string().eq(&"slug_org2".to_string()));
             assert!(io
-                .buffer_get(10)
+                .buffer_get(9)
                 .to_string()
                 .eq(&"\nChoose organization by writing its slug: ".to_string()));
             assert!(io
-                .buffer_get(11)
+                .buffer_get(10)
                 .to_string()
                 .eq(&"Could not set organization".to_string()));
         }
