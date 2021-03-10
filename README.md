@@ -99,6 +99,81 @@ Published *Builds* will be located to the [https://download.mooc.fi](https://dow
 
 Manual for using the program
 
+## Logging in
+
+You can log in using `tmc-cli-rust login`. This saves your TMC login information to a configuration file in <linux config path> (or %APPDATA%\tmc-vscode_plugin on Windows) - you will only have to log in once.
+
+```
+~ $ tmc-cli-rust login
+Email / username:
+Password:
+All available organizations will be listed.
+Choose organization by writing its slug:
+```
+
+You can change your organization with the command `organization`. All available organizations will be listed.
+
+## Logging out
+
+you can log out using 'tmc-cli-rust logout'. This will remove your login token from the configuration file.
+
+```
+~ $ tmc-cli-rust logout
+Logged out successfully.
+```
+
+## Listing courses
+
+Once you have logged in, you can list all the available courses on the server with `tmc-cli-rust courses`.
+```
+~ $ tmc-cli-rust courses
+```
+
+## Downloading course exercises
+
+Either
+Navigate to a suitable directory in which you wish to download your exercises. Then, run `tmc-cli-rust download [COURSE_NAME] .`. 
+Or
+Enter suitable filepath as an argument `tmc-cli-rust download [COURSE_NAME] [FILEPATH]`
+This will download all available exercises into it.
+
+
+```
+~ $ tmc-cli-rust download test-course tmc-courses/test-course
+[12 / 15] exercises downloaded.
+```
+
+## Running tests
+
+After you've completed an exercise and wish to run tests on it, navigate to the exercise directory and run `tmc-cli-rust test`. If you are in the course root directory, you can also give the name of the exercise as argument: `tmc-cli-rust test exercise1`.
+
+```
+~/tmc-courses/test-course/exercise1 $ tmc-cli-rust test
+Testing: exercise1
+
+Test results: 1/1 tests passed
+All tests passed! Submit to server with 'tmc submit'
+100%[████████████████████████████████████████████████████████████████]
+```
+
+## Listing exercises
+
+If you want to see your current progress, you can view the status of all course exercises with `tmc-cli-rust exercises [course]`.
+
+```
+~/tmc-courses/test-course/ $ tmc-cli-rust exercises test-course
+Course name: test-course
+Deadline: none
+Soft deadline: none
+  Completed: exercise1
+  Completed: exercise2
+  Not completed: exercise3
+```
+
+
+
+
+
 ## Contribution
 
 ### Formatting
