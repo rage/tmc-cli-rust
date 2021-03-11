@@ -46,6 +46,7 @@ mod tests {
     use super::super::command_util::*;
     use super::*;
     use std::slice::Iter;
+    use tmc_client::Organization;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -193,10 +194,16 @@ mod tests {
                 Organization {
                     name: "org1".to_string(),
                     slug: "slug_org1".to_string(),
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
                 Organization {
                     name: "org2".to_string(),
                     slug: "slug_org2".to_string(),
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
             ])
         });
