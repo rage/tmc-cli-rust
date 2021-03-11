@@ -1,24 +1,86 @@
 use crate::config::{ConfigValue, Credentials, TmcConfig};
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::BufWriter;
+use std::path::Path;
 use std::path::PathBuf;
-use tmc_client::{ClientError, CourseExercise, TmcClient, Token};
-
+use tmc_client::{
+    ClientError, Course, CourseDetails, CourseExercise, Exercise, Organization, TmcClient, Token,
+};
 pub const PLUGIN: &str = "vscode_plugin";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
-
-pub struct Organization {
-    pub name: String,
-    pub slug: String,
-}
 
 pub struct ClientProduction {
     pub tmc_client: TmcClient,
     pub test_mode: bool,
 }
 
-pub struct Course {
-    pub name: String,
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CourseDetailsWrapper {
+    pub unlockables: Vec<String>,
+    pub exercises: Vec<Exercise>,
     pub id: usize,
+    pub name: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub details_url: String,
+    pub unlock_url: String,
+    pub reviews_url: String,
+    pub comet_url: String,
+    pub spyware_urls: Vec<String>,
+}
+
+impl CourseDetailsWrapper {
+    pub fn new(cd: CourseDetails) -> CourseDetailsWrapper {
+        CourseDetailsWrapper {
+            unlockables: cd.unlockables,
+            exercises: cd.exercises,
+            id: cd.course.id,
+            name: cd.course.name,
+            title: cd.course.title,
+            description: cd.course.description,
+            details_url: cd.course.details_url,
+            unlock_url: cd.course.unlock_url,
+            reviews_url: cd.course.reviews_url,
+            comet_url: cd.course.comet_url,
+            spyware_urls: cd.course.spyware_urls,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CourseConfig {
+    pub username: String,
+    pub server_address: String,
+    pub course: CourseDetailsWrapper,
+    pub organization: Organization,
+    pub local_completed_exercises: Vec<String>,
+    pub properties: Vec<String>,
+}
+
+/// Loads course information from file
+pub fn load_course_config(path: &Path) -> Result<CourseConfig, Box<dyn Error>> {
+    // TODO: errorhandling
+
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `User`.
+    let u = serde_json::from_reader(reader)?;
+
+    Ok(u)
+}
+
+/// Saves course information to file
+pub fn save_course_information(course_config: CourseConfig, pathbuf: PathBuf) {
+    // TODO: errorhandling
+    let f = File::create(pathbuf).expect("Unable to create file");
+    let bw = BufWriter::new(f);
+    serde_json::to_writer(bw, &course_config).expect("Failed writing :(");
 }
 
 use mockall::predicate::*;
@@ -36,6 +98,8 @@ pub trait Client {
         download_params: Vec<(usize, PathBuf)>,
     ) -> Result<(), ClientError>;
     fn is_test_mode(&mut self) -> bool;
+    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
+    fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
 }
 
 impl ClientProduction {
@@ -147,10 +211,26 @@ impl Client for ClientProduction {
                 Course {
                     name: "test-tmc-test-course".to_string(),
                     id: 0,
+
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
                 Course {
                     name: "imaginary-test-course".to_string(),
                     id: 1,
+
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
             ]);
         }
@@ -162,6 +242,14 @@ impl Client for ClientProduction {
                     course_list.push(Course {
                         name: course.name,
                         id: course.id,
+
+                        title: "".to_string(),
+                        description: None,
+                        details_url: "".to_string(),
+                        unlock_url: "".to_string(),
+                        reviews_url: "".to_string(),
+                        comet_url: "".to_string(),
+                        spyware_urls: vec![],
                     });
                 }
                 Ok(course_list)
@@ -179,10 +267,18 @@ impl Client for ClientProduction {
                 Organization {
                     name: "test organization".to_string(),
                     slug: "test".to_string(),
+
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
                 Organization {
                     name: "imaginary test organization".to_string(),
                     slug: "imag".to_string(),
+
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
             ]);
         }
@@ -194,6 +290,10 @@ impl Client for ClientProduction {
                     org_list.push(Organization {
                         name: org.name,
                         slug: org.slug,
+
+                        information: "".to_string(),
+                        logo_path: "".to_string(),
+                        pinned: false,
                     });
                 }
                 Ok(org_list)
@@ -256,6 +356,44 @@ impl Client for ClientProduction {
         }
         self.tmc_client
             .download_or_update_exercises(download_params)
+    }
+
+    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
+        if self.test_mode {
+            let course = Course {
+                id: 0,
+                name: "".to_string(),
+                title: "".to_string(),
+                description: None,
+                details_url: "".to_string(),
+                unlock_url: "".to_string(),
+                reviews_url: "".to_string(),
+                comet_url: "".to_string(),
+                spyware_urls: vec![],
+            };
+            Ok(CourseDetails {
+                course,
+                unlockables: vec![],
+                exercises: vec![],
+            })
+        } else {
+            self.tmc_client.get_course_details(course_id)
+        }
+    }
+    fn get_organization(
+        &self,
+        organization_slug: &str,
+    ) -> std::result::Result<Organization, tmc_client::ClientError> {
+        if self.test_mode {
+            return Ok(Organization {
+                name: "String".to_string(),
+                information: "String".to_string(),
+                slug: "String".to_string(),
+                logo_path: "String".to_string(),
+                pinned: false,
+            });
+        }
+        self.tmc_client.get_organization(organization_slug)
     }
 }
 

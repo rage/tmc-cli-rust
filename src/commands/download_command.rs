@@ -1,5 +1,8 @@
+use super::command_util;
+use super::command_util::CourseConfig;
 use super::command_util::*;
 use crate::io_module::Io;
+use std::env;
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
 
@@ -41,6 +44,31 @@ pub fn download_or_update(
         )),
         Err(error) => io.println(&error),
     }
+
+    // TODO: Integration tests skip creation of course folder, so we can't save course information there
+    if client.is_test_mode() {
+        return;
+    }
+
+    let course_details = client.get_course_details(course_id).unwrap();
+    let organization = client
+        .get_organization(&command_util::get_organization().unwrap())
+        .unwrap();
+    //Generate path for config
+    let mut pathbuf = env::current_dir().unwrap();
+    pathbuf.push(download_folder);
+    pathbuf.push(".tmc.json"); // Make into a constant, also used in submit command
+
+    let course_config = CourseConfig {
+        username: "My username".to_string(),       // TODO
+        server_address: "Server addr".to_string(), // TODO
+        course: CourseDetailsWrapper::new(course_details),
+        organization,
+        local_completed_exercises: vec![], // TODO
+        properties: vec![],                // TODO
+    };
+
+    command_util::save_course_information(course_config, pathbuf);
 }
 
 fn parse_download_result(result: Result<(), ClientError>) -> String {

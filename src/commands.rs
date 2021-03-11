@@ -5,6 +5,7 @@ use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
+use submit_command::submit;
 use test_command::test;
 mod command_util;
 mod courses_command;
@@ -13,6 +14,7 @@ mod exercises_command;
 mod login_command;
 mod logout_command;
 mod organization_command;
+mod submit_command;
 mod test_command;
 
 use crate::io_module::Io;
@@ -65,6 +67,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 test(io, None);
             }
         }
+        ("submit", _) => submit(),
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given

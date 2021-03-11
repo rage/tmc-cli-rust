@@ -88,9 +88,10 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 
 #[cfg(test)]
 mod tests {
-    use tmc_client::{ClientError, CourseExercise /*, ExercisePoint*/};
-
     use std::path::PathBuf;
+    use tmc_client::Course;
+    use tmc_client::Organization;
+    use tmc_client::{ClientError, CourseExercise};
 
     use super::*;
     use std::slice::Iter;
@@ -149,10 +150,24 @@ mod tests {
                 Course {
                     id: 0,
                     name: "name".to_string(),
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
                 Course {
                     id: 88,
                     name: "course_name".to_string(),
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
             ])
         }
@@ -239,6 +254,19 @@ mod tests {
             _download_params: Vec<(usize, PathBuf)>,
         ) -> Result<(), ClientError> {
             Ok(())
+        }
+
+        fn get_course_details(
+            &self,
+            _: usize,
+        ) -> std::result::Result<tmc_client::CourseDetails, tmc_client::ClientError> {
+            todo!()
+        }
+        fn get_organization(
+            &self,
+            _: &str,
+        ) -> std::result::Result<Organization, tmc_client::ClientError> {
+            todo!()
         }
     }
 
