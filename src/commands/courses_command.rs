@@ -1,8 +1,6 @@
 use super::command_util::*;
 use crate::io_module::Io;
 
-use tmc_client::Course;
-
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
@@ -28,11 +26,11 @@ fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use tmc_client::{ClientError, CourseExercise, Organization};
+    use tmc_client::{ClientError, CourseExercise};
 
     use std::path::PathBuf;
 
+    use super::*;
     use std::slice::Iter;
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -89,24 +87,10 @@ mod tests {
                 Course {
                     id: 0,
                     name: "name".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
                 },
                 Course {
                     id: 88,
                     name: "mooc-tutustumiskurssi".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
                 },
             ])
         }
@@ -125,18 +109,6 @@ mod tests {
             _download_params: Vec<(usize, PathBuf)>,
         ) -> Result<(), ClientError> {
             Ok(())
-        }
-        fn get_course_details(
-            &self,
-            _: usize,
-        ) -> std::result::Result<tmc_client::CourseDetails, tmc_client::ClientError> {
-            todo!()
-        }
-        fn get_organization(
-            &self,
-            _: &str,
-        ) -> std::result::Result<Organization, tmc_client::ClientError> {
-            todo!()
         }
     }
 
@@ -159,24 +131,10 @@ mod tests {
                 Course {
                     id: 0,
                     name: "name".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
                 },
                 Course {
                     id: 10,
                     name: "course of sorts".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
                 },
             ];
             print_courses(&mut io, courses);
