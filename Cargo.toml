@@ -2,8 +2,7 @@
 name = "tmc-cli-rust"
 version = "0.2.5"
 authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
-           "Robustic <juha.malinen@helsinki.fi",
-           "ShootingStar91 <arttu.kangas@helsinki.fi>"]
+           "Robustic <juha.malinen@helsinki.fi"]
 edition = "2018"
 description = "Command line interface for TMC, written in Rust."
 license = "Apache-2.0"
@@ -28,4 +27,3 @@ mockall = "0.9.0"
 indicatif = "0.15.0"
 reqwest = "0.11.1"
 toml = "0.5"
-isolang = "1"

@@ -88,13 +88,10 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 
 #[cfg(test)]
 mod tests {
-    use isolang::Language;
-    use reqwest::Url;
-    use std::path::Path;
     use std::path::PathBuf;
     use tmc_client::Course;
     use tmc_client::Organization;
-    use tmc_client::{ClientError, CourseExercise, NewSubmission};
+    use tmc_client::{ClientError, CourseExercise};
 
     use super::*;
     use std::slice::Iter;
@@ -139,15 +136,6 @@ mod tests {
 
     #[cfg(test)]
     impl Client for ClientTest {
-        fn paste(
-            &self,
-            submission_url: Url,
-            submission_path: &Path,
-            paste_message: Option<String>,
-            locale: Option<Language>,
-        ) -> Result<NewSubmission, String> {
-            Err("not implemented".to_string())
-        }
         fn is_test_mode(&mut self) -> bool {
             false
         }
