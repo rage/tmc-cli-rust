@@ -11,7 +11,6 @@ mod updater;
 
 fn main() {
     let mut stdin = stdin();
-    //let mut input = stdin.lock();
     let mut output = stdout();
 
     let mut io = IoProduction::new(&mut output, &mut stdin);
@@ -31,12 +30,8 @@ fn main() {
 
 fn get_matches() -> ArgMatches<'static> {
     let matches = App::new("Test My Code client written in Rust")
-        .version("0.1.0")
-        .about("Does awesome things")
-        .subcommand(
-            SubCommand::with_name("config")
-                .about("Set/unset TMC-CLI properties and change settings"),
-        )
+        .version("0.2.5")
+        .about("Command line interface for using TestMyCode functionality")
         .subcommand(SubCommand::with_name("courses").about("List the available courses"))
         .subcommand(
             SubCommand::with_name("download")
@@ -53,12 +48,23 @@ fn get_matches() -> ArgMatches<'static> {
                 .about("List the exercises for a specific course")
                 .arg(Arg::with_name("course").value_name("course").required(true)),
         )
-        .subcommand(SubCommand::with_name("help").about("List every command"))
-        .subcommand(SubCommand::with_name("info").about("Show info about the current directory"))
         .subcommand(SubCommand::with_name("login").about("Login to TMC server"))
         .subcommand(SubCommand::with_name("logout").about("Logout from TMC server"))
         .subcommand(SubCommand::with_name("organization").about("Change organization"))
-        .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
+        .subcommand(
+            SubCommand::with_name("paste")
+                .about("Submit exercise to TMC pastebin")
+                .arg(
+                    Arg::with_name("exercise")
+                        .value_name("exercise")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("paste message")
+                        .value_name("paste_message")
+                        .required(false),
+                ),
+        )
         .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
         .subcommand(
             SubCommand::with_name("test")
@@ -67,18 +73,6 @@ fn get_matches() -> ArgMatches<'static> {
                     Arg::with_name("exercise")
                         .value_name("exercise")
                         .required(false),
-                ),
-        )
-        .subcommand(SubCommand::with_name("update").about("Update exercises"))
-        .subcommand(
-            SubCommand::with_name("adssada")
-                .about("controls testing features")
-                .version("1.3")
-                .author("Someone E. <someone_else@other.com>")
-                .arg(
-                    Arg::with_name("debug")
-                        .short("d")
-                        .help("print debug information verbosely"),
                 ),
         )
         .arg(
@@ -90,7 +84,7 @@ fn get_matches() -> ArgMatches<'static> {
         .arg(
             Arg::with_name("testmode")
                 .long("testmode")
-                .help("Only for internal testing, disables server connection"),
+                .help("Only for internal testing, runs commands in offline mode"),
         )
         .get_matches();
 
