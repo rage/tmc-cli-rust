@@ -68,6 +68,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("submit", _) => submit(),
+<<<<<<< Updated upstream
+=======
+        ("paste", _) => paste(io, &mut client),   
+>>>>>>> Stashed changes
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given

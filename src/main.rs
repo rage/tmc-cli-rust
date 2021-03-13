@@ -61,6 +61,7 @@ fn get_matches() -> ArgMatches<'static> {
         .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
         .subcommand(
+<<<<<<< Updated upstream
             SubCommand::with_name("test")
                 .about("Run local exercise tests")
                 .arg(
@@ -68,6 +69,10 @@ fn get_matches() -> ArgMatches<'static> {
                         .value_name("exercise")
                         .required(false),
                 ),
+=======
+            SubCommand::with_name("paste")
+                .about("Submit exercise to TMC pastebin")
+>>>>>>> Stashed changes
         )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .subcommand(
