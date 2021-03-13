@@ -1,4 +1,6 @@
 use crate::config::{ConfigValue, Credentials, TmcConfig};
+use isolang::Language;
+use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs::File;
@@ -7,8 +9,10 @@ use std::io::BufWriter;
 use std::path::Path;
 use std::path::PathBuf;
 use tmc_client::{
-    ClientError, Course, CourseDetails, CourseExercise, Exercise, Organization, TmcClient, Token,
+    ClientError, Course, CourseDetails, CourseExercise, Exercise, NewSubmission, Organization,
+    TmcClient, Token,
 };
+
 pub const PLUGIN: &str = "vscode_plugin";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
@@ -100,6 +104,13 @@ pub trait Client {
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
+    fn paste(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        paste_message: Option<String>,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, String>;
 }
 
 impl ClientProduction {
@@ -140,6 +151,27 @@ impl ClientProduction {
 }
 
 impl Client for ClientProduction {
+    fn paste(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        paste_message: Option<String>,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, String> {
+        if self.test_mode {
+            return Err("Integration test input not yet implemented for paste command".to_string());
+        }
+        match self
+            .tmc_client
+            .paste(submission_url, submission_path, paste_message, locale)
+        {
+            Err(_client_error) => {
+                Err("Received ClientError when calling paste command from tmc_client".to_string())
+            }
+            Ok(submission) => Ok(submission),
+        }
+    }
+
     fn is_test_mode(&mut self) -> bool {
         self.test_mode
     }
@@ -444,6 +476,26 @@ pub fn get_course_id_by_name(client: &mut dyn Client, course_name: String) -> Op
             for course in courses {
                 if course.name == course_name {
                     return Some(course.id);
+                }
+            }
+            None
+        }
+        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
+        _ => None,
+    }
+}
+
+pub fn get_exercise_id_by_name(
+    client: &mut dyn Client,
+    course_id: usize,
+    exercise_name: String,
+) -> Option<usize> {
+    // Notice: This doesn't return exercise.id, but instead just the index of exercise inside the course!
+    match client.get_course_exercises(course_id) {
+        Ok(exercises) => {
+            for (exercise_id, exercise) in exercises.into_iter().enumerate() {
+                if exercise.name == exercise_name {
+                    return Some(exercise_id);
                 }
             }
             None

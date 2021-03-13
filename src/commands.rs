@@ -5,6 +5,7 @@ use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
+use paste_command::paste;
 use submit_command::submit;
 use test_command::test;
 mod command_util;
@@ -14,6 +15,7 @@ mod exercises_command;
 mod login_command;
 mod logout_command;
 mod organization_command;
+mod paste_command;
 mod submit_command;
 mod test_command;
 
@@ -68,10 +70,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("submit", _) => submit(),
-<<<<<<< Updated upstream
-=======
-        ("paste", _) => paste(io, &mut client),   
->>>>>>> Stashed changes
+        ("paste", _) => paste(io, &mut client),
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given

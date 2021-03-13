@@ -1,5 +1,4 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
-//use std::io::{Write, Read};
 use std::io::{stdin, stdout};
 
 pub mod config;
@@ -11,7 +10,6 @@ mod updater;
 
 fn main() {
     let mut stdin = stdin();
-    //let mut input = stdin.lock();
     let mut output = stdout();
 
     let mut io = IoProduction::new(&mut output, &mut stdin);
@@ -31,7 +29,7 @@ fn main() {
 
 fn get_matches() -> ArgMatches<'static> {
     let matches = App::new("Test My Code client written in Rust")
-        .version("0.1.0")
+        .version("0.2.5")
         .about("Does awesome things")
         .subcommand(
             SubCommand::with_name("config")
@@ -61,7 +59,6 @@ fn get_matches() -> ArgMatches<'static> {
         .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
         .subcommand(
-<<<<<<< Updated upstream
             SubCommand::with_name("test")
                 .about("Run local exercise tests")
                 .arg(
@@ -69,23 +66,9 @@ fn get_matches() -> ArgMatches<'static> {
                         .value_name("exercise")
                         .required(false),
                 ),
-=======
-            SubCommand::with_name("paste")
-                .about("Submit exercise to TMC pastebin")
->>>>>>> Stashed changes
         )
+        .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
-        .subcommand(
-            SubCommand::with_name("adssada")
-                .about("controls testing features")
-                .version("1.3")
-                .author("Someone E. <someone_else@other.com>")
-                .arg(
-                    Arg::with_name("debug")
-                        .short("d")
-                        .help("print debug information verbosely"),
-                ),
-        )
         .arg(
             Arg::with_name("no-update")
                 .short("d")
