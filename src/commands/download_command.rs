@@ -27,6 +27,8 @@ pub fn download_or_update(
     }
     let course_id = course_result.unwrap();
 
+    //io.print("Destination Folder: ");
+    //let mut filepath = io.read_line();
     let mut filepath = download_folder.trim().to_string();
     filepath = if filepath.ends_with('/') {
         filepath

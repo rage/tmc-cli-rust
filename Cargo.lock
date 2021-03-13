@@ -2388,7 +2388,6 @@ dependencies = [
  "clap",
  "dirs",
  "indicatif",
- "isolang",
  "log",
  "mockall",
  "predicates",
