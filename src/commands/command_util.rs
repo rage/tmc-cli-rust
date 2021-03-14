@@ -10,7 +10,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, Exercise, NewSubmission, Organization,
-    TmcClient, Token,
+    TmcClient, Token, SubmissionFinished
 };
 
 pub const PLUGIN: &str = "vscode_plugin";
@@ -96,6 +96,13 @@ pub trait Client {
     fn list_courses(&mut self) -> Result<Vec<Course>, String>;
     fn get_organizations(&mut self) -> Result<Vec<Organization>, String>;
     fn logout(&mut self);
+    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError>;
+    fn submit(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, ClientError>;
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String>;
     fn download_or_update_exercises(
         &mut self,
@@ -151,6 +158,25 @@ impl ClientProduction {
 }
 
 impl Client for ClientProduction {
+    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError> {
+        self.tmc_client.wait_for_submission(submission_url)
+    }
+    fn submit(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, ClientError> {
+        if self.test_mode {
+            return Ok(NewSubmission {
+                show_submission_url: "https://tmc.mooc.fi/submissions/7400888".to_string(),
+                paste_url: "url".to_string(),
+                submission_url: "https://tmc.mooc.fi/api/v8/core/submissions/7400888".to_string(),
+            });
+        }
+        self.tmc_client 
+            .submit(submission_url, submission_path, locale)
+    }
     fn paste(
         &self,
         submission_url: Url,

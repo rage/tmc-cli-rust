@@ -69,7 +69,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 test(io, None);
             }
         }
-        ("submit", _) => submit(),
+        ("submit", _) => submit(io, &mut client),
         ("paste", _) => paste(io, &mut client),
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
