@@ -14,6 +14,20 @@ use tui::{
 
 use std::{io::stdout, time::Duration};
 
+/// display an interactive prompt to ask the user to select an item
+///
+/// example:
+/// ```
+/// let prompt = "Choose your organization:";
+/// let items = vec![String::from("Eka"), String::from("Toka"), String::from("Kolmas"),
+/// String::from("Neljäs")];
+///
+/// let choice = interactive_list(prompt, items);
+///
+/// if let Some(choice) = choice {
+///     println!("You chose: {}", choice);
+/// }
+/// ```
 pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
     enable_raw_mode().unwrap();
 
@@ -61,26 +75,24 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
             .unwrap();
 
         if poll(Duration::from_millis(poll_rate)).unwrap() {
-            if let Ok(event) = read() {
-                if let Event::Key(x) = event {
-                    match x.code {
-                        KeyCode::Esc => break,
-                        KeyCode::Up | KeyCode::Left => app.items.previous(),
-                        KeyCode::Down | KeyCode::Right => app.items.next(),
-                        KeyCode::Enter => {
-                            result = app.items.get_current().unwrap_or_default();
-                            break;
-                        }
-                        //KeyCode::Char(_c) => {
-                        // todo filtering
-                        // filter_word.push(c);
-                        //}
-                        //KeyCode::Backspace => {
-                        // todo filtering
-                        // filter_word.pop();
-                        //}
-                        _ => {}
+            if let Ok(Event::Key(x)) = read() {
+                match x.code {
+                    KeyCode::Esc => break,
+                    KeyCode::Up | KeyCode::Left => app.items.previous(),
+                    KeyCode::Down | KeyCode::Right => app.items.next(),
+                    KeyCode::Enter => {
+                        result = app.items.get_current().unwrap_or_default();
+                        break;
                     }
+                    //KeyCode::Char(_c) => {
+                    // todo filtering
+                    // filter_word.push(c);
+                    //}
+                    //KeyCode::Backspace => {
+                    // todo filtering
+                    // filter_word.pop();
+                    //}
+                    _ => {}
                 }
             }
         }
