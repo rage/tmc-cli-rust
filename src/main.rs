@@ -8,6 +8,8 @@ use io_module::IoProduction;
 pub mod commands;
 mod updater;
 
+const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
+
 fn main() {
     let mut stdin = stdin();
     let mut output = stdout();
@@ -29,7 +31,7 @@ fn main() {
 
 fn get_matches() -> ArgMatches<'static> {
     let matches = App::new("Test My Code client written in Rust")
-        .version("0.2.5")
+        .version(PKG_VERSION.unwrap())
         .about("Does awesome things")
         .subcommand(
             SubCommand::with_name("config")
