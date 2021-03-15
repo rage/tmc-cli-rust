@@ -32,7 +32,8 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
     let mut app = AppState::new(items.clone());
     app.items.next();
     let poll_rate = 10;
-    let mut filter_word = String::from("");
+    // todo filtering
+    //let mut filter_word = String::from("");
     loop {
         terminal
             .draw(|f| {
@@ -44,7 +45,8 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                     .items
                     .items
                     .iter()
-                    .filter(|i| i.0.contains(&filter_word))
+                    // todo filtering
+                    //.filter(|i| i.0.contains(&filter_word))
                     .map(|i| {
                         let lines = vec![Spans::from(i.clone().0)];
                         ListItem::new(lines).style(Style::default())
@@ -69,11 +71,13 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                             result = app.items.get_current().unwrap_or_default();
                             break;
                         }
-                        KeyCode::Char(c) => {
-                            filter_word.push(c);
+                        KeyCode::Char(_c) => {
+                            // todo filtering
+                            // filter_word.push(c);
                         }
                         KeyCode::Backspace => {
-                            filter_word.pop();
+                            // todo filtering
+                            // filter_word.pop();
                         }
                         _ => {}
                     },
