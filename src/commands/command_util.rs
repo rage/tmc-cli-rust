@@ -9,8 +9,8 @@ use std::io::BufWriter;
 use std::path::Path;
 use std::path::PathBuf;
 use tmc_client::{
-    ClientError, Course, CourseDetails, CourseExercise, Exercise, NewSubmission, Organization,
-    SubmissionFinished, TmcClient, Token,
+    ClientError, Course, CourseDetails, CourseExercise, Exercise, ExercisesDetails, NewSubmission,
+    Organization, SubmissionFinished, TmcClient, Token,
 };
 
 pub const PLUGIN: &str = "vscode_plugin";
@@ -104,6 +104,10 @@ pub trait Client {
         locale: Option<Language>,
     ) -> Result<NewSubmission, ClientError>;
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String>;
+    fn get_exercise_details(
+        &mut self,
+        exercise_ids: Vec<usize>,
+    ) -> Result<Vec<ExercisesDetails>, String>;
     fn download_or_update_exercises(
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
@@ -403,6 +407,24 @@ impl Client for ClientProduction {
                 Err("Login token is invalid. Please try logging in again.".to_string())
             }
             _ => Err("Unknown error. Please try again.".to_string()),
+        }
+    }
+
+    fn get_exercise_details(
+        &mut self,
+        exercise_ids: Vec<usize>,
+    ) -> Result<Vec<ExercisesDetails>, String> {
+        if self.test_mode {
+            return Ok(vec![ExercisesDetails {
+                id: 0,
+                course_name: "test_course".to_string(),
+                exercise_name: "test_exercise".to_string(),
+                checksum: "test_checksum".to_string(),
+            }]);
+        }
+        match self.tmc_client.get_exercises_details(exercise_ids) {
+            Ok(exercise_details) => Ok(exercise_details),
+            Err(_) => Err("Unknown error. Please try again.".to_string()),
         }
     }
 
