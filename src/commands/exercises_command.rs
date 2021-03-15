@@ -304,6 +304,14 @@ mod tests {
             let exercises = vec![exercise1, exercise2, exercise3, exercise4, exercise5];
             Ok(exercises)
         }
+
+        fn get_exercise_details(
+            &mut self,
+            exercise_ids: Vec<usize>,
+        ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
+            todo!()
+        }
+
         fn download_or_update_exercises(
             &mut self,
             _download_params: Vec<(usize, PathBuf)>,

@@ -171,6 +171,14 @@ mod tests {
         ) -> Result<Vec<CourseExercise>, String> {
             Ok(vec![])
         }
+
+        fn get_exercise_details(
+            &mut self,
+            exercise_ids: Vec<usize>,
+        ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
+            todo!()
+        }
+
         fn download_or_update_exercises(
             &mut self,
             _download_params: Vec<(usize, PathBuf)>,

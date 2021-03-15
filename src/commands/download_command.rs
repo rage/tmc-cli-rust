@@ -38,14 +38,80 @@ pub fn download_or_update(
 
     io.println("");
 
-    match client.get_course_exercises(course_id) {
-        Ok(exercises) => io.println(&parse_download_result(
-            client.download_or_update_exercises(get_download_params(filepath, exercises)),
-        )),
-        Err(error) => io.println(&error),
-    }
+    let mut course_config_path = filepath.clone();
+    course_config_path.push_str(".tmc.json");
+    match command_util::load_course_config(&PathBuf::from(course_config_path)) {
+        //if .tmc.json file exists, assume we're updating
+        Ok(config) => {
+            match client.get_course_exercises(course_id) {
+                Ok(mut exercises) => {
+                    // collect exercise id's
+                    let mut exercise_ids = Vec::<usize>::new();
+                    for exercise in &exercises {
+                        // filter disabled and locked exercises
+                        if !exercise.disabled && exercise.unlocked {
+                            exercise_ids.push(exercise.id);
+                        }
+                    }
+                    //get exercise details containing checksums
+                    let exercises_details = match client.get_exercise_details(exercise_ids) {
+                        Ok(details) => details,
+                        Err(_) => {
+                            println!("Failed to get exercise details from tmc_client");
+                            return;
+                        }
+                    };
+
+                    let mut exercises_id_to_download = Vec::<usize>::new();
+                    for exercise_details in exercises_details {
+                        let mut skip = false;
+                        for local_exercise_details in &config.course.exercises {
+                            // If an exercise with matching id AND matching checksum is found, skip it.
+                            if exercise_details.id == local_exercise_details.id
+                                && exercise_details.checksum == local_exercise_details.checksum
+                            {
+                                skip = true;
+                            }
+                        }
+                        //either the exercise is new or the local version needs to be updated
+                        if !skip {
+                            exercises_id_to_download.push(exercise_details.id);
+                        }
+                    }
+
+                    //compile result
+                    exercises.retain(|exercise| {
+                        let mut keep = false;
+                        for exercise_id in &exercises_id_to_download {
+                            if exercise_id == &exercise.id {
+                                keep = true;
+                            }
+                        }
+                        keep
+                    });
+
+                    io.println(&parse_download_result(client.download_or_update_exercises(
+                        get_download_params(filepath.clone(), exercises),
+                    )));
+                }
+                Err(error) => io.println(&error),
+            }
+        }
+        Err(_) => {
+            //if .tmc.json is missing, assume it's the first download case for given course
+            match client.get_course_exercises(course_id) {
+                Ok(exercises) => {
+                    io.println(&parse_download_result(client.download_or_update_exercises(
+                        get_download_params(filepath.clone(), exercises),
+                    )))
+                }
+                Err(error) => io.println(&error),
+            }
+        }
+    };
 
     // TODO: Integration tests skip creation of course folder, so we can't save course information there
+
     if client.is_test_mode() {
         return;
     }
