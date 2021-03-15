@@ -77,10 +77,10 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            submission_url: Url,
-            submission_path: &Path,
-            paste_message: Option<String>,
-            locale: Option<Language>,
+            _submission_url: Url,
+            _submission_path: &Path,
+            _paste_message: Option<String>,
+            _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
             Err("not implemented".to_string())
         }
@@ -125,9 +125,9 @@ mod tests {
         fn logout(&mut self) {}
         fn submit(
             &self,
-            submission_url: Url,
-            submission_path: &Path,
-            locale: Option<Language>,
+            _submission_url: Url,
+            _submission_path: &Path,
+            _locale: Option<Language>,
         ) -> Result<NewSubmission, ClientError> {
             Ok(NewSubmission {
                 show_submission_url: "".to_string(),
@@ -137,7 +137,7 @@ mod tests {
         }
         fn wait_for_submission(
             &self,
-            submission_url: &str,
+            _submission_url: &str,
         ) -> Result<SubmissionFinished, ClientError> {
             Ok(SubmissionFinished {
                 api_version: 0,
@@ -174,7 +174,7 @@ mod tests {
 
         fn get_exercise_details(
             &mut self,
-            exercise_ids: Vec<usize>,
+            _exercise_ids: Vec<usize>,
         ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
             todo!()
         }
