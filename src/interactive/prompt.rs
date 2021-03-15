@@ -51,19 +51,19 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                         let lines = vec![Spans::from(i.clone().0)];
                         ListItem::new(lines).style(Style::default())
                     })
-                    .collect();
+                .collect();
                 let items = List::new(items)
                     .block(Block::default().borders(Borders::NONE).title(prompt))
                     .highlight_style(Style::default().add_modifier(Modifier::BOLD))
                     .highlight_symbol(">> ");
                 f.render_stateful_widget(items, chunks[0], &mut app.items.state);
             })
-            .unwrap();
+        .unwrap();
 
         if poll(Duration::from_millis(poll_rate)).unwrap() {
             if let Ok(event) = read() {
-                match event {
-                    Event::Key(x) => match x.code {
+                if let Event::Key(x) = event {
+                    match x.code {
                         KeyCode::Esc => break,
                         KeyCode::Up | KeyCode::Left => app.items.previous(),
                         KeyCode::Down | KeyCode::Right => app.items.next(),
@@ -71,17 +71,16 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                             result = app.items.get_current().unwrap_or_default();
                             break;
                         }
-                        KeyCode::Char(_c) => {
-                            // todo filtering
-                            // filter_word.push(c);
-                        }
-                        KeyCode::Backspace => {
-                            // todo filtering
-                            // filter_word.pop();
-                        }
+                        //KeyCode::Char(_c) => {
+                        // todo filtering
+                        // filter_word.push(c);
+                        //}
+                        //KeyCode::Backspace => {
+                        // todo filtering
+                        // filter_word.pop();
+                        //}
                         _ => {}
-                    },
-                    _ => {}
+                    }
                 }
             }
         }

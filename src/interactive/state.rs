@@ -5,6 +5,12 @@ pub struct StatefulList<T> {
     pub items: Vec<T>,
 }
 
+impl<T> Default for StatefulList<T> {
+    fn default() -> Self {
+        StatefulList::new()
+    }
+}
+
 impl<T> StatefulList<T> {
     pub fn new() -> StatefulList<T> {
         StatefulList {
