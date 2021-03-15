@@ -93,7 +93,9 @@ mod tests {
     use std::path::{Path, PathBuf};
     use tmc_client::Course;
     use tmc_client::Organization;
-    use tmc_client::{ClientError, CourseExercise, NewSubmission};
+    use tmc_client::{
+        ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
+    };
 
     use super::*;
     use std::slice::Iter;
@@ -186,6 +188,48 @@ mod tests {
             Ok(vec![])
         }
         fn logout(&mut self) {}
+        fn submit(
+            &self,
+            submission_url: Url,
+            submission_path: &Path,
+            locale: Option<Language>,
+        ) -> Result<NewSubmission, ClientError> {
+            Ok(NewSubmission {
+                show_submission_url: "".to_string(),
+                paste_url: "".to_string(),
+                submission_url: "".to_string(),
+            })
+        }
+        fn wait_for_submission(
+            &self,
+            submission_url: &str,
+        ) -> Result<SubmissionFinished, ClientError> {
+            Ok(SubmissionFinished {
+                api_version: 0,
+                all_tests_passed: Some(true),
+                user_id: 0,
+                login: "".to_string(),
+                course: "".to_string(),
+                exercise_name: "".to_string(),
+                status: SubmissionStatus::Ok,
+                points: vec!["".to_string()],
+                valgrind: Some("".to_string()),
+                submission_url: "".to_string(),
+                solution_url: Some("".to_string()),
+                submitted_at: "".to_string(),
+                processing_time: Some(0),
+                reviewed: true,
+                requests_review: true,
+                paste_url: Some("".to_string()),
+                message_for_paste: Some("".to_string()),
+                missing_review_points: vec!["".to_string()],
+                test_cases: None,
+                feedback_questions: None,
+                feedback_answer_url: Some("".to_string()),
+                error: Some("".to_string()),
+                validations: None,
+            })
+        }
         fn get_course_exercises(
             &mut self,
             _course_id: usize,

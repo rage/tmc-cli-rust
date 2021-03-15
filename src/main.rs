@@ -57,7 +57,39 @@ fn get_matches() -> ArgMatches<'static> {
         .subcommand(SubCommand::with_name("logout").about("Logout from TMC server"))
         .subcommand(SubCommand::with_name("organization").about("Change organization"))
         .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
-        .subcommand(SubCommand::with_name("submit").about("Submit exercises to TMC server"))
+        .subcommand(
+            SubCommand::with_name("submit")
+                .about("Submit exercises to TMC server")
+                .arg(
+                    Arg::with_name("dont-block")
+                        .value_name("dont-block")
+                        .help("Set to avoid blocking.")
+                        .long("dont-block"),
+                )
+                .arg(
+                    Arg::with_name("locale")
+                        .value_name("locale")
+                        .help("Language as a three letter ISO 639-3 code, e.g. 'eng' or 'fin'.")
+                        .long("locale")
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("submission-path")
+                        .value_name("submission-path")
+                        .help("Path to the directory where the exercise resides.")
+                        .long("submission-path")
+                        //.required(true)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("submission-url")
+                        .value_name("submission-url")
+                        .help("URL where the submission should be posted.")
+                        .long("submission-url")
+                        //.required(true)
+                        .takes_value(true),
+                ),
+        )
         .subcommand(
             SubCommand::with_name("test")
                 .about("Run local exercise tests")

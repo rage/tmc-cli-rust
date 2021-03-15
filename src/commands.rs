@@ -5,8 +5,6 @@ use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
-use paste_command::paste;
-use submit_command::submit;
 use test_command::test;
 mod command_util;
 mod courses_command;
@@ -51,6 +49,9 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("organization", _) => organization(io, &mut client),
         ("courses", _) => list_courses(io, &mut client),
+        ("submit", _) => {
+            submit_command::submit(io, &mut client);
+        }
         ("exercises", args) => {
             if let Some(a) = args {
                 if let Some(c) = a.value_of("course") {
@@ -69,8 +70,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 test(io, None);
             }
         }
-        ("submit", _) => submit(),
-        ("paste", _) => paste(io, &mut client),
+        ("paste", _) => paste_command::paste(io, &mut client),
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given

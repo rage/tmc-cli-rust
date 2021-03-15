@@ -10,6 +10,7 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+url = "2.2.1"
 clap = "2.3.3"
 assert_cmd = "0.10"
 predicates = "1"
