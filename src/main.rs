@@ -6,6 +6,7 @@ pub mod config;
 pub mod io_module;
 use io_module::IoProduction;
 pub mod commands;
+pub mod interactive;
 mod updater;
 
 const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");

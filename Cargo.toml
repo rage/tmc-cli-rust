@@ -29,3 +29,6 @@ indicatif = "0.15.0"
 reqwest = "0.11.1"
 toml = "0.5"
 isolang = "1"
+crossterm = "0.19"
+tui = { version = "0.14", features = ['crossterm'] }
+
