@@ -91,7 +91,7 @@ pub fn download_or_update(
                     });
 
                     io.println(&parse_download_result(client.download_or_update_exercises(
-                        get_download_params(filepath.clone(), exercises),
+                        get_download_params(filepath, exercises),
                     )));
                 }
                 Err(error) => io.println(&error),
@@ -100,11 +100,9 @@ pub fn download_or_update(
         Err(_) => {
             //if .tmc.json is missing, assume it's the first download case for given course
             match client.get_course_exercises(course_id) {
-                Ok(exercises) => {
-                    io.println(&parse_download_result(client.download_or_update_exercises(
-                        get_download_params(filepath.clone(), exercises),
-                    )))
-                }
+                Ok(exercises) => io.println(&parse_download_result(
+                    client.download_or_update_exercises(get_download_params(filepath, exercises)),
+                )),
                 Err(error) => io.println(&error),
             }
         }
