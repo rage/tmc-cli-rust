@@ -1,4 +1,6 @@
 use super::command_util::*;
+use crate::config::course_config;
+use crate::config::course_config::CourseConfig;
 use crate::io_module::Io;
 use anyhow::{Context, Result};
 use std::env;
@@ -15,9 +17,9 @@ pub fn submit(io: &mut dyn Io, client: &mut dyn Client) {
 
     let mut pathbuf = env::current_dir().unwrap();
     pathbuf.pop();
-    pathbuf.push(".tmc.json");
+    pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
 
-    if let Ok(config) = load_course_config(pathbuf.as_path()) {
+    if let Ok(config) = course_config::load_course_config(pathbuf.as_path()) {
         submit_logic(io, client, &config);
     } else {
         io.println("Current directory does not contain any exercise")

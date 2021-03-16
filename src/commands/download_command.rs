@@ -1,7 +1,9 @@
 use super::command_util;
-use super::command_util::CourseConfig;
 use super::command_util::*;
+use crate::config::course_config;
+use crate::config::course_config::{CourseConfig, CourseDetailsWrapper};
 use crate::io_module::Io;
+use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
@@ -40,7 +42,7 @@ pub fn download_or_update(
 
     let mut course_config_path = filepath.clone();
     course_config_path.push_str(".tmc.json");
-    match command_util::load_course_config(&PathBuf::from(course_config_path)) {
+    match course_config::load_course_config(&PathBuf::from(course_config_path)) {
         //if .tmc.json file exists, assume we're updating
         Ok(config) => {
             match client.get_course_exercises(course_id) {
@@ -121,18 +123,18 @@ pub fn download_or_update(
     //Generate path for config
     let mut pathbuf = env::current_dir().unwrap();
     pathbuf.push(download_folder);
-    pathbuf.push(".tmc.json"); // Make into a constant, also used in submit command
+    pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
 
     let course_config = CourseConfig {
-        username: "My username".to_string(),       // TODO
-        server_address: "Server addr".to_string(), // TODO
+        username: "My username".to_string(), // TODO: Find out where to get. from client?
+        server_address: "Server addr".to_string(), // TODO: Find out where to get. from client?
         course: CourseDetailsWrapper::new(course_details),
         organization,
-        local_completed_exercises: vec![], // TODO
-        properties: vec![],                // TODO
+        local_completed_exercises: vec![],
+        properties: HashMap::new(),
     };
 
-    command_util::save_course_information(course_config, pathbuf);
+    course_config::save_course_information(course_config, pathbuf);
 }
 
 fn parse_download_result(result: Result<(), ClientError>) -> String {
