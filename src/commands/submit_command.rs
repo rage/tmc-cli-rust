@@ -4,7 +4,7 @@ use crate::config::course_config::CourseConfig;
 use crate::io_module::Io;
 use anyhow::{Context, Result};
 use std::env;
-use tmc_langs_util::Language;
+use tmc_langs::Language;
 use url::Url;
 
 pub fn submit(io: &mut dyn Io, client: &mut dyn Client) {

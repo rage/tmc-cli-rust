@@ -73,3 +73,21 @@ pub fn save_course_information(course_config: CourseConfig, pathbuf: PathBuf) {
     let bw = BufWriter::new(f);
     serde_json::to_writer(bw, &course_config).expect("Failed writing course information");
 }
+
+pub fn get_exercise_by_id(course_config: CourseConfig, id: usize) -> Option<Exercise> {
+    for exercise in course_config.course.exercises {
+        if exercise.id == id {
+            return Some(exercise);
+        }
+    }
+    None
+}
+
+pub fn get_exercise_by_name(course_config: CourseConfig, name: String) -> Option<Exercise> {
+    for exercise in course_config.course.exercises {
+        if exercise.name == name {
+            return Some(exercise);
+        }
+    }
+    None
+}

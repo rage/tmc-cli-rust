@@ -1,37 +1,25 @@
 use crate::io_module::Io;
 use std::env;
 use std::path::{Path, PathBuf};
-use tmc_langs_framework::domain::RunResult;
-use tmc_langs_util::task_executor;
+use tmc_langs::RunResult;
 
 /// Executes tmc tests for exercise(s)
 pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
     let status = match env::current_dir() {
-        Ok(mut pathbuf) => match exercise_folder {
-            Some(exercise) => {
-                // Specific exercise folder was given as an argument, so we only do tests for it.
+        Ok(mut pathbuf) => {
+            if let Some(exercise) = exercise_folder {
                 pathbuf.push(exercise);
-                let path = pathbuf.as_path();
-                if task_executor::is_exercise_root_directory(path) {
-                    test_exercise_path(io, path)
-                } else {
-                    Err("Specified folder is not an exercise".to_string())
-                }
             }
-            None => {
-                let path = pathbuf.as_path();
-                // If current directory is an excercise, its tests will be done.
-                if task_executor::is_exercise_root_directory(path) {
-                    test_exercise_path(io, path)
-                } else {
-                    // Otherwise we will find exercises under this directory recursively.
-                    match task_executor::find_exercise_directories(path) {
-                        Ok(exercises) => test_exercises(io, exercises),
-                        Err(error) => Err(error.to_string()),
-                    }
-                }
+
+            match tmc_langs::find_exercise_directories(pathbuf.as_path()) {
+                Ok(exercises) => match exercises.len() {
+                    0 => Err("No exercises found.".to_string()),
+                    1 => test_exercise_path(io, exercises[0].as_path()),
+                    _ => test_exercises(io, exercises),
+                },
+                Err(error) => Err(error.to_string()),
             }
-        },
+        }
         Err(error) => Err(format!(
             "Invalid directory / Insufficient permissions: {}",
             error
@@ -43,6 +31,14 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
     }
 }
 
+/// Wrapper around test_exercise funtion to get uniform Result type
+fn test_exercise_path(io: &mut dyn Io, path: &Path) -> Result<(), String> {
+    if let Err(err) = test_exercise(io, path, true) {
+        Err(err)
+    } else {
+        Ok(())
+    }
+}
 /// Executes tmc tests for multiple exercises
 fn test_exercises(io: &mut dyn Io, paths: Vec<PathBuf>) -> Result<(), String> {
     let mut exercises_completed = 0_usize;
@@ -63,15 +59,6 @@ fn test_exercises(io: &mut dyn Io, paths: Vec<PathBuf>) -> Result<(), String> {
     Ok(())
 }
 
-/// Wrapper around test_exercise funtion to get uniform Result type
-fn test_exercise_path(io: &mut dyn Io, path: &Path) -> Result<(), String> {
-    if let Err(err) = test_exercise(io, path, true) {
-        Err(err)
-    } else {
-        Ok(())
-    }
-}
-
 /// Executes tests for a single exercise, returns true if all tests passed (false if not).
 fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<bool, String> {
     // Get exercise folder name from last component in path
@@ -82,7 +69,7 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<b
         }
     }
 
-    match task_executor::run_tests(path) {
+    match tmc_langs::run_tests(path) {
         Ok(run_result) => Ok(print_result_test(
             io,
             run_result,
@@ -181,7 +168,7 @@ fn get_progress_string(completed: usize, total: usize, length: usize) -> String 
 mod tests {
     use super::*;
     use std::slice::Iter;
-    use tmc_langs_framework::domain::{RunResult, RunStatus, TestResult};
+    use tmc_langs::RunResult;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -220,6 +207,8 @@ mod tests {
     mod tests {
         use super::*;
         use std::collections::HashMap;
+        use tmc_langs_framework::RunStatus;
+        use tmc_langs_framework::TestResult;
 
         #[test]
         fn generate_progress_string_empty_test() {
