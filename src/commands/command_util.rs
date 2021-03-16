@@ -464,7 +464,7 @@ pub fn get_course_id_by_name(client: &mut dyn Client, course_name: String) -> Op
     }
 }
 
-pub fn get_exercise_id_by_name(
+/*pub fn get_exercise_id_by_name(
     client: &mut dyn Client,
     course_id: usize,
     exercise_name: String,
@@ -482,4 +482,4 @@ pub fn get_exercise_id_by_name(
         //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
         _ => None,
     }
-}
+}*/
