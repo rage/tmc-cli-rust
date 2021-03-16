@@ -29,6 +29,19 @@ https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
 ### Installation
 
+#### Using Flatpak
+
+        flatpak install flathub fi.mooc.tmc.tmc-cli-rust
+
+Create alias after installation for ease of use with:
+
+        echo "alias tmc=\"flatpak run fi.mooc.tmc.tmc-cli-rust\"" >> ~/.bashrc
+
+After restarting the terminal, this should work:
+
+        tmc --help
+
+
 #### Using the install script (Linux/OS X)
 
 ```cd``` into the directory where you want to download tmc-cli-rust and run the following command:
