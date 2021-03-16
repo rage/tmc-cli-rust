@@ -120,9 +120,9 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("test")
         .arg("folder/nonexistant_ex");
-    cmd.assert().success().stdout(predicate::str::contains(
-        "Specified folder is not an exercise",
-    ));
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("No exercises found"));
 
     // tmc-cli-rust --testmode --no-update logout
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;

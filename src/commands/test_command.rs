@@ -17,7 +17,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
                     1 => test_exercise_path(io, exercises[0].as_path()),
                     _ => test_exercises(io, exercises),
                 },
-                Err(error) => Err(error.to_string()),
+                Err(error) => Err(format!("No exercises found: {}", error)),
             }
         }
         Err(error) => Err(format!(
