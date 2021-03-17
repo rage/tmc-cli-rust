@@ -88,7 +88,7 @@ pub fn get_exercise_by_name<'a>(
     name: &str,
 ) -> Option<&'a Exercise> {
     for exercise in &course_config.course.exercises {
-        if &exercise.name == name {
+        if exercise.name == name {
             return Some(exercise);
         }
     }
