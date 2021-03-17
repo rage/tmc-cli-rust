@@ -85,7 +85,7 @@ pub fn get_exercise_by_id(course_config: &CourseConfig, id: usize) -> Option<&Ex
 
 pub fn get_exercise_by_name<'a>(
     course_config: &'a CourseConfig,
-    name: &String,
+    name: &str,
 ) -> Option<&'a Exercise> {
     for exercise in &course_config.course.exercises {
         if &exercise.name == name {

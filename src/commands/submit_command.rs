@@ -40,7 +40,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, course_config: &Course
     match course_config::get_exercise_by_name(course_config, &exercise_name) {
         Some(exercise) => submission_url = into_url(&exercise.return_url).unwrap(),
         None => {
-            io.println(&format!("Curernt directory does not contaiant "));
+            io.println("Current directory does not contain any exercise");
             return;
         }
     }
