@@ -28,7 +28,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client) {
 
     let course_config = course_config::load_course_config(pathbuf.as_path()).unwrap();
 
-    let submission_url = course_config::get_exercise_by_name(course_config, exercise_name)
+    let submission_url = &course_config::get_exercise_by_name(&course_config, &exercise_name)
         .unwrap()
         .return_url; //&course_details.exercises[exercise_id].return_url;
     let submission_url = Url::parse(&submission_url).unwrap();

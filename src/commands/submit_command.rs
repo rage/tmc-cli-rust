@@ -37,10 +37,10 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, course_config: &Course
         .to_string();
 
     let submission_url;
-    match get_submission_url_by_exercise_name(&exercise_name, course_config) {
-        Ok(url) => submission_url = url,
-        Err(err) => {
-            io.println(&err);
+    match course_config::get_exercise_by_name(course_config, &exercise_name) {
+        Some(exercise) => submission_url = into_url(&exercise.return_url).unwrap(),
+        None => {
+            io.println(&format!("Curernt directory does not contaiant "));
             return;
         }
     }
@@ -60,21 +60,6 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, course_config: &Course
         Ok(_submission_finished) => io.println("Submission finished"),
         Err(_err) => io.println(""), //io.println(&format!("Submission failed with message {:#?}", err))
     }
-}
-
-fn get_submission_url_by_exercise_name(
-    exercise_name: &str,
-    course_config: &CourseConfig,
-) -> Result<Url, String> {
-    for exercise in &course_config.course.exercises {
-        if exercise.name == exercise_name {
-            return Ok(into_url(&exercise.return_url).unwrap());
-        }
-    }
-    Err(format!(
-        "Submission url not found for exercise {}",
-        exercise_name
-    ))
 }
 
 fn into_locale(arg: &str) -> Result<Language> {
