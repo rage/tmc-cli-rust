@@ -56,9 +56,27 @@ fn get_matches() -> ArgMatches<'static> {
         )
         .subcommand(SubCommand::with_name("help").about("List every command"))
         .subcommand(SubCommand::with_name("info").about("Show info about the current directory"))
-        .subcommand(SubCommand::with_name("login").about("Login to TMC server"))
+        .subcommand(
+            SubCommand::with_name("login")
+                .about("Login to TMC server")
+                .arg(
+                    Arg::with_name("non-interactive")
+                        .short("n")
+                        .help("Initiates the non-interactive mode.")
+                        .long("non-interactive"),
+                ),
+        )
         .subcommand(SubCommand::with_name("logout").about("Logout from TMC server"))
-        .subcommand(SubCommand::with_name("organization").about("Change organization"))
+        .subcommand(
+            SubCommand::with_name("organization")
+                .about("Change organization")
+                .arg(
+                    Arg::with_name("non-interactive")
+                        .short("n")
+                        .help("Initiates the non-interactive mode.")
+                        .long("non-interactive"),
+                ),
+        )
         .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(
             SubCommand::with_name("submit")

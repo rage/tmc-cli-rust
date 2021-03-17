@@ -2,7 +2,7 @@ use super::command_util::Client;
 use super::organization_command;
 use crate::io_module::Io;
 
-pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
+pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     if let Ok(()) = client.load_login() {
         io.println("You are already logged in.");
         return;
@@ -33,7 +33,13 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
     match client.try_login(username, password) {
         Ok(message) => {
             io.println(&message);
-            if let Err(_err) = organization_command::set_organization(io, client) {
+
+            let res = if interactive_mode {
+                organization_command::set_organization(client)
+            } else {
+                organization_command::set_organization_old(io, client)
+            };
+            if let Err(_err) = res {
                 io.println("Could not set organization");
             }
         }
@@ -101,7 +107,7 @@ mod tests {
         let mut mock = MockClient::new();
         mock.expect_load_login().times(1).returning(|| Ok(()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(1, io.buffer_length());
         if io.buffer_length() == 1 {
@@ -127,7 +133,7 @@ mod tests {
             .times(1)
             .returning(|| Err("".to_string()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(2, io.buffer_length());
         if io.buffer_length() == 2 {
@@ -158,7 +164,7 @@ mod tests {
         mock.expect_try_login()
             .returning(|_username, _password| Err("error_message".to_string()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(3, io.buffer_length());
         if io.buffer_length() == 3 {
@@ -208,7 +214,7 @@ mod tests {
             ])
         });
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(11, io.buffer_length());
 

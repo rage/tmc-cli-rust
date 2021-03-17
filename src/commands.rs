@@ -25,7 +25,17 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     let mut client = ClientProduction::new(matches.is_present("testmode"));
 
     match matches.subcommand() {
-        ("login", _) => login(io, &mut client),
+        ("login", args) => {
+            if let Some(args) = args {
+                let interactive_mode;
+                if args.is_present("non-interactive") {
+                    interactive_mode = false;
+                } else {
+                    interactive_mode = true;
+                }
+                login(io, &mut client, interactive_mode)
+            }
+        }
         ("download", args) => {
             if let Some(a) = args {
                 let course;
@@ -47,7 +57,17 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 io.println("arguments not found");
             }
         }
-        ("organization", _) => organization(io, &mut client),
+        ("organization", args) => {
+            if let Some(args) = args {
+                let interactive_mode;
+                if args.is_present("non-interactive") {
+                    interactive_mode = false;
+                } else {
+                    interactive_mode = true;
+                }
+                organization(io, &mut client, interactive_mode)
+            }
+        }
         ("courses", _) => list_courses(io, &mut client),
         ("submit", _) => {
             submit_command::submit(io, &mut client);
