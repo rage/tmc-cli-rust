@@ -260,14 +260,7 @@ impl Client for ClientProduction {
             Ok(organizations) => {
                 let mut org_list: Vec<Organization> = Vec::new();
                 for org in organizations {
-                    org_list.push(Organization {
-                        name: org.name,
-                        slug: org.slug,
-
-                        information: "".to_string(),
-                        logo_path: "".to_string(),
-                        pinned: false,
-                    });
+                    org_list.push(org);
                 }
                 Ok(org_list)
             }

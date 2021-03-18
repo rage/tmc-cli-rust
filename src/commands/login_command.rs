@@ -216,22 +216,22 @@ mod tests {
 
         login(&mut io, &mut mock, false);
 
-        assert_eq!(11, io.buffer_length());
+        assert_eq!(13, io.buffer_length());
 
-        if io.buffer_length() == 11 {
+        if io.buffer_length() == 13 {
             assert!(io
                 .buffer_get(2)
                 .to_string()
                 .eq(&"ok_message_for_try_login".to_string()));
-            assert!(io.buffer_get(6).to_string().eq(&"org2".to_string()));
-            assert!(io.buffer_get(7).to_string().eq(&" Slug: ".to_string()));
-            assert!(io.buffer_get(8).to_string().eq(&"slug_org2".to_string()));
+            assert!(io.buffer_get(8).to_string().eq(&"org2".to_string()));
+            assert!(io.buffer_get(9).to_string().eq(&" Slug: ".to_string()));
+            assert!(io.buffer_get(10).to_string().eq(&"slug_org2".to_string()));
             assert!(io
-                .buffer_get(9)
+                .buffer_get(11)
                 .to_string()
                 .eq(&"\nChoose organization by writing its slug: ".to_string()));
             assert!(io
-                .buffer_get(10)
+                .buffer_get(12)
                 .to_string()
                 .eq(&"Could not set organization".to_string()));
         }

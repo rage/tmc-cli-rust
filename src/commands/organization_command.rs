@@ -6,11 +6,20 @@ use crate::io_module::Io;
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
     // List all organizations
-    let orgs = client.get_organizations().unwrap();
+    let mut orgs = client.get_organizations().unwrap();
+    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
+    let mut last_pinned = true;
+
+    io.println("Available Organizations:\n");
+
     for org in &orgs {
+        if org.pinned != last_pinned {
+            io.println("----------");
+        }
         io.print(&org.name);
         io.print(" Slug: ");
         io.println(&org.slug);
+        last_pinned = org.pinned;
     }
 
     io.print("\nChoose organization by writing its slug: ");
@@ -26,8 +35,8 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
 }
 
 pub fn set_organization(client: &mut dyn Client) -> Result<String, String> {
-    let orgs = client.get_organizations().unwrap();
-
+    let mut orgs = client.get_organizations().unwrap();
+    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
 
     let org_name = interactive::interactive_list(
         "Select your organization:",
@@ -54,6 +63,7 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
         io.println(&error);
         return;
     };
+
     let res = if interactive_mode {
         set_organization(client)
     } else {
