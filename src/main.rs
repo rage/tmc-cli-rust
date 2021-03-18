@@ -85,7 +85,15 @@ fn get_matches() -> ArgMatches<'static> {
                         .long("non-interactive"),
                 ),
         )
-        .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
+        .subcommand(
+            SubCommand::with_name("paste")
+                .about("Submit exercise to TMC pastebin")
+                .arg(
+                    Arg::with_name("exercise")
+                        .value_name("exercise")
+                        .required(false),
+                ),
+        )
         .subcommand(
             SubCommand::with_name("submit")
                 .about("Submit exercises to TMC server")
@@ -128,7 +136,6 @@ fn get_matches() -> ArgMatches<'static> {
                         .required(false),
                 ),
         )
-        .subcommand(SubCommand::with_name("paste").about("Submit exercise to TMC pastebin"))
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .arg(
             Arg::with_name("no-update")

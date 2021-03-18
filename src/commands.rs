@@ -81,7 +81,15 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 test(io, None);
             }
         }
-        ("paste", _) => paste_command::paste(io, &mut client),
+        ("paste", args) => {
+            let path;
+            if let Some(a) = args {
+                path = a.value_of("exercise").unwrap_or("");
+            } else {
+                path = "";
+            }
+            paste_command::paste(io, &mut client, path);
+        }
         ("logout", _) => logout(io, &mut client),
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given
