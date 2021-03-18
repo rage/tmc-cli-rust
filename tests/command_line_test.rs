@@ -36,11 +36,11 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         Write also what input command is given. Run logout first to remove possible old test-login.
 
         tmc-cli-rust --testmode --no-update logout
-        tmc-cli-rust --testmode --no-update login
+        tmc-cli-rust --testmode --no-update login -n
             testusername
             testpassword
             imag
-        tmc-cli-rust --testmode --no-update organization
+        tmc-cli-rust --testmode --no-update organization -n
             test
         tmc-cli-rust --testmode --no-update courses
         tmc-cli-rust --testmode --no-update exercises test-tmc-test-course
@@ -58,7 +58,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert();
 
-    // tmc-cli-rust --testmode --no-update login
+    // tmc-cli-rust --testmode --no-update login -n
     // testusername testpassword imag
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
@@ -73,7 +73,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
             "Choose organization by writing its slug: ",
         ));
 
-    // tmc-cli-rust --testmode --no-update organization
+    // tmc-cli-rust --testmode --no-update organization -n
     // test
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")

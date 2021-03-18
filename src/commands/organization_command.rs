@@ -28,6 +28,7 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
 pub fn set_organization(client: &mut dyn Client) -> Result<String, String> {
     let orgs = client.get_organizations().unwrap();
 
+
     let org_name = interactive::interactive_list(
         "Select your organization:",
         orgs.iter().map(|org| org.name.clone()).collect(),
@@ -58,6 +59,7 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     } else {
         set_organization_old(io, client)
     };
+    io.println("");
     match res {
         Ok(org) => io.println(&format!("Selected {} as organization.", org)),
         Err(msg) => io.println(&msg),
