@@ -110,7 +110,9 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("download")
+        .arg("-c")
         .arg("test-tmc-test-course")
+        .arg("-f")
         .arg("folder_for_download");
     cmd.assert()
         .success()
