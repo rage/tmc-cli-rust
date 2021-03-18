@@ -56,7 +56,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         .unwrap()
         .return_url;
     let submission_url = Url::parse(&submission_url).unwrap();
-    
+
     io.println("Write a paste message, enter sends it:");
     let paste_msg = io.read_line();
     io.println("");
