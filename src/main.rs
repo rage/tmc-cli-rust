@@ -44,19 +44,17 @@ fn get_matches() -> ArgMatches<'static> {
                 .about("Downloads course exercises")
                 .arg(
                     Arg::with_name("course")
-                        .value_name("course")
+                        .short("c")
+                        .long("course")
+                        .value_name("course name")
                         .required(false),
                 )
                 .arg(
                     Arg::with_name("download_folder")
-                        .value_name("download_folder")
+                        .short("f")
+                        .long("folder")
+                        .value_name("download folder")
                         .required(false),
-                )
-                .arg(
-                    Arg::with_name("non-interactive")
-                        .short("n")
-                        .help("Initiates the non-interactive mode.")
-                        .long("non-interactive"),
                 ),
         )
         .subcommand(

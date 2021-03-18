@@ -43,7 +43,6 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     &mut client,
                     a.value_of("course"),
                     a.value_of("download_folder"),
-                    !a.is_present("non-interactive"),
                 );
             } else {
                 io.println("arguments not found");

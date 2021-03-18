@@ -14,7 +14,6 @@ pub fn download_or_update(
     client: &mut dyn Client,
     course_name: Option<&str>,
     download_folder_arg: Option<&str>,
-    interactive_mode: bool,
 ) {
     // Get a client that has credentials
     if let Err(error) = client.load_login() {
@@ -22,24 +21,15 @@ pub fn download_or_update(
         return;
     };
 
-    if course_name.is_none() && !interactive_mode {
-        io.println("You need to give 'course name' as argument when using non-interactive mode.");
-        return;
-    }
-    if course_name.is_some() && interactive_mode {
-        io.println("Can't use argument 'course name' with interactive mode.");
-        return;
-    }
-    //io.println("Do either 'tmc download -n course-name <download_folder>'");
-    //io.println("Or 'tmc download <download_folder>'");
-
     let courses_result = client.list_courses();
     if courses_result.is_err() {
         io.println("Could not list courses.");
         return;
     }
 
-    let name_select = if interactive_mode {
+    let name_select = if let Some(course) = course_name {
+        course.to_string()
+    } else {
         interactive::interactive_list(
             "Select your course:",
             courses_result
@@ -49,8 +39,6 @@ pub fn download_or_update(
                 .collect(),
         )
         .unwrap() // TODO: error handling
-    } else {
-        course_name.unwrap().to_string()
     };
 
     // Get course by name
