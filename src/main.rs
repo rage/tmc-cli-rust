@@ -41,12 +41,22 @@ fn get_matches() -> ArgMatches<'static> {
         .subcommand(SubCommand::with_name("courses").about("List the available courses"))
         .subcommand(
             SubCommand::with_name("download")
-                .about("Sets the level of verbosity")
-                .arg(Arg::with_name("course").value_name("course").required(true))
+                .about("Downloads course exercises")
+                .arg(
+                    Arg::with_name("course")
+                        .value_name("course")
+                        .required(false),
+                )
                 .arg(
                     Arg::with_name("download_folder")
                         .value_name("download_folder")
-                        .required(true),
+                        .required(false),
+                )
+                .arg(
+                    Arg::with_name("non-interactive")
+                        .short("n")
+                        .help("Initiates the non-interactive mode.")
+                        .long("non-interactive"),
                 ),
         )
         .subcommand(

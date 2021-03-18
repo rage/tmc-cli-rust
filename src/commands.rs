@@ -38,21 +38,13 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("download", args) => {
             if let Some(a) = args {
-                let course;
-                let download_folder;
-                if let Some(c) = a.value_of("course") {
-                    course = String::from(c);
-                } else {
-                    io.println("argument for course not found");
-                    return;
-                }
-                if let Some(d) = a.value_of("download_folder") {
-                    download_folder = String::from(d);
-                } else {
-                    io.println("argument for download folder not found");
-                    return;
-                }
-                download_or_update(io, &mut client, course, download_folder);
+                download_or_update(
+                    io,
+                    &mut client,
+                    a.value_of("course"),
+                    a.value_of("download_folder"),
+                    !a.is_present("non-interactive"),
+                );
             } else {
                 io.println("arguments not found");
             }

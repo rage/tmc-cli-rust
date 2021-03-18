@@ -5,7 +5,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::path::Path;
-use std::path::PathBuf;
 use tmc_client::CourseDetails;
 use tmc_client::Exercise;
 use tmc_client::Organization;
@@ -68,8 +67,8 @@ pub fn load_course_config(path: &Path) -> Result<CourseConfig, Box<dyn Error>> {
 }
 
 /// Saves course information to file
-pub fn save_course_information(course_config: CourseConfig, pathbuf: PathBuf) {
-    let f = File::create(pathbuf).expect("Unable to create file");
+pub fn save_course_information(course_config: CourseConfig, path: &Path) {
+    let f = File::create(path).expect("Unable to create file");
     let bw = BufWriter::new(f);
     serde_json::to_writer(bw, &course_config).expect("Failed writing course information");
 }

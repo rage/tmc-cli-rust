@@ -457,6 +457,21 @@ pub fn get_course_id_by_name(client: &mut dyn Client, course_name: String) -> Op
     }
 }
 
+pub fn get_course_by_name(client: &mut dyn Client, course_name: String) -> Option<Course> {
+    match client.list_courses() {
+        Ok(courses) => {
+            for course in courses {
+                if course.name == course_name {
+                    return Some(course);
+                }
+            }
+            None
+        }
+        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
+        _ => None,
+    }
+}
+
 /*pub fn get_exercise_id_by_name(
     client: &mut dyn Client,
     course_id: usize,
