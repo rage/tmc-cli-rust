@@ -44,7 +44,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
             test
         tmc-cli-rust --testmode --no-update courses
         tmc-cli-rust --testmode --no-update exercises test-tmc-test-course
-        tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
+        tmc-cli-rust --testmode --no-update download -c test-tmc-test-course -f folder_for_download
         tmc-cli-rust --testmode --no-update test folder/nonexistant_ex
         tmc-cli-rust --testmode --no-update logout
         tmc-cli-rust --testmode --no-update login
@@ -105,7 +105,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .success()
         .stdout(predicate::str::contains("Imaginary test exercise"));
 
-    // tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
+    // tmc-cli-rust --testmode --no-update download -c test-tmc-test-course -f folder_for_download
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
