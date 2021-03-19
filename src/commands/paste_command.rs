@@ -30,7 +30,13 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         pathbuf = env::current_dir().unwrap();
         pathbuf.pop(); // we go to the course directory
         pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
-        course_config = course_config::load_course_config(pathbuf.as_path()).unwrap();
+        course_config = match course_config::load_course_config(pathbuf.as_path()) {
+            Ok(conf) => conf,
+            Err(_error) => {
+                io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.");
+                return;
+            }
+        };
         exercise_dir = env::current_dir().unwrap();
     } else {
         // Path given, find out course part, exercise name, and full path
@@ -47,16 +53,30 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         let mut course_config_path = env::current_dir().unwrap();
         course_config_path.push(part_path);
         course_config_path.push(course_config::COURSE_CONFIG_FILE_NAME);
-        course_config = course_config::load_course_config(course_config_path.as_path()).unwrap();
+        course_config = match course_config::load_course_config(course_config_path.as_path()) {
+            Ok(conf) => conf,
+            Err(_error) => {
+                io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.");
+                return;
+            }
+        };
+
         exercise_dir = env::current_dir().unwrap();
         exercise_dir.push(Path::new(path).to_path_buf());
     }
 
-    let submission_url = &course_config::get_exercise_by_name(&course_config, &exercise_name)
-        .unwrap()
-        .return_url;
+    let submission_url = match &course_config::get_exercise_by_name(&course_config, &exercise_name)
+    {
+        Some(result) => &result.return_url,
+        None => {
+            io.println(
+                "Exercise not found. Check that exercise path leads to a valid exercise folder.",
+            );
+            return;
+        }
+    };
     let submission_url = Url::parse(&submission_url).unwrap();
-    
+
     io.println("Write a paste message, enter sends it:");
     let paste_msg = io.read_line();
     io.println("");
