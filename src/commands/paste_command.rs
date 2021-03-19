@@ -6,24 +6,11 @@ use reqwest::Url;
 use std::env;
 use std::path::Path;
 
-pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path_arg: &str) {
+pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
         io.println(&error);
         return;
     };
-
-    let path;
-
-    if !path_arg.is_empty() && path_arg.starts_with('/') {
-        // Remove first character if it is "/" because pathbuf.push doesnt like that
-        path = path_arg
-            .chars()
-            .next()
-            .map(|c| &path_arg[c.len_utf8()..])
-            .unwrap_or("");
-    } else {
-        path = path_arg;
-    }
 
     let exercise_name;
     let mut pathbuf;
