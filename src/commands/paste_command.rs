@@ -33,7 +33,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         course_config = match course_config::load_course_config(pathbuf.as_path()) {
             Ok(conf) => conf,
             Err(_error) => {
-                io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.");
+                io.println("Could not load course config file. Check that you are an exercise folder inside a course folder.");
                 return;
             }
         };
@@ -48,6 +48,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
             .to_str()
             .unwrap()
             .to_string();
+        println!("exercise_name {}", exercise_name);
         let mut part_path = Path::new(path).to_path_buf();
         part_path.pop();
         let mut course_config_path = env::current_dir().unwrap();
@@ -93,4 +94,117 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         "Paste submitted to this address: {} \n",
         new_submission.unwrap().paste_url
     ));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::command_util::*;
+    use super::*;
+    use std::slice::Iter;
+
+    pub struct IoTest<'a> {
+        list: &'a mut Vec<String>,
+        input: &'a mut Iter<'a, &'a str>,
+    }
+
+    impl IoTest<'_> {
+        pub fn buffer_length(&mut self) -> usize {
+            self.list.len()
+        }
+
+        pub fn buffer_get(&mut self, index: usize) -> String {
+            self.list[index].to_string()
+        }
+    }
+
+    impl Io for IoTest<'_> {
+        fn read_line(&mut self) -> String {
+            match self.input.next() {
+                Some(string) => string,
+                None => "",
+            }
+            .to_string()
+        }
+
+        fn print(&mut self, output: &str) {
+            print!("{}", output);
+            self.list.push(output.to_string());
+        }
+
+        fn println(&mut self, output: &str) {
+            println!("{}", output);
+            self.list.push(output.to_string());
+        }
+
+        fn read_password(&mut self) -> String {
+            self.read_line()
+        }
+    }
+
+    #[test]
+    fn paste_command_when_not_logged_in_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec![];
+        let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+
+        let mut mock_client = MockClient::new();
+        mock_client
+            .expect_load_login()
+            .returning(|| Err("Not logged in message.".to_string()));
+
+        let path = "";
+
+        paste(&mut io, &mut mock_client, path);
+
+        assert_eq!(1, io.buffer_length());
+        if io.buffer_length() == 1 {
+            assert!(io
+                .buffer_get(0)
+                .to_string()
+                .eq(&"Not logged in message.".to_string()));
+        }
+    }
+
+    #[test]
+    fn paste_command_when_path_is_empty_and_config_file_not_exists_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec![];
+        let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+
+        let mut mock_client = MockClient::new();
+        mock_client.expect_load_login().returning(|| Ok(()));
+
+        let path = "";
+
+        //let directory = env::current_dir().unwrap();
+        //println!("The current directory is {}", directory.display());
+
+        std::fs::create_dir("tmc_cli_test_course_dir/").unwrap();
+        std::fs::create_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
+
+        let current_directory = env::current_dir().unwrap();
+        //let pathbuf = env::current_dir().unwrap();
+
+        env::set_current_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
+        paste(&mut io, &mut mock_client, path);
+
+        env::set_current_dir(current_directory.to_str().unwrap().to_string()).unwrap();
+        std::fs::remove_dir_all("tmc_cli_test_course_dir/").unwrap();
+
+        assert_eq!(1, io.buffer_length());
+        if io.buffer_length() == 1 {
+            assert!(io
+                .buffer_get(0)
+                .to_string()
+                .eq(&"Could not load course config file. Check that you are an exercise folder inside a course folder.".to_string()));
+        }
+    }
 }
