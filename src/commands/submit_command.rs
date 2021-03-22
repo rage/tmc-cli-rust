@@ -1,43 +1,43 @@
 use super::command_util::*;
 use crate::config::course_config;
-use crate::config::course_config::CourseConfig;
 use crate::io_module::Io;
 use anyhow::{Context, Result};
-use std::env;
 use tmc_langs::Language;
 use url::Url;
 
-pub fn submit(io: &mut dyn Io, client: &mut dyn Client) {
+pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
         io.println(&error);
         return;
     }
 
     //file_util::lock!(submission_path);
-
-    let mut pathbuf = env::current_dir().unwrap();
-    pathbuf.pop();
-    pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
-
-    if let Ok(config) = course_config::load_course_config(pathbuf.as_path()) {
-        submit_logic(io, client, &config);
-    } else {
-        io.println("Current directory does not contain any exercise")
-    }
+    submit_logic(io, client, path);
 }
-fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, course_config: &CourseConfig) {
+fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     let locale = into_locale("fin").unwrap();
-    let current_dir = env::current_dir().unwrap();
 
-    let exercise_name = current_dir
-        .file_name()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_string();
+    let mut exercise_name = "".to_string();
+    let mut course_config = None;
+    let mut exercise_dir = std::path::PathBuf::new();
+
+    match find_submit_or_paste_config(
+        &mut exercise_name,
+        &mut course_config,
+        &mut exercise_dir,
+        path,
+    ) {
+        Ok(_) => (),
+        Err(msg) => {
+            io.println(&msg.to_string());
+            return;
+        }
+    }
+
+    let course_config = course_config.unwrap();
 
     let submission_url;
-    match course_config::get_exercise_by_name(course_config, &exercise_name) {
+    match course_config::get_exercise_by_name(&course_config, &exercise_name) {
         Some(exercise) => submission_url = into_url(&exercise.return_url).unwrap(),
         None => {
             io.println("Current directory does not contain any exercise");
@@ -45,10 +45,8 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, course_config: &Course
         }
     }
 
-    let submission_path = current_dir.as_path();
-
     //file_util::lock!(submission_path);
-    let new_submission = client.submit(submission_url, submission_path, Some(locale));
+    let new_submission = client.submit(submission_url, exercise_dir.as_path(), Some(locale));
     let submission_url = &new_submission.unwrap().show_submission_url;
 
     io.println(&format!(

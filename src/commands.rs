@@ -60,8 +60,14 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("courses", _) => list_courses(io, &mut client),
-        ("submit", _) => {
-            submit_command::submit(io, &mut client);
+        ("submit", args) => {
+            let path;
+            if let Some(a) = args {
+                path = a.value_of("exercise").unwrap_or("");
+            } else {
+                path = "";
+            }
+            submit_command::submit(io, &mut client, path);
         }
         ("exercises", args) => {
             if let Some(a) = args {
