@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::{borrow::Cow, fs};
-use tmc_langs_framework::file_util;
+use tmc_langs::file_util;
 use toml::{value::Table, Value};
 
 /// Save configurations, like organization, in JSON

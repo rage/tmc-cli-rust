@@ -1,24 +1,20 @@
 use crate::config::{ConfigValue, Credentials, TmcConfig};
+use isolang::Language;
+use reqwest::Url;
+use std::path::Path;
 use std::path::PathBuf;
-use tmc_client::{ClientError, CourseExercise, TmcClient, Token};
+use tmc_client::{
+    ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
+    Organization, SubmissionFinished, TmcClient, Token,
+};
 
 pub const PLUGIN: &str = "vscode_plugin";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 
-pub struct Organization {
-    pub name: String,
-    pub slug: String,
-}
-
 pub struct ClientProduction {
     pub tmc_client: TmcClient,
     pub test_mode: bool,
-}
-
-pub struct Course {
-    pub name: String,
-    pub id: usize,
 }
 
 use mockall::predicate::*;
@@ -30,12 +26,32 @@ pub trait Client {
     fn list_courses(&mut self) -> Result<Vec<Course>, String>;
     fn get_organizations(&mut self) -> Result<Vec<Organization>, String>;
     fn logout(&mut self);
+    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError>;
+    fn submit(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, ClientError>;
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String>;
+    fn get_exercise_details(
+        &mut self,
+        exercise_ids: Vec<usize>,
+    ) -> Result<Vec<ExercisesDetails>, String>;
     fn download_or_update_exercises(
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
     ) -> Result<(), ClientError>;
     fn is_test_mode(&mut self) -> bool;
+    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
+    fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
+    fn paste(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        paste_message: Option<String>,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, String>;
 }
 
 impl ClientProduction {
@@ -76,6 +92,27 @@ impl ClientProduction {
 }
 
 impl Client for ClientProduction {
+    fn paste(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        paste_message: Option<String>,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, String> {
+        if self.test_mode {
+            return Err("Integration test input not yet implemented for paste command".to_string());
+        }
+        match self
+            .tmc_client
+            .paste(submission_url, submission_path, paste_message, locale)
+        {
+            Err(_client_error) => {
+                Err("Received ClientError when calling paste command from tmc_client".to_string())
+            }
+            Ok(submission) => Ok(submission),
+        }
+    }
+
     fn is_test_mode(&mut self) -> bool {
         self.test_mode
     }
@@ -147,10 +184,26 @@ impl Client for ClientProduction {
                 Course {
                     name: "test-tmc-test-course".to_string(),
                     id: 0,
+
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
                 Course {
                     name: "imaginary-test-course".to_string(),
                     id: 1,
+
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
             ]);
         }
@@ -162,6 +215,14 @@ impl Client for ClientProduction {
                     course_list.push(Course {
                         name: course.name,
                         id: course.id,
+
+                        title: "".to_string(),
+                        description: None,
+                        details_url: "".to_string(),
+                        unlock_url: "".to_string(),
+                        reviews_url: "".to_string(),
+                        comet_url: "".to_string(),
+                        spyware_urls: vec![],
                     });
                 }
                 Ok(course_list)
@@ -179,10 +240,18 @@ impl Client for ClientProduction {
                 Organization {
                     name: "test organization".to_string(),
                     slug: "test".to_string(),
+
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
                 Organization {
                     name: "imaginary test organization".to_string(),
                     slug: "imag".to_string(),
+
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
             ]);
         }
@@ -191,10 +260,7 @@ impl Client for ClientProduction {
             Ok(organizations) => {
                 let mut org_list: Vec<Organization> = Vec::new();
                 for org in organizations {
-                    org_list.push(Organization {
-                        name: org.name,
-                        slug: org.slug,
-                    });
+                    org_list.push(org);
                 }
                 Ok(org_list)
             }
@@ -223,6 +289,26 @@ impl Client for ClientProduction {
         credentials.remove().unwrap();
     }
 
+    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError> {
+        self.tmc_client.wait_for_submission(submission_url)
+    }
+    fn submit(
+        &self,
+        submission_url: Url,
+        submission_path: &Path,
+        locale: Option<Language>,
+    ) -> Result<NewSubmission, ClientError> {
+        if self.test_mode {
+            return Ok(NewSubmission {
+                show_submission_url: "https://tmc.mooc.fi/submissions/7400888".to_string(),
+                paste_url: "url".to_string(),
+                submission_url: "https://tmc.mooc.fi/api/v8/core/submissions/7400888".to_string(),
+            });
+        }
+        self.tmc_client
+            .submit(submission_url, submission_path, locale)
+    }
+
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String> {
         if self.test_mode {
             return Ok(vec![CourseExercise {
@@ -247,6 +333,24 @@ impl Client for ClientProduction {
         }
     }
 
+    fn get_exercise_details(
+        &mut self,
+        exercise_ids: Vec<usize>,
+    ) -> Result<Vec<ExercisesDetails>, String> {
+        if self.test_mode {
+            return Ok(vec![ExercisesDetails {
+                id: 0,
+                course_name: "test_course".to_string(),
+                exercise_name: "test_exercise".to_string(),
+                checksum: "test_checksum".to_string(),
+            }]);
+        }
+        match self.tmc_client.get_exercises_details(exercise_ids) {
+            Ok(exercise_details) => Ok(exercise_details),
+            Err(_) => Err("Unknown error. Please try again.".to_string()),
+        }
+    }
+
     fn download_or_update_exercises(
         &mut self,
         download_params: Vec<(usize, PathBuf)>,
@@ -256,6 +360,44 @@ impl Client for ClientProduction {
         }
         self.tmc_client
             .download_or_update_exercises(download_params)
+    }
+
+    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
+        if self.test_mode {
+            let course = Course {
+                id: 0,
+                name: "".to_string(),
+                title: "".to_string(),
+                description: None,
+                details_url: "".to_string(),
+                unlock_url: "".to_string(),
+                reviews_url: "".to_string(),
+                comet_url: "".to_string(),
+                spyware_urls: vec![],
+            };
+            Ok(CourseDetails {
+                course,
+                unlockables: vec![],
+                exercises: vec![],
+            })
+        } else {
+            self.tmc_client.get_course_details(course_id)
+        }
+    }
+    fn get_organization(
+        &self,
+        organization_slug: &str,
+    ) -> std::result::Result<Organization, tmc_client::ClientError> {
+        if self.test_mode {
+            return Ok(Organization {
+                name: "String".to_string(),
+                information: "String".to_string(),
+                slug: "String".to_string(),
+                logo_path: "String".to_string(),
+                pinned: false,
+            });
+        }
+        self.tmc_client.get_organization(organization_slug)
     }
 }
 
@@ -314,3 +456,38 @@ pub fn get_course_id_by_name(client: &mut dyn Client, course_name: String) -> Op
         _ => None,
     }
 }
+
+pub fn get_course_by_name(client: &mut dyn Client, course_name: String) -> Option<Course> {
+    match client.list_courses() {
+        Ok(courses) => {
+            for course in courses {
+                if course.name == course_name {
+                    return Some(course);
+                }
+            }
+            None
+        }
+        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
+        _ => None,
+    }
+}
+
+/*pub fn get_exercise_id_by_name(
+    client: &mut dyn Client,
+    course_id: usize,
+    exercise_name: String,
+) -> Option<usize> {
+    // Notice: This doesn't return exercise.id, but instead just the index of exercise inside the course!
+    match client.get_course_exercises(course_id) {
+        Ok(exercises) => {
+            for (exercise_id, exercise) in exercises.into_iter().enumerate() {
+                if exercise.name == exercise_name {
+                    return Some(exercise_id);
+                }
+            }
+            None
+        }
+        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
+        _ => None,
+    }
+}*/

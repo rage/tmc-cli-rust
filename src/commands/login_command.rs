@@ -2,7 +2,7 @@ use super::command_util::Client;
 use super::organization_command;
 use crate::io_module::Io;
 
-pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
+pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     if let Ok(()) = client.load_login() {
         io.println("You are already logged in.");
         return;
@@ -33,7 +33,13 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client) {
     match client.try_login(username, password) {
         Ok(message) => {
             io.println(&message);
-            if let Err(_err) = organization_command::set_organization(io, client) {
+
+            let res = if interactive_mode {
+                organization_command::set_organization(client)
+            } else {
+                organization_command::set_organization_old(io, client)
+            };
+            if let Err(_err) = res {
                 io.println("Could not set organization");
             }
         }
@@ -46,6 +52,7 @@ mod tests {
     use super::super::command_util::*;
     use super::*;
     use std::slice::Iter;
+    use tmc_client::Organization;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -100,7 +107,7 @@ mod tests {
         let mut mock = MockClient::new();
         mock.expect_load_login().times(1).returning(|| Ok(()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(1, io.buffer_length());
         if io.buffer_length() == 1 {
@@ -126,7 +133,7 @@ mod tests {
             .times(1)
             .returning(|| Err("".to_string()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(2, io.buffer_length());
         if io.buffer_length() == 2 {
@@ -157,7 +164,7 @@ mod tests {
         mock.expect_try_login()
             .returning(|_username, _password| Err("error_message".to_string()));
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
         assert_eq!(3, io.buffer_length());
         if io.buffer_length() == 3 {
@@ -193,32 +200,38 @@ mod tests {
                 Organization {
                     name: "org1".to_string(),
                     slug: "slug_org1".to_string(),
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
                 Organization {
                     name: "org2".to_string(),
                     slug: "slug_org2".to_string(),
+                    information: "".to_string(),
+                    logo_path: "".to_string(),
+                    pinned: false,
                 },
             ])
         });
 
-        login(&mut io, &mut mock);
+        login(&mut io, &mut mock, false);
 
-        assert_eq!(11, io.buffer_length());
+        assert_eq!(13, io.buffer_length());
 
-        if io.buffer_length() == 11 {
+        if io.buffer_length() == 13 {
             assert!(io
                 .buffer_get(2)
                 .to_string()
                 .eq(&"ok_message_for_try_login".to_string()));
-            assert!(io.buffer_get(6).to_string().eq(&"org2".to_string()));
-            assert!(io.buffer_get(7).to_string().eq(&" Slug: ".to_string()));
-            assert!(io.buffer_get(8).to_string().eq(&"slug_org2".to_string()));
+            assert!(io.buffer_get(8).to_string().eq(&"org2".to_string()));
+            assert!(io.buffer_get(9).to_string().eq(&" Slug: ".to_string()));
+            assert!(io.buffer_get(10).to_string().eq(&"slug_org2".to_string()));
             assert!(io
-                .buffer_get(9)
+                .buffer_get(11)
                 .to_string()
                 .eq(&"\nChoose organization by writing its slug: ".to_string()));
             assert!(io
-                .buffer_get(10)
+                .buffer_get(12)
                 .to_string()
                 .eq(&"Could not set organization".to_string()));
         }

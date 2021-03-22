@@ -178,7 +178,7 @@ fn stash_old_executable() {
     let tmp_filepath = tmp_filepath.join("tmc.exe");
 
     if tmp_filepath.exists() {
-        fs::remove_file(&tmp_filepath).unwrap();
+        //fs::remove_file(&tmp_filepath).unwrap();
     }
 
     fs::rename(&filepath, &tmp_filepath).unwrap();

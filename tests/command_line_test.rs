@@ -36,15 +36,15 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         Write also what input command is given. Run logout first to remove possible old test-login.
 
         tmc-cli-rust --testmode --no-update logout
-        tmc-cli-rust --testmode --no-update login
+        tmc-cli-rust --testmode --no-update login -n
             testusername
             testpassword
             imag
-        tmc-cli-rust --testmode --no-update organization
+        tmc-cli-rust --testmode --no-update organization -n
             test
         tmc-cli-rust --testmode --no-update courses
         tmc-cli-rust --testmode --no-update exercises test-tmc-test-course
-        tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
+        tmc-cli-rust --testmode --no-update download -c test-tmc-test-course -f folder_for_download
         tmc-cli-rust --testmode --no-update test folder/nonexistant_ex
         tmc-cli-rust --testmode --no-update logout
         tmc-cli-rust --testmode --no-update login
@@ -58,12 +58,13 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert();
 
-    // tmc-cli-rust --testmode --no-update login
+    // tmc-cli-rust --testmode --no-update login -n
     // testusername testpassword imag
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("login")
+        .arg("-n")
         .with_stdin()
         .buffer("testusername\ntestpassword\nimag\n")
         .assert()
@@ -72,12 +73,13 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
             "Choose organization by writing its slug: ",
         ));
 
-    // tmc-cli-rust --testmode --no-update organization
+    // tmc-cli-rust --testmode --no-update organization -n
     // test
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("organization")
+        .arg("-n")
         .with_stdin()
         .buffer("test\n")
         .assert()
@@ -103,12 +105,14 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .success()
         .stdout(predicate::str::contains("Imaginary test exercise"));
 
-    // tmc-cli-rust --testmode --no-update download test-tmc-test-course folder_for_download
+    // tmc-cli-rust --testmode --no-update download -c test-tmc-test-course -f folder_for_download
     cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("download")
+        .arg("-c")
         .arg("test-tmc-test-course")
+        .arg("-f")
         .arg("folder_for_download");
     cmd.assert()
         .success()
@@ -120,9 +124,9 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("test")
         .arg("folder/nonexistant_ex");
-    cmd.assert().success().stdout(predicate::str::contains(
-        "Specified folder is not an exercise",
-    ));
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("No exercises found"));
 
     // tmc-cli-rust --testmode --no-update logout
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;

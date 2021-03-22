@@ -1,8 +1,9 @@
 [package]
 name = "tmc-cli-rust"
-version = "0.2.5"
+version = "0.3.0"
 authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
-           "Robustic <juha.malinen@helsinki.fi"]
+           "Robustic <juha.malinen@helsinki.fi",
+           "ShootingStar91 <arttu.kangas@helsinki.fi"]
 edition = "2018"
 description = "Command line interface for TMC, written in Rust."
 license = "Apache-2.0"
@@ -10,6 +11,7 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+url = "2.2.1"
 clap = "2.3.3"
 assert_cmd = "0.10"
 predicates = "1"
@@ -19,11 +21,15 @@ serde_json = "1"
 log = "0.4"
 dirs = "3"
 tmc-langs-util = { git = "https://github.com/rage/tmc-langs-rust", branch = "master",  version = "0.1.0"}
-tmc-langs-cli = { git = "https://github.com/rage/tmc-langs-rust", branch = "master", version = "0.11.0" }
 tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust", branch = "master", version = "0.1.0" }
+tmc-langs = { git = "https://github.com/rage/tmc-langs-rust", branch = "master", version = "0.1.0" }
 tmc-client = { git = "https://github.com/rage/tmc-langs-rust", branch = "master", version = "0.1.0"}
 rpassword = "5.0.1"
 mockall = "0.9.0"
 indicatif = "0.15.0"
 reqwest = "0.11.1"
 toml = "0.5"
+isolang = "1"
+crossterm = "0.19"
+tui = { version = "0.14", default-features = false, features = ['crossterm'] }
+

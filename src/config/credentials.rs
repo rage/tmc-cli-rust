@@ -5,7 +5,7 @@ use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
 use tmc_client::Token;
-use tmc_langs_framework::file_util;
+use tmc_langs::file_util;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Credentials {

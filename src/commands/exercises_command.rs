@@ -88,9 +88,14 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 
 #[cfg(test)]
 mod tests {
-    use tmc_client::{ClientError, CourseExercise /*, ExercisePoint*/};
-
-    use std::path::PathBuf;
+    use isolang::Language;
+    use reqwest::Url;
+    use std::path::{Path, PathBuf};
+    use tmc_client::Course;
+    use tmc_client::Organization;
+    use tmc_client::{
+        ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
+    };
 
     use super::*;
     use std::slice::Iter;
@@ -135,6 +140,15 @@ mod tests {
 
     #[cfg(test)]
     impl Client for ClientTest {
+        fn paste(
+            &self,
+            _submission_url: Url,
+            _submission_path: &Path,
+            _paste_message: Option<String>,
+            _locale: Option<Language>,
+        ) -> Result<NewSubmission, String> {
+            Err("not implemented".to_string())
+        }
         fn is_test_mode(&mut self) -> bool {
             false
         }
@@ -149,10 +163,24 @@ mod tests {
                 Course {
                     id: 0,
                     name: "name".to_string(),
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
                 Course {
                     id: 88,
                     name: "course_name".to_string(),
+                    title: "".to_string(),
+                    description: None,
+                    details_url: "".to_string(),
+                    unlock_url: "".to_string(),
+                    reviews_url: "".to_string(),
+                    comet_url: "".to_string(),
+                    spyware_urls: vec![],
                 },
             ])
         }
@@ -160,6 +188,48 @@ mod tests {
             Ok(vec![])
         }
         fn logout(&mut self) {}
+        fn submit(
+            &self,
+            _submission_url: Url,
+            _submission_path: &Path,
+            _locale: Option<Language>,
+        ) -> Result<NewSubmission, ClientError> {
+            Ok(NewSubmission {
+                show_submission_url: "".to_string(),
+                paste_url: "".to_string(),
+                submission_url: "".to_string(),
+            })
+        }
+        fn wait_for_submission(
+            &self,
+            _submission_url: &str,
+        ) -> Result<SubmissionFinished, ClientError> {
+            Ok(SubmissionFinished {
+                api_version: 0,
+                all_tests_passed: Some(true),
+                user_id: 0,
+                login: "".to_string(),
+                course: "".to_string(),
+                exercise_name: "".to_string(),
+                status: SubmissionStatus::Ok,
+                points: vec!["".to_string()],
+                valgrind: Some("".to_string()),
+                submission_url: "".to_string(),
+                solution_url: Some("".to_string()),
+                submitted_at: "".to_string(),
+                processing_time: Some(0),
+                reviewed: true,
+                requests_review: true,
+                paste_url: Some("".to_string()),
+                message_for_paste: Some("".to_string()),
+                missing_review_points: vec!["".to_string()],
+                test_cases: None,
+                feedback_questions: None,
+                feedback_answer_url: Some("".to_string()),
+                error: Some("".to_string()),
+                validations: None,
+            })
+        }
         fn get_course_exercises(
             &mut self,
             _course_id: usize,
@@ -234,11 +304,32 @@ mod tests {
             let exercises = vec![exercise1, exercise2, exercise3, exercise4, exercise5];
             Ok(exercises)
         }
+
+        fn get_exercise_details(
+            &mut self,
+            _exercise_ids: Vec<usize>,
+        ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
+            todo!()
+        }
+
         fn download_or_update_exercises(
             &mut self,
             _download_params: Vec<(usize, PathBuf)>,
         ) -> Result<(), ClientError> {
             Ok(())
+        }
+
+        fn get_course_details(
+            &self,
+            _: usize,
+        ) -> std::result::Result<tmc_client::CourseDetails, tmc_client::ClientError> {
+            todo!()
+        }
+        fn get_organization(
+            &self,
+            _: &str,
+        ) -> std::result::Result<Organization, tmc_client::ClientError> {
+            todo!()
         }
     }
 
