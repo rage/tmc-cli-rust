@@ -1,6 +1,6 @@
 use super::state::AppState;
 use crossterm::{
-    event::{poll, read, Event, KeyCode},
+    event::{poll, read, Event, KeyCode, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tui::{
@@ -36,14 +36,14 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
         .zip(0..)
         .map(|(a, b)| (a.to_owned(), b))
         .collect::<Vec<_>>();
-    let mut result = 0;
+    let mut result = None;
     let stdout = stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
 
     terminal.clear().unwrap();
 
-    let mut app = AppState::new(items.clone());
+    let mut app = AppState::new(items);
     app.items.next();
     let poll_rate = 10;
     // todo filtering
@@ -57,7 +57,7 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                     .split(f.size());
                 let items: Vec<ListItem> = app
                     .items
-                    .items
+                    .displayed
                     .iter()
                     // todo filtering
                     //.filter(|i| i.0.contains(&filter_word))
@@ -76,14 +76,22 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
 
         if poll(Duration::from_millis(poll_rate)).unwrap() {
             if let Ok(Event::Key(x)) = read() {
+                // CTRL-C is the usual stop command
+                if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
+                    break;
+                }
                 match x.code {
                     KeyCode::Esc => break,
                     KeyCode::Up | KeyCode::Left => app.items.previous(),
                     KeyCode::Down | KeyCode::Right => app.items.next(),
                     KeyCode::Enter => {
-                        result = app.items.get_current().unwrap_or_default();
+                        result = app.get_selected();
                         break;
                     }
+                    KeyCode::Char(c) => {
+                        app.push_filter(c);
+                    }
+                    KeyCode::Backspace => app.pop_filter(),
                     //KeyCode::Char(_c) => {
                     // todo filtering
                     // filter_word.push(c);
@@ -102,5 +110,9 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
 
     terminal.clear().unwrap();
 
-    Some(items[result].0.clone())
+    if let Some(result) = result {
+        Some(result)
+    } else {
+        None
+    }
 }

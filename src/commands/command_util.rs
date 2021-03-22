@@ -1,6 +1,8 @@
-use crate::config::{ConfigValue, Credentials, TmcConfig};
+use crate::config::course_config;
+use crate::config::{ConfigValue, CourseConfig, Credentials, TmcConfig};
 use isolang::Language;
 use reqwest::Url;
+use std::env;
 use std::path::Path;
 use std::path::PathBuf;
 use tmc_client::{
@@ -472,22 +474,55 @@ pub fn get_course_by_name(client: &mut dyn Client, course_name: String) -> Optio
     }
 }
 
-/*pub fn get_exercise_id_by_name(
-    client: &mut dyn Client,
-    course_id: usize,
-    exercise_name: String,
-) -> Option<usize> {
-    // Notice: This doesn't return exercise.id, but instead just the index of exercise inside the course!
-    match client.get_course_exercises(course_id) {
-        Ok(exercises) => {
-            for (exercise_id, exercise) in exercises.into_iter().enumerate() {
-                if exercise.name == exercise_name {
-                    return Some(exercise_id);
-                }
+/// Checks if current directory or given path
+/// contains valid exercise (i.e .tmc.json file)
+pub fn find_submit_or_paste_config(
+    exercise_name: &mut String,
+    course_config: &mut Option<CourseConfig>,
+    exercise_dir: &mut PathBuf,
+    path: &str,
+) -> Result<(), String> {
+    if path.is_empty() {
+        // No exercise path given, so assuming we are in exercise directory.
+        *exercise_name = env::current_dir()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        let mut pathbuf = env::current_dir().unwrap();
+        pathbuf.pop(); // we go to the course directory
+        pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
+        *course_config = match course_config::load_course_config(pathbuf.as_path()) {
+            Ok(conf) => Some(conf),
+            Err(_) => {
+                return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
             }
-            None
-        }
-        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
-        _ => None,
+        };
+        *exercise_dir = env::current_dir().unwrap();
+    } else {
+        // Path given, find out course part, exercise name and full path
+        *exercise_name = Path::new(path)
+            .to_path_buf()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        let mut part_path = Path::new(path).to_path_buf();
+        part_path.pop();
+        let mut course_config_path = env::current_dir().unwrap();
+        course_config_path.push(part_path);
+        course_config_path.push(course_config::COURSE_CONFIG_FILE_NAME);
+        *course_config = match course_config::load_course_config(course_config_path.as_path()) {
+            Ok(conf) => Some(conf),
+            Err(_) => {
+                return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
+            }
+        };
+        *exercise_dir = env::current_dir().unwrap();
+        exercise_dir.push(Path::new(path).to_path_buf());
     }
-}*/
+    Ok(())
+}

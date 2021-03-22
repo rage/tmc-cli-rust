@@ -98,33 +98,9 @@ fn get_matches() -> ArgMatches<'static> {
             SubCommand::with_name("submit")
                 .about("Submit exercises to TMC server")
                 .arg(
-                    Arg::with_name("dont-block")
-                        .value_name("dont-block")
-                        .help("Set to avoid blocking.")
-                        .long("dont-block"),
-                )
-                .arg(
-                    Arg::with_name("locale")
-                        .value_name("locale")
-                        .help("Language as a three letter ISO 639-3 code, e.g. 'eng' or 'fin'.")
-                        .long("locale")
-                        .takes_value(true),
-                )
-                .arg(
-                    Arg::with_name("submission-path")
-                        .value_name("submission-path")
-                        .help("Path to the directory where the exercise resides.")
-                        .long("submission-path")
-                        //.required(true)
-                        .takes_value(true),
-                )
-                .arg(
-                    Arg::with_name("submission-url")
-                        .value_name("submission-url")
-                        .help("URL where the submission should be posted.")
-                        .long("submission-url")
-                        //.required(true)
-                        .takes_value(true),
+                    Arg::with_name("exercise")
+                        .value_name("exercise")
+                        .required(false),
                 ),
         )
         .subcommand(
