@@ -29,7 +29,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     ) {
         Ok(_) => (),
         Err(msg) => {
-            io.println(&msg.to_string());
+            io.println(&msg);
             return;
         }
     }

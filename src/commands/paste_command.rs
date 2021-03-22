@@ -22,7 +22,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     ) {
         Ok(_) => (),
         Err(msg) => {
-            io.println(&msg.to_string());
+            io.println(&msg);
             return;
         }
     }
@@ -167,7 +167,7 @@ mod tests {
             assert!(io
                 .buffer_get(0)
                 .to_string()
-                .eq(&"Could not load course config file. Check that you are an exercise folder inside a course folder.".to_string()));
+                .eq(&"Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string()));
         }
     }
 }
