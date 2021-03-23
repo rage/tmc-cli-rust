@@ -1,5 +1,5 @@
 [package]
-name = "tmc-cli-rust"
+name = "tmc"
 version = "0.3.2"
 authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
            "Robustic <juha.malinen@helsinki.fi",
