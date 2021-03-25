@@ -4,7 +4,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tui::{
-    backend::CrosstermBackend,
+    backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
     text::Spans,
@@ -13,6 +13,13 @@ use tui::{
 };
 
 use std::{io::stdout, time::Duration};
+
+/// control the maximum waiting time for event availability
+/// in this case, the value should not really matter,
+/// as the content does not update while waiting for events
+///
+/// see https://docs.rs/crossterm/0.14.0/crossterm/event/fn.poll.html
+const POLL_RATE: u64 = 1000;
 
 /// display an interactive prompt to ask the user to select an item
 ///
@@ -31,23 +38,37 @@ use std::{io::stdout, time::Duration};
 pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
     enable_raw_mode().unwrap();
 
-    let items = items
-        .iter()
-        .zip(0..)
-        .map(|(a, b)| (a.to_owned(), b))
-        .collect::<Vec<_>>();
-    let mut result = None;
     let stdout = stdout();
     let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend).unwrap();
+    let terminal = Terminal::new(backend).unwrap();
 
+    let result = event_loop(terminal, items, prompt);
+
+    disable_raw_mode().unwrap();
+
+    if let Some(result) = result {
+        Some(result)
+    } else {
+        None
+    }
+}
+
+fn event_loop<B>(mut terminal: Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
+where
+    B: Backend,
+{
     terminal.clear().unwrap();
+    //let items = items
+    //.iter()
+    //.zip(0..)
+    //.map(|(a, b)| (a.to_owned(), b))
+    //.collect::<Vec<_>>();
 
     let mut app = AppState::new(items);
+
+    let mut result = None;
+    // set the highlighted item to be the first in the list
     app.items.next();
-    let poll_rate = 10;
-    // todo filtering
-    //let mut filter_word = String::from("");
     loop {
         terminal
             .draw(|f| {
@@ -59,10 +80,8 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                     .items
                     .displayed
                     .iter()
-                    // todo filtering
-                    //.filter(|i| i.0.contains(&filter_word))
                     .map(|i| {
-                        let lines = vec![Spans::from(i.clone().0)];
+                        let lines = vec![Spans::from(i.clone())];
                         ListItem::new(lines).style(Style::default())
                     })
                     .collect();
@@ -74,9 +93,10 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
             })
             .unwrap();
 
-        if poll(Duration::from_millis(poll_rate)).unwrap() {
+        if poll(Duration::from_millis(POLL_RATE)).unwrap() {
             if let Ok(Event::Key(x)) = read() {
                 // CTRL-C is the usual stop command
+                // which is disabled by default because of raw mode
                 if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
                     break;
                 }
@@ -92,27 +112,12 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
                         app.push_filter(c);
                     }
                     KeyCode::Backspace => app.pop_filter(),
-                    //KeyCode::Char(_c) => {
-                    // todo filtering
-                    // filter_word.push(c);
-                    //}
-                    //KeyCode::Backspace => {
-                    // todo filtering
-                    // filter_word.pop();
-                    //}
                     _ => {}
                 }
             }
         }
     }
-
-    disable_raw_mode().unwrap();
-
     terminal.clear().unwrap();
 
-    if let Some(result) = result {
-        Some(result)
-    } else {
-        None
-    }
+    result
 }
