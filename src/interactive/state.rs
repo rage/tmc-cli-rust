@@ -135,7 +135,7 @@ impl AppState {
 #[cfg(test)]
 mod tests {
 
-    use super::{AppState, StatefulList};
+    use super::AppState;
 
     fn get_item_list() -> Vec<String> {
         vec!["eka", "toka", "kolmas"]
