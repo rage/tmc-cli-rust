@@ -87,8 +87,10 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(items: Vec<String>) -> AppState {
+        let mut items = StatefulList::with_items(items);
+        items.next();
         AppState {
-            items: StatefulList::with_items(items),
+            items,
             filter: String::from(""),
         }
     }

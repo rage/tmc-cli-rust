@@ -58,17 +58,10 @@ where
     B: Backend,
 {
     terminal.clear().unwrap();
-    //let items = items
-    //.iter()
-    //.zip(0..)
-    //.map(|(a, b)| (a.to_owned(), b))
-    //.collect::<Vec<_>>();
 
     let mut app = AppState::new(items);
 
     let mut result = None;
-    // set the highlighted item to be the first in the list
-    app.items.next();
     loop {
         terminal
             .draw(|f| {
