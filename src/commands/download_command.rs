@@ -30,15 +30,46 @@ pub fn download_or_update(
     let name_select = if let Some(course) = course_name {
         course.to_string()
     } else {
-        interactive::interactive_list(
+        let courses = courses_result.unwrap();
+        let mut course_details = vec![];
+        // Course objects from list_courses() don't contain title, so we have to manually get it from CourseDetails
+        for c in courses {
+            let details = client.get_course_details(c.id);
+            course_details.push(details.unwrap());
+        }
+        course_details.sort_by(|a, b| {
+            a.course
+                .title
+                .to_lowercase()
+                .cmp(&b.course.title.to_lowercase())
+        });
+
+        let result = interactive::interactive_list(
             "Select your course:",
-            courses_result
-                .unwrap()
+            course_details
                 .iter()
-                .map(|course| course.name.clone())
+                .map(|course| course.course.title.clone())
                 .collect(),
-        )
-        .unwrap() // TODO: error handling
+        );
+        if result.is_none() {
+            io.println("Course selection was interrupted.");
+            return;
+        }
+        let course_title = result.unwrap();
+
+        // find name of course with title
+        let mut course_name = "".to_string();
+        for c in course_details {
+            if c.course.title.trim() == course_title.trim() {
+                course_name = c.course.name
+            }
+        }
+        if course_name.is_empty() {
+            io.println("Could not find course by title.");
+            return;
+        }
+
+        course_name
     };
 
     // Get course by name
