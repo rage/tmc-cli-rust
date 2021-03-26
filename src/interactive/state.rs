@@ -61,12 +61,9 @@ impl<T: Clone> StatefulList<T> {
         self.state.select(None);
     }
 }
-pub struct AppState {
-    pub items: StatefulList<String>,
-    filter: String,
-}
 
 /// Struct to control the state of the interactive prompt
+///
 /// Example:
 ///
 /// ```
@@ -82,6 +79,12 @@ pub struct AppState {
 /// app.push_filter('s');
 /// assert_eq!(items[2], app.get_selected().unwrap());
 /// ```
+pub struct AppState {
+    pub items: StatefulList<String>,
+    filter: String,
+}
+
+
 impl AppState {
     pub fn new(items: Vec<String>) -> AppState {
         AppState {
