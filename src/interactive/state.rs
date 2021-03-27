@@ -84,7 +84,6 @@ pub struct AppState {
     filter: String,
 }
 
-
 impl AppState {
     pub fn new(items: Vec<String>) -> AppState {
         let mut items = StatefulList::with_items(items);
@@ -154,7 +153,7 @@ mod tests {
 
         assert_eq!(app.items.items, items);
         assert_eq!(app.items.displayed, items);
-        assert_eq!(app.items.state.selected(), None);
+        assert_eq!(app.get_selected().unwrap(), items[0]);
     }
 
     #[test]
@@ -163,12 +162,12 @@ mod tests {
 
         let mut app = AppState::new(items.clone());
 
-        assert_eq!(None, app.items.get_current());
-        assert_eq!(None, app.get_selected());
-        app.items.next();
+        assert_eq!(items[0], items[app.items.get_current().unwrap()]);
         assert_eq!(items[0], app.get_selected().unwrap());
         app.items.next();
         assert_eq!(items[1], app.get_selected().unwrap());
+        app.items.next();
+        assert_eq!(items[2], app.get_selected().unwrap());
     }
 
     #[test]
