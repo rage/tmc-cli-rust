@@ -4,7 +4,14 @@ use crate::io_module::Io;
 use anyhow::{Context, Result};
 use tmc_langs::Language;
 use url::Url;
-
+/// Sends the course exercise submission to the server.
+/// Path to the exercise can be given as a parameter or
+/// the user can run the command in the exercise folder.
+/// 
+/// # Errors
+/// Returns an error if no exercise was found on given path or current folder.
+/// Returns an error if user is not logged in.
+/// 
 pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
         io.println(&error);
