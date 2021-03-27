@@ -6,11 +6,10 @@ use reqwest::Url;
 /// Sends the course exercise submission with paste message to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.
-/// 
+///
 /// # Errors
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
-/// 
 pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
         io.println(&error);

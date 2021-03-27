@@ -10,11 +10,10 @@ use std::path::PathBuf;
 use tmc_client::{ClientError, CourseExercise};
 /// Downloads the exercises for the given course, by either downloading
 /// the exercise template or updating the exercises if newer versions are found.
-/// 
+///
 /// # Errors
 /// Returns an error if no course is found.
 /// Returns an error is the user is not logged in.
-/// 
 pub fn download_or_update(
     io: &mut dyn Io,
     client: &mut dyn Client,
