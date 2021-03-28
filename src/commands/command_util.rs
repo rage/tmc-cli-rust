@@ -1,5 +1,8 @@
 use crate::config::course_config;
 use crate::config::{ConfigValue, CourseConfig, Credentials, TmcConfig};
+use tmc_langs::DownloadResult;
+use anyhow;
+use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
 use std::env;
@@ -347,7 +350,7 @@ impl Client for ClientProduction {
                 checksum: "test_checksum".to_string(),
             }]);
         }
-        match self.tmc_client.get_exercises_details(exercise_ids) {
+        match self.tmc_client.get_exercises_details(&exercise_ids) {
             Ok(exercise_details) => Ok(exercise_details),
             Err(_) => Err("Unknown error. Please try again.".to_string()),
         }
@@ -360,8 +363,15 @@ impl Client for ClientProduction {
         if self.test_mode {
             return Ok(());
         }
-        self.tmc_client
-            .download_or_update_exercises(download_params)
+        let exercise_ids: Vec<usize> = download_params.iter().map(|t| t.0).collect();
+
+        let exercises = tmc_langs::download_or_update_course_exercises(
+            &self.tmc_client,
+            TmcConfig::get_location(PLUGIN).unwrap().as_path(),
+            &exercise_ids,
+            true
+        ).unwrap();
+        Ok(())
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
