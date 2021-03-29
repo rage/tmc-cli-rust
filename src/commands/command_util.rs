@@ -1,8 +1,7 @@
 use crate::config::course_config;
 use crate::config::{ConfigValue, CourseConfig, Credentials, TmcConfig};
-use tmc_langs::DownloadResult;
-use anyhow;
-use anyhow::Context;
+// use anyhow;
+// use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
 use std::env;
@@ -12,6 +11,7 @@ use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
     Organization, SubmissionFinished, TmcClient, Token,
 };
+// use tmc_langs::DownloadResult;
 
 pub const PLUGIN: &str = "vscode_plugin";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
@@ -365,12 +365,13 @@ impl Client for ClientProduction {
         }
         let exercise_ids: Vec<usize> = download_params.iter().map(|t| t.0).collect();
 
-        let exercises = tmc_langs::download_or_update_course_exercises(
+        tmc_langs::download_or_update_course_exercises(
             &self.tmc_client,
             crate::config::get_tmc_dir(PLUGIN).unwrap().as_path(), //TmcConfig::get_location(PLUGIN).unwrap().as_path(),
             &exercise_ids,
-            true
-        ).unwrap();
+            true,
+        )
+        .unwrap();
         Ok(())
     }
 
