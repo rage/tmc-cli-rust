@@ -18,7 +18,7 @@ pub struct TmcConfig {
 
 impl TmcConfig {
     fn get_config_path(client_name: &str) -> Result<PathBuf> {
-        super::get_tmc_dir(client_name).map(|dir| dir.join("config.json"))
+        super::get_tmc_dir(client_name).map(|dir| dir.join("config.toml"))
     }
 
     pub fn get(&self, key: &str) -> ConfigValue {

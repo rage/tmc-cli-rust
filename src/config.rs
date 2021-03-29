@@ -1,7 +1,3 @@
-pub mod credentials;
-
-pub use self::credentials::Credentials;
-
 use anyhow::{Context, Error};
 use std::env;
 use std::path::PathBuf;

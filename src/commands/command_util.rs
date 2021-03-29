@@ -1,5 +1,5 @@
 use crate::config::course_config;
-use crate::config::{ConfigValue, CourseConfig, Credentials, TmcConfig};
+use crate::config::{ConfigValue, CourseConfig, TmcConfig};
 // use anyhow;
 // use anyhow::Context;
 use isolang::Language;
@@ -11,6 +11,7 @@ use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
     Organization, SubmissionFinished, TmcClient, Token,
 };
+use tmc_langs::Credentials;
 // use tmc_langs::DownloadResult;
 
 pub const PLUGIN: &str = "vscode_plugin";
