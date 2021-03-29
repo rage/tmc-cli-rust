@@ -30,7 +30,7 @@ mod tests {
     use super::*;
     use isolang::Language;
     use reqwest::Url;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
     use tmc_client::{Organization, SubmissionFinished};
