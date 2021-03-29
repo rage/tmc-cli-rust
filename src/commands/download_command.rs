@@ -1,20 +1,10 @@
 use super::command_util;
 use super::command_util::*;
-use crate::config::course_config;
-use crate::config::course_config::{CourseConfig, CourseDetailsWrapper};
 use crate::interactive;
 use crate::io_module::Io;
-use std::collections::HashMap;
-use std::env;
-use std::path::PathBuf;
-use tmc_client::{ClientError, CourseExercise};
+use tmc_client::ClientError;
 
-pub fn download_or_update(
-    io: &mut dyn Io,
-    client: &mut dyn Client,
-    course_name: Option<&str>,
-    download_folder_arg: Option<&str>,
-) {
+pub fn download_or_update(io: &mut dyn Io, client: &mut dyn Client, course_name: Option<&str>) {
     // Get a client that has credentials
     if let Err(error) = client.load_login() {
         io.println(&error);
@@ -73,7 +63,7 @@ pub fn download_or_update(
     };
 
     // Get course by name
-    let course_result = command_util::get_course_by_name(client, name_select.clone());
+    let course_result = command_util::get_course_by_name(client, name_select);
     if course_result.is_none() {
         io.println("Could not find course with that name");
         return;
@@ -151,18 +141,18 @@ pub fn download_or_update(
             }
         }
         Err(_) => {*/
-            //if .tmc.json is missing, assume it's the first download case for given course
-        
-            match client.get_course_exercises(course.id) {
-                Ok(exercises) => {
-                    let exercise_ids: Vec<usize> = exercises.iter().map(|t| t.id).collect();
-        
-                    io.println(&parse_download_result(client.download_or_update_exercises(
-                        &exercise_ids,
-                    )))
-                }
-                Err(error) => io.println(&error),
-            }
+    //if .tmc.json is missing, assume it's the first download case for given course
+
+    match client.get_course_exercises(course.id) {
+        Ok(exercises) => {
+            let exercise_ids: Vec<usize> = exercises.iter().map(|t| t.id).collect();
+
+            io.println(&parse_download_result(
+                client.download_or_update_exercises(&exercise_ids),
+            ))
+        }
+        Err(error) => io.println(&error),
+    }
     /*    }
     };*/
 

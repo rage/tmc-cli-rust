@@ -48,13 +48,6 @@ fn get_matches() -> ArgMatches<'static> {
                         .long("course")
                         .value_name("course name")
                         .required(false),
-                )
-                .arg(
-                    Arg::with_name("download_folder")
-                        .short("f")
-                        .long("folder")
-                        .value_name("download folder")
-                        .required(false),
                 ),
         )
         .subcommand(

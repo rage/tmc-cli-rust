@@ -356,14 +356,11 @@ impl Client for ClientProduction {
         }
     }
 
-    fn download_or_update_exercises(
-        &mut self,
-        exercise_ids: &[usize],
-    ) -> Result<(), ClientError> {
+    fn download_or_update_exercises(&mut self, exercise_ids: &[usize]) -> Result<(), ClientError> {
         if self.test_mode {
             return Ok(());
         }
-        
+
         tmc_langs::download_or_update_course_exercises(
             &self.tmc_client,
             crate::config::get_tmc_dir(PLUGIN).unwrap().as_path(), //TmcConfig::get_location(PLUGIN).unwrap().as_path(),

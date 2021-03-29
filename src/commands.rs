@@ -38,12 +38,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("download", args) => {
             if let Some(a) = args {
-                download_or_update(
-                    io,
-                    &mut client,
-                    a.value_of("course"),
-                    a.value_of("download_folder"),
-                );
+                download_or_update(io, &mut client, a.value_of("course"));
             } else {
                 io.println("arguments not found");
             }
