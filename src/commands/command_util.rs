@@ -45,7 +45,7 @@ pub trait Client {
     ) -> Result<Vec<ExercisesDetails>, String>;
     fn download_or_update_exercises(
         &mut self,
-        download_params: Vec<(usize, PathBuf)>,
+        download_params: &[usize],
     ) -> Result<(), ClientError>;
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
@@ -358,13 +358,12 @@ impl Client for ClientProduction {
 
     fn download_or_update_exercises(
         &mut self,
-        download_params: Vec<(usize, PathBuf)>,
+        exercise_ids: &[usize],
     ) -> Result<(), ClientError> {
         if self.test_mode {
             return Ok(());
         }
-        let exercise_ids: Vec<usize> = download_params.iter().map(|t| t.0).collect();
-
+        
         tmc_langs::download_or_update_course_exercises(
             &self.tmc_client,
             crate::config::get_tmc_dir(PLUGIN).unwrap().as_path(), //TmcConfig::get_location(PLUGIN).unwrap().as_path(),

@@ -314,7 +314,7 @@ mod tests {
 
         fn download_or_update_exercises(
             &mut self,
-            _download_params: Vec<(usize, PathBuf)>,
+            _download_params: &[usize],
         ) -> Result<(), ClientError> {
             Ok(())
         }

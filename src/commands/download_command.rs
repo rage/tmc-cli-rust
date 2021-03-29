@@ -81,7 +81,7 @@ pub fn download_or_update(
     let course = course_result.unwrap();
 
     // check if download_folder was given as an argument, otherwise use course name
-    let mut course_path = env::current_dir().unwrap();
+    /*let mut course_path = env::current_dir().unwrap();
     if let Some(download_folder) = download_folder_arg {
         course_path.push(download_folder);
     } else {
@@ -150,27 +150,30 @@ pub fn download_or_update(
                 Err(error) => io.println(&error),
             }
         }
-        Err(_) => {
+        Err(_) => {*/
             //if .tmc.json is missing, assume it's the first download case for given course
+        
             match client.get_course_exercises(course.id) {
                 Ok(exercises) => {
+                    let exercise_ids: Vec<usize> = exercises.iter().map(|t| t.id).collect();
+        
                     io.println(&parse_download_result(client.download_or_update_exercises(
-                        get_download_params(PathBuf::from(&course_path), exercises),
+                        &exercise_ids,
                     )))
                 }
                 Err(error) => io.println(&error),
             }
-        }
-    };
+    /*    }
+    };*/
 
     // TODO: Integration tests skip creation of course folder, so we can't save course information there
-    if client.is_test_mode() {
-        return;
-    }
-    save_course_config(client, PathBuf::from(&course_config_path), course.id);
+    //if client.is_test_mode() {
+    //    return;
+    //}
+    //save_course_config(client, PathBuf::from(&course_config_path), course.id);
 }
 
-fn save_course_config(client: &mut dyn Client, course_config_path: PathBuf, course_id: usize) {
+/*fn save_course_config(client: &mut dyn Client, course_config_path: PathBuf, course_id: usize) {
     let course_details = client.get_course_details(course_id).unwrap();
     let organization = client
         .get_organization(&command_util::get_organization().unwrap())
@@ -186,7 +189,7 @@ fn save_course_config(client: &mut dyn Client, course_config_path: PathBuf, cour
     };
 
     course_config::save_course_information(course_config, course_config_path.as_path());
-}
+}*/
 
 fn parse_download_result(result: Result<(), ClientError>) -> String {
     match result {
@@ -203,7 +206,7 @@ fn parse_download_result(result: Result<(), ClientError>) -> String {
     }
 }
 
-fn get_download_params(
+/*fn get_download_params(
     course_path: PathBuf,
     exercises: Vec<CourseExercise>,
 ) -> Vec<(usize, PathBuf)> {
@@ -216,4 +219,4 @@ fn get_download_params(
         }
     }
     download_params
-}
+}*/
