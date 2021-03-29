@@ -367,7 +367,7 @@ impl Client for ClientProduction {
 
         let exercises = tmc_langs::download_or_update_course_exercises(
             &self.tmc_client,
-            TmcConfig::get_location(PLUGIN).unwrap().as_path(),
+            crate::config::get_tmc_dir(PLUGIN).unwrap().as_path(), //TmcConfig::get_location(PLUGIN).unwrap().as_path(),
             &exercise_ids,
             true
         ).unwrap();
