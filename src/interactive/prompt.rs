@@ -79,7 +79,16 @@ where
                 .highlight_symbol(">> ");
             f.render_stateful_widget(items, chunks[0], &mut app.items.state);
 
-            let text = Paragraph::new(Span::raw(app.filter.clone())).wrap(Wrap { trim: true });
+            // if the user hasn't written anything yet, display the help message in its place
+            let text = if app.filter.is_empty() {
+                Paragraph::new(Span::styled(
+                    "Press keys to filter",
+                    Style::default().add_modifier(Modifier::ITALIC),
+                ))
+                .wrap(Wrap { trim: true })
+            } else {
+                Paragraph::new(Span::raw(app.filter.clone())).wrap(Wrap { trim: true })
+            };
             f.render_widget(text, chunks[1]);
         })
         .unwrap();
