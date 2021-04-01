@@ -7,8 +7,9 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
-    text::Spans,
-    widgets::{Block, Borders, List, ListItem},
+    text::{Span, Spans},
+    widgets::Wrap,
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Terminal,
 };
 
@@ -53,6 +54,37 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
     }
 }
 
+fn draw_terminal<B>(terminal: &mut Terminal<B>, app: &mut AppState, prompt: &str)
+where
+    B: Backend,
+{
+    terminal
+        .draw(|f| {
+            let chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+                .split(f.size());
+            let items: Vec<ListItem> = app
+                .items
+                .displayed
+                .iter()
+                .map(|i| {
+                    let lines = vec![Spans::from(i.clone())];
+                    ListItem::new(lines).style(Style::default())
+                })
+                .collect();
+            let items = List::new(items)
+                .block(Block::default().borders(Borders::NONE).title(prompt))
+                .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+                .highlight_symbol(">> ");
+            f.render_stateful_widget(items, chunks[0], &mut app.items.state);
+
+            let text = Paragraph::new(Span::raw(app.filter.clone())).wrap(Wrap { trim: true });
+            f.render_widget(text, chunks[1]);
+        })
+        .unwrap();
+}
+
 fn event_loop<B>(mut terminal: Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
 where
     B: Backend,
@@ -63,28 +95,7 @@ where
 
     let mut result = None;
     loop {
-        terminal
-            .draw(|f| {
-                let chunks = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints([Constraint::Percentage(100)].as_ref())
-                    .split(f.size());
-                let items: Vec<ListItem> = app
-                    .items
-                    .displayed
-                    .iter()
-                    .map(|i| {
-                        let lines = vec![Spans::from(i.clone())];
-                        ListItem::new(lines).style(Style::default())
-                    })
-                    .collect();
-                let items = List::new(items)
-                    .block(Block::default().borders(Borders::NONE).title(prompt))
-                    .highlight_style(Style::default().add_modifier(Modifier::BOLD))
-                    .highlight_symbol(">> ");
-                f.render_stateful_widget(items, chunks[0], &mut app.items.state);
-            })
-            .unwrap();
+        draw_terminal(&mut terminal, &mut app, prompt);
 
         if poll(Duration::from_millis(POLL_RATE)).unwrap() {
             if let Ok(Event::Key(x)) = read() {

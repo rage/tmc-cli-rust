@@ -81,7 +81,7 @@ impl<T: Clone> StatefulList<T> {
 /// ```
 pub struct AppState {
     pub items: StatefulList<String>,
-    filter: String,
+    pub filter: String,
 }
 
 impl AppState {
