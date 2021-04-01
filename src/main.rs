@@ -48,6 +48,12 @@ fn get_matches() -> ArgMatches<'static> {
                         .long("course")
                         .value_name("course name")
                         .required(false),
+                )
+                .arg(
+                    Arg::with_name("currentdir")
+                        .short("d")
+                        .long("currentdir")
+                        .required(false),
                 ),
         )
         .subcommand(

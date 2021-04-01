@@ -1,5 +1,5 @@
+use super::command_util;
 use super::command_util::{find_submit_or_paste_config, Client};
-use crate::config::course_config;
 use crate::io_module::Io;
 use isolang::Language;
 use reqwest::Url;
@@ -26,20 +26,23 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
             return;
         }
     }
-
+    if course_config.is_none() {
+        io.println("could not find course config");
+        return;
+    }
     let course_config = course_config.unwrap();
-
-    let submission_url = match &course_config::get_exercise_by_name(&course_config, &exercise_name)
-    {
-        Some(result) => &result.return_url,
-        None => {
-            io.println(
-                "Exercise not found. Check that exercise path leads to a valid exercise folder.",
-            );
+    let exercise_id_result =
+        command_util::get_exercise_id_from_config(&course_config, &exercise_name);
+    let return_url: Url;
+    match exercise_id_result {
+        Ok(exercise_id) => {
+            return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
+        }
+        Err(err) => {
+            io.println(&err);
             return;
         }
-    };
-    let submission_url = Url::parse(&submission_url).unwrap();
+    }
 
     io.println("Write a paste message, enter sends it:");
     let paste_msg = io.read_line();
@@ -47,7 +50,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
 
     // Send submission, handle errors and print link to paste
     let new_submission = client.paste(
-        submission_url,
+        return_url,
         exercise_dir.as_path(),
         Some(paste_msg),
         Some(Language::Eng),

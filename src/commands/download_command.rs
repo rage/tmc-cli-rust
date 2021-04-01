@@ -4,7 +4,15 @@ use crate::interactive;
 use crate::io_module::Io;
 use tmc_client::ClientError;
 
-pub fn download_or_update(io: &mut dyn Io, client: &mut dyn Client, course_name: Option<&str>) {
+// Downloads course exercises
+// course_name as None will trigger interactive menu for selecting a course
+// currentdir determines if course should be downloaded to current directory or central project directory
+pub fn download_or_update(
+    io: &mut dyn Io,
+    client: &mut dyn Client,
+    course_name: Option<&str>,
+    currentdir: bool,
+) {
     // Get a client that has credentials
     if let Err(error) = client.load_login() {
         io.println(&error);
@@ -143,12 +151,19 @@ pub fn download_or_update(io: &mut dyn Io, client: &mut dyn Client, course_name:
         Err(_) => {*/
     //if .tmc.json is missing, assume it's the first download case for given course
 
+    let pathbuf = if currentdir {
+        std::env::current_dir().unwrap()
+    } else {
+        crate::config::get_tmc_dir(PLUGIN).unwrap()
+    };
+
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
             let exercise_ids: Vec<usize> = exercises.iter().map(|t| t.id).collect();
 
+            // TODO: save tmc course folder to project config?
             io.println(&parse_download_result(
-                client.download_or_update_exercises(&exercise_ids),
+                client.download_or_update_exercises(&exercise_ids, pathbuf.as_path()),
             ))
         }
         Err(error) => io.println(&error),

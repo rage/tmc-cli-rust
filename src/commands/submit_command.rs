@@ -1,5 +1,5 @@
+use super::command_util;
 use super::command_util::*;
-use crate::config::course_config;
 use crate::io_module::Io;
 use anyhow::{Context, Result};
 use tmc_langs::Language;
@@ -41,19 +41,26 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
     }
 
+    if course_config.is_none() {
+        io.println("could not find course config");
+        return;
+    }
     let course_config = course_config.unwrap();
-
-    let submission_url;
-    match course_config::get_exercise_by_name(&course_config, &exercise_name) {
-        Some(exercise) => submission_url = into_url(&exercise.return_url).unwrap(),
-        None => {
-            io.println("Current directory does not contain any exercise");
+    let exercise_id_result =
+        command_util::get_exercise_id_from_config(&course_config, &exercise_name);
+    let return_url: Url;
+    match exercise_id_result {
+        Ok(exercise_id) => {
+            return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
+        }
+        Err(err) => {
+            io.println(&err);
             return;
         }
     }
 
     //file_util::lock!(submission_path);
-    let new_submission = client.submit(submission_url, exercise_dir.as_path(), Some(locale));
+    let new_submission = client.submit(return_url, exercise_dir.as_path(), Some(locale));
     let submission_url = &new_submission.unwrap().show_submission_url;
 
     io.println(&format!(
@@ -73,9 +80,10 @@ fn into_locale(arg: &str) -> Result<Language> {
         .or_else(|| Language::from_639_3(arg))
         .with_context(|| format!("Invalid locale: {}", arg))
 }
-fn into_url(arg: &str) -> Result<Url> {
+
+/*fn into_url(arg: &str) -> Result<Url> {
     Url::parse(arg).with_context(|| format!("Failed to parse url {}", arg))
-}
+}*/
 
 #[cfg(test)]
 mod tests {
