@@ -1,15 +1,15 @@
-use std::cmp::min;
-use indicatif::ProgressStyle;
-use indicatif::ProgressBar;
-use tmc_langs::ClientUpdateData;
 use super::command_util;
 use super::command_util::*;
 use crate::interactive;
 use crate::io_module::Io;
-use tmc_client::ClientError;
+use indicatif::ProgressBar;
+use indicatif::ProgressStyle;
+use std::cmp::min;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+use tmc_client::ClientError;
+use tmc_langs::ClientUpdateData;
 
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
@@ -171,13 +171,11 @@ pub fn download_or_update(
             let mut manager = ProgressBarManager::new(exercise_ids.len() * 2 + 1);
             manager.start();
 
-            let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());            
-            
+            let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());
+
             manager.join();
 
-            io.println(&parse_download_result(
-                result
-            ))
+            io.println(&parse_download_result(result))
         }
         Err(error) => io.println(&error),
     }
@@ -296,7 +294,7 @@ impl ProgressBarManager {
             drop(guard);
 
             let message_guard = status_message.lock().expect("Could not lock mutex");
-            pb.set_message(&format!("{}", *message_guard));
+            pb.set_message(&*message_guard);
             drop(message_guard);
 
             if is_finished.load(Ordering::Relaxed) {
