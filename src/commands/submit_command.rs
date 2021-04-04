@@ -1,7 +1,11 @@
 use super::command_util;
 use super::command_util::*;
 use crate::io_module::Io;
+use crate::progress_reporting::ProgressBarManager;
 use anyhow::{Context, Result};
+use indicatif::ProgressStyle;
+use tmc_langs::ClientError;
+use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
 use url::Url;
 /// Sends the course exercise submission to the server.
@@ -59,18 +63,70 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
     }
 
+    // make submission:
+    let progress_style = ProgressStyle::default_bar()
+    .template(
+        "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
+    )
+    .progress_chars("#>-");
+
+    let mut manager = ProgressBarManager::new(progress_style, 100);
+    manager.start::<ClientUpdateData>();
     //file_util::lock!(submission_path);
     let new_submission = client.submit(return_url, exercise_dir.as_path(), Some(locale));
+    if let Err(err) = new_submission {
+        manager.force_join();
+
+        match err {
+            ClientError::HttpError {
+                url,
+                status: _,
+                error,
+                obsolete_client: _,
+            } => {
+                io.println(&format!(
+                    "\nGot error '{}' \n    while submitting exercise to address {}",
+                    error, url
+                ));
+            }
+            _ => {
+                io.println("Error during submission");
+            }
+        }
+        return;
+    }
+    manager.join();
+
     let submission_url = &new_submission.unwrap().show_submission_url;
 
     io.println(&format!(
         "Submitting... \nYou can find your submission here: {}",
         &submission_url
     ));
+    io.println("");
 
-    match client.wait_for_submission(&submission_url) {
-        Ok(_submission_finished) => io.println("Submission finished"),
-        Err(_err) => io.println(""), //io.println(&format!("Submission failed with message {:#?}", err))
+    // Wait for submission:
+    let progress_style2 = ProgressStyle::default_bar()
+    .template(
+        "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
+    )
+    .progress_chars("#>-");
+
+    let mut wait_manager = ProgressBarManager::new(progress_style2, 100);
+    wait_manager.start::<ClientUpdateData>();
+
+    let wait_status = client.wait_for_submission(&submission_url);
+    match wait_status {
+        Ok(_submission_finished) => {
+            wait_manager.join();
+            io.println("Submission finished");
+        }
+        Err(err) => {
+            // TODO: fix JSON response decode bug ("redirect to /login").
+
+            wait_manager.force_join();
+            io.println(&format!("Submission failed with message {:#?}", err));
+        }
     }
 }
 

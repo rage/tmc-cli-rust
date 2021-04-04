@@ -2349,9 +2349,9 @@ dependencies = [
 
 [[package]]
 name = "tinyvec"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "317cca572a0e89c3ce0ca1f1bdc9369547fe318a683418e42ac8f59d14701023"
+checksum = "5b5220f05bb7de7f3f53c7c065e1199b3172696fe2db9f9c4d8ad9b4ee74c342"
 dependencies = [
  "tinyvec_macros",
 ]
@@ -2392,7 +2392,7 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "chrono",
  "dirs",
@@ -2417,7 +2417,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "base64 0.13.0",
  "dirs",
@@ -2455,7 +2455,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "dirs",
  "log",
@@ -2471,7 +2471,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "fd-lock",
  "funty",
@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "dirs",
  "flate2",
@@ -2515,7 +2515,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "lazy_static",
  "log",
@@ -2532,7 +2532,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2542,7 +2542,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "impl-enum",
  "log",
@@ -2562,7 +2562,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "dunce",
  "hex",
@@ -2582,7 +2582,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "log",
  "serde",
@@ -2596,7 +2596,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#b9b4af7be91dfec84289f91dc6b9c92a76adc490"
+source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
 dependencies = [
  "fd-lock",
  "log",
