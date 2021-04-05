@@ -94,6 +94,47 @@ where
         .unwrap();
 }
 
+/// tries reading input from user
+/// if succeeds, handles the input and returns Option<Option<String>> as return value
+///
+/// None: nothing was selected yet
+/// Some(None): the user interrupted and the process should quit
+/// Some(Some(res)): the user has selected an item
+fn read_keys(app: &mut AppState) -> Option<Option<String>> {
+    if poll(Duration::from_millis(POLL_RATE)).unwrap() {
+        if let Ok(Event::Key(x)) = read() {
+            // CTRL-C is the usual stop command
+            // which is disabled by default because of raw mode
+            if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
+                return Some(None);
+            }
+            return match x.code {
+                KeyCode::Esc => Some(None),
+                KeyCode::Up | KeyCode::Left => {
+                    app.items.previous();
+                    None
+                }
+                KeyCode::Down | KeyCode::Right => {
+                    app.items.next();
+                    None
+                }
+                KeyCode::Enter => Some(app.get_selected()),
+                KeyCode::Char(c) => {
+                    app.push_filter(c);
+                    None
+                }
+                KeyCode::Backspace => {
+                    app.pop_filter();
+                    None
+                }
+                _ => None,
+            };
+        }
+    }
+
+    None
+}
+
 fn event_loop<B>(mut terminal: Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
 where
     B: Backend,
@@ -106,28 +147,11 @@ where
     loop {
         draw_terminal(&mut terminal, &mut app, prompt);
 
-        if poll(Duration::from_millis(POLL_RATE)).unwrap() {
-            if let Ok(Event::Key(x)) = read() {
-                // CTRL-C is the usual stop command
-                // which is disabled by default because of raw mode
-                if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
-                    break;
-                }
-                match x.code {
-                    KeyCode::Esc => break,
-                    KeyCode::Up | KeyCode::Left => app.items.previous(),
-                    KeyCode::Down | KeyCode::Right => app.items.next(),
-                    KeyCode::Enter => {
-                        result = app.get_selected();
-                        break;
-                    }
-                    KeyCode::Char(c) => {
-                        app.push_filter(c);
-                    }
-                    KeyCode::Backspace => app.pop_filter(),
-                    _ => {}
-                }
+        if let Some(res) = read_keys(&mut app) {
+            if res.is_some() {
+                result = res;
             }
+            break;
         }
     }
     terminal.clear().unwrap();
