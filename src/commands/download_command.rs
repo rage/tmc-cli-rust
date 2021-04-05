@@ -154,7 +154,7 @@ pub fn download_or_update(
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
-        crate::config::get_tmc_dir(PLUGIN).unwrap()
+        get_path()
     };
 
     match client.get_course_exercises(course.id) {
