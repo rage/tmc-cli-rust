@@ -157,7 +157,8 @@ pub fn download_or_update(
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
-        crate::config::get_tmc_dir(PLUGIN).unwrap()
+        //crate::config::get_tmc_dir(PLUGIN).unwrap()
+        tmc_langs::get_projects_dir(PLUGIN).unwrap()
     };
 
     match client.get_course_exercises(course.id) {
@@ -174,7 +175,8 @@ pub fn download_or_update(
                 )
                 .progress_chars("#>-");
 
-            let mut manager = ProgressBarManager::new(progress_style, exercise_ids.len() * 2 + 1);
+            // start manager for 1 event: tmc_langs::download_or_update_exercises
+            let mut manager = ProgressBarManager::new(progress_style, 1);
             manager.start::<ClientUpdateData>();
 
             let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());

@@ -63,18 +63,20 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
     }
 
-    // make submission:
+    // Make style for progress bar:
     let progress_style = ProgressStyle::default_bar()
     .template(
         "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
     )
     .progress_chars("#>-");
 
-    let mut manager = ProgressBarManager::new(progress_style, 100);
+    // start manager for 2 events TmcClient::Submit, TmcClient::WaitForSubmission
+    let mut manager = ProgressBarManager::new(progress_style, 2);
     manager.start::<ClientUpdateData>();
-    //file_util::lock!(submission_path);
-    let new_submission = client.submit(return_url, exercise_dir.as_path(), Some(locale));
-    if let Err(err) = new_submission {
+
+    // Send submission
+    let new_submission_result = client.submit(return_url, exercise_dir.as_path(), Some(locale));
+    if let Err(err) = new_submission_result {
         manager.force_join();
 
         match err {
@@ -95,37 +97,30 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
         return;
     }
-    manager.join();
 
-    let submission_url = &new_submission.unwrap().show_submission_url;
+    let new_submission = new_submission_result.unwrap();
 
-    io.println(&format!(
+    // TODO: can't print while in progress bar
+    /*io.println(&format!(
         "Submitting... \nYou can find your submission here: {}",
-        &submission_url
+        &new_submission.show_submission_url
     ));
-    io.println("");
+    io.println("");*/
 
-    // Wait for submission:
-    let progress_style2 = ProgressStyle::default_bar()
-    .template(
-        "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
-    )
-    .progress_chars("#>-");
-
-    let mut wait_manager = ProgressBarManager::new(progress_style2, 100);
-    wait_manager.start::<ClientUpdateData>();
-
-    let wait_status = client.wait_for_submission(&submission_url);
+    let wait_status = client.wait_for_submission(&new_submission.submission_url);
     match wait_status {
         Ok(_submission_finished) => {
-            wait_manager.join();
-            io.println("Submission finished");
+            manager.join();
+
+            io.println(&format!(
+                "Submission finished.\nYou can find your submission here: {}",
+                &new_submission.show_submission_url
+            ));
         }
         Err(err) => {
-            // TODO: fix JSON response decode bug ("redirect to /login").
-
-            wait_manager.force_join();
-            io.println(&format!("Submission failed with message {:#?}", err));
+            manager.force_join();
+            io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", &new_submission.show_submission_url));
+            io.println(&format!("Error message: {:#?}", err));
         }
     }
 }

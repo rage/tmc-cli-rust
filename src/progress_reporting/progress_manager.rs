@@ -1,32 +1,39 @@
+use core::sync::atomic::AtomicUsize;
 use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
 use std::cmp::min;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 
 pub struct ProgressBarManager {
     style: ProgressStyle,
-    max_size: usize,
     percentage_progress: Arc<Mutex<f64>>,
     status_message: Arc<Mutex<String>>,
-    is_finished: Arc<AtomicBool>,
+    finishes_count: usize,
+    is_finished: Arc<AtomicUsize>,
     handle: Option<JoinHandle<()>>,
 }
 
 impl ProgressBarManager {
-    pub fn new(style: ProgressStyle, max_size: usize) -> ProgressBarManager {
+    /// creates a new progressbar manager
+    /// style: style of progress bar, can be used to change how progress or messages are shown
+    /// finishes_count: expected amount of finish stages,
+    ///     e.g. 2 for submission (1 for TmcClient::submit, 1 for TmcClient::wait_for_submission)
+    pub fn new(style: ProgressStyle, finishes_count: usize) -> ProgressBarManager {
         ProgressBarManager {
             style,
-            max_size,
             percentage_progress: Arc::new(Mutex::new(0.0)),
             status_message: Arc::new(Mutex::new("".to_string())),
-            is_finished: Arc::new(AtomicBool::new(false)),
+            finishes_count,
+            is_finished: Arc::new(AtomicUsize::new(0)),
             handle: None,
         }
     }
 
-    // T: ex. ClientUpdateData for download and submit
+    /// Initializes progress callback and starts listening for updates
+    /// Must not print anything to console between start() and join()/force_join() calls.
+    /// T: ex. ClientUpdateData for download and submit
     pub fn start<T: 'static + std::marker::Send + std::marker::Sync>(&mut self) {
         let finished_cb = self.is_finished.clone();
         let percentage_cb = self.percentage_progress.clone();
@@ -41,21 +48,24 @@ impl ProgressBarManager {
             drop(message_guard);
 
             if status.finished {
-                finished_cb.store(true, Ordering::Relaxed);
+                // increase finish count by one
+                finished_cb.fetch_add(1, Ordering::SeqCst);
             }
         };
 
         let style = self.style.clone();
-        let max_size = self.max_size;
+        let max_size = 100;
         let message_t = self.status_message.clone();
         let percentage_t = self.percentage_progress.clone();
+        let finishes_count_t = self.finishes_count;
         let finished_t = self.is_finished.clone();
         let join_handle = std::thread::spawn(move || {
-            ProgressBarManager::progress_thread(
+            ProgressBarManager::progress_loop(
                 style,
                 max_size,
                 percentage_t,
                 message_t,
+                finishes_count_t,
                 finished_t,
             )
         });
@@ -64,28 +74,35 @@ impl ProgressBarManager {
         tmc_langs_util::progress_reporter::subscribe(callback);
     }
 
+    /// joins progress thread to callers thread
     pub fn join(&mut self) {
         self.handle.take().map(JoinHandle::join);
     }
 
+    /// forcefully terminates progress bar update loop
+    ///   and joins progress thread to callers thread
+    /// Should be called if function responsible for progress reporting
+    ///   returns an error (finish_stage might not be called).
     pub fn force_join(&mut self) {
-        self.is_finished.store(true, Ordering::Relaxed);
+        self.is_finished
+            .store(self.finishes_count, Ordering::SeqCst);
         self.join();
     }
 
-    pub fn progress_thread(
+    /// Initializes and updates progress bar state
+    fn progress_loop(
         style: ProgressStyle,
         max_len: usize,
         percentage_progress: Arc<Mutex<f64>>,
         status_message: Arc<Mutex<String>>,
-        is_finished: Arc<AtomicBool>,
+        finishes_count: usize,
+        is_finished: Arc<AtomicUsize>,
     ) {
         let pb = ProgressBar::new(max_len as u64);
         pb.set_style(style);
 
         loop {
             let guard = percentage_progress.lock().expect("Could not lock mutex");
-            //let progress_percent = *guard;
             let progress = (*guard as f64) * max_len as f64;
             pb.set_position(min(progress as u64, max_len as u64));
             drop(guard);
@@ -94,15 +111,11 @@ impl ProgressBarManager {
             pb.set_message(&*message_guard);
             drop(message_guard);
 
-            if is_finished.load(Ordering::Relaxed)
-            /*|| (1.0 - progress_percent).abs() < 0.005*/
-            {
-                //pb.set_position(max_len as u64);
+            if finishes_count == is_finished.load(Ordering::SeqCst) {
                 break;
             }
 
-            //TODO
-            //std::thread::sleep(std::time::Duration::from_millis(1000 / 15));
+            std::thread::sleep(std::time::Duration::from_millis(1000 / 15));
         }
 
         let message_guard = status_message.lock().expect("Could not lock mutex");

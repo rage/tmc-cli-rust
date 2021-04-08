@@ -861,9 +861,9 @@ dependencies = [
 
 [[package]]
 name = "http"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7245cd7449cc792608c3c8a9eaf69bd4eabbabf802713748fd739c98b82f0747"
+checksum = "527e8c9ac747e28542699a951517aa9a6945af506cd1f2e1b53a576c17b6cc11"
 dependencies = [
  "bytes",
  "fnv",
@@ -883,9 +883,9 @@ dependencies = [
 
 [[package]]
 name = "httparse"
-version = "1.3.5"
+version = "1.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "615caabe2c3160b313d52ccc905335f4ed5f10881dd63dc5699d47e90be85691"
+checksum = "bc35c995b9d93ec174cf9a27d425c7892722101e14993cd227fdb51d70cf9589"
 
 [[package]]
 name = "httpdate"
@@ -1109,9 +1109,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.92"
+version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56d855069fafbb9b344c0f962150cd2c1187975cb1c22c1522c240d8c4986714"
+checksum = "9385f66bf6105b241aa65a61cb923ef20efc665cb9f9bb50ac2f0c4b7f378d41"
 
 [[package]]
 name = "libloading"
@@ -1269,9 +1269,9 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.19.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2ccba0cfe4fdf15982d1674c69b1fd80bad427d293849982668dfe454bd61f2"
+checksum = "fa9b4819da1bc61c0ea48b63b7bc8604064dd43013e7cc325df098d49cd7c18a"
 dependencies = [
  "bitflags",
  "cc",
@@ -1974,9 +1974,9 @@ dependencies = [
 
 [[package]]
 name = "schemars"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f81b69175bfb19653b59983e78701ebda5ee6a6f1e4875f65f9b92e2efde48f3"
+checksum = "bc6ab463ae35acccb5cba66c0084c985257b797d288b6050cc2f6ac1b266cb78"
 dependencies = [
  "chrono",
  "dyn-clone",
@@ -1987,9 +1987,9 @@ dependencies = [
 
 [[package]]
 name = "schemars_derive"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3a9f7bf22f96bc98cebd33a9286118c4e588b6a2fc26ab83469c18e12ae7678"
+checksum = "902fdfbcf871ae8f653bddf4b2c05905ddaabc08f69d32a915787e3be0d31356"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2258,9 +2258,9 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 
 [[package]]
 name = "syn"
-version = "1.0.68"
+version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ce15dd3ed8aa2f8eeac4716d6ef5ab58b6b9256db41d7e1a0224c2788e8fd87"
+checksum = "48fe99c6bd8b1cc636890bcc071842de909d902c81ac7dab53ba33c421ab8ffb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2392,7 +2392,7 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "chrono",
  "dirs",
@@ -2417,7 +2417,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "base64 0.13.0",
  "dirs",
@@ -2455,7 +2455,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "dirs",
  "log",
@@ -2471,10 +2471,9 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "fd-lock",
- "funty",
  "isolang",
  "lazy_static",
  "log",
@@ -2495,7 +2494,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "dirs",
  "flate2",
@@ -2515,7 +2514,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "lazy_static",
  "log",
@@ -2532,7 +2531,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2542,7 +2541,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "impl-enum",
  "log",
@@ -2562,7 +2561,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "dunce",
  "hex",
@@ -2582,7 +2581,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "log",
  "serde",
@@ -2596,7 +2595,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
-source = "git+https://github.com/noobLue/tmc-langs-rust#1fdb76a0ed75ababc1986ab56cd60901c7ade92b"
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
 dependencies = [
  "fd-lock",
  "log",
@@ -2745,9 +2744,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-bidi"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49f2bd0c6468a8230e1db229cff8029217cf623c767ea5d60bfbd42729ea54d5"
+checksum = "eeb8be209bb1c96b7c177c7420d26e04eccacb0eeae6b980e35fcb74678107e0"
 dependencies = [
  "matches",
 ]
