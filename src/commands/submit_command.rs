@@ -60,17 +60,17 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     }
 
     //file_util::lock!(submission_path);
-    let new_submission = client.submit(return_url, exercise_dir.as_path(), Some(locale));
-    let submission_url = &new_submission.unwrap().show_submission_url;
+    let new_submission_result = client.submit(return_url, exercise_dir.as_path(), Some(locale));
+    let new_submission = new_submission_result.unwrap();
 
     io.println(&format!(
         "Submitting... \nYou can find your submission here: {}",
-        &submission_url
+        new_submission.show_submission_url
     ));
 
-    match client.wait_for_submission(&submission_url) {
+    match client.wait_for_submission(&new_submission.submission_url) {
         Ok(_submission_finished) => io.println("Submission finished"),
-        Err(_err) => io.println(""), //io.println(&format!("Submission failed with message {:#?}", err))
+        Err(err) => io.println(&format!("Submission failed with message {:#?}", err)),
     }
 }
 
