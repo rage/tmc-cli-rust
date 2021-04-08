@@ -587,3 +587,6 @@ pub fn generate_return_url(exercise_id: usize) -> String {
 pub fn get_path() -> PathBuf {
     TmcConfig::get_location(PLUGIN).unwrap()
 }
+pub fn get_projects_dir() -> PathBuf {
+    tmc_langs::get_projects_dir(PLUGIN).unwrap()
+}

@@ -154,7 +154,7 @@ pub fn download_or_update(
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
-        get_path()
+        get_projects_dir()
     };
 
     match client.get_course_exercises(course.id) {
