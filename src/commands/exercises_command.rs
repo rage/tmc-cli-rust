@@ -11,7 +11,14 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     };
 
     // Get course by id
-    let course_result = get_course_id_by_name(client, course_name.clone());
+    let course_result = match get_course_id_by_name(client, course_name.clone()) {
+        Ok(result) => result,
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
     if course_result.is_none() {
         io.println(&format!(
             "Could not find a course with name '{}'",

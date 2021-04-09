@@ -452,33 +452,39 @@ pub fn set_organization(org: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn get_course_id_by_name(client: &mut dyn Client, course_name: String) -> Option<usize> {
+/// Returns course id as: Ok(Some(usize)) or Ok(None) if not found, Err(msg) if could not get id list
+pub fn get_course_id_by_name(
+    client: &mut dyn Client,
+    course_name: String,
+) -> Result<Option<usize>, String> {
     match client.list_courses() {
         Ok(courses) => {
             for course in courses {
                 if course.name == course_name {
-                    return Some(course.id);
+                    return Ok(Some(course.id));
                 }
             }
-            None
+            Ok(None)
         }
-        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
-        _ => None,
+        Err(msg) => Err(msg),
     }
 }
 
-pub fn get_course_by_name(client: &mut dyn Client, course_name: String) -> Option<Course> {
+/// Returns course as: Ok(Some(Course)) or Ok(None) if not found, Err(msg) if could not get courses list
+pub fn get_course_by_name(
+    client: &mut dyn Client,
+    course_name: String,
+) -> Result<Option<Course>, String> {
     match client.list_courses() {
         Ok(courses) => {
             for course in courses {
                 if course.name == course_name {
-                    return Some(course);
+                    return Ok(Some(course));
                 }
             }
-            None
+            Ok(None)
         }
-        //Err(ClientError::NotLoggedIn) => /* TODO: pass this information to caller */,
-        _ => None,
+        Err(msg) => Err(msg),
     }
 }
 

@@ -74,7 +74,14 @@ pub fn download_or_update(
     };
 
     // Get course by name
-    let course_result = command_util::get_course_by_name(client, name_select);
+    let course_result = match command_util::get_course_by_name(client, name_select) {
+        Ok(result) => result,
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
     if course_result.is_none() {
         io.println("Could not find course with that name");
         return;
