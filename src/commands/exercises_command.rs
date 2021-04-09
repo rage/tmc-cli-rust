@@ -315,7 +315,7 @@ mod tests {
         fn download_or_update_exercises(
             &mut self,
             _download_params: &[usize],
-            path: &Path,
+            _path: &Path,
         ) -> Result<(), ClientError> {
             Ok(())
         }

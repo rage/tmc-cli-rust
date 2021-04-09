@@ -65,13 +65,21 @@ pub trait Client {
 static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
-        let tmc_client = TmcClient::new(
-            PathBuf::from("./config"),
+        // let tmc_client = TmcClient::new(
+        //     PathBuf::from("./config"),
+        //     SERVER_ADDRESS.to_string(),
+        //     PLUGIN.to_string(),
+        //     "1.0.0".to_string(),
+        // )
+        // .unwrap();
+
+        let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
             SERVER_ADDRESS.to_string(),
-            PLUGIN.to_string(),
-            "1.0.0".to_string(),
+            PLUGIN,
+            "1.0.0",
         )
         .unwrap();
+
         ClientProduction {
             tmc_client,
             test_mode,
