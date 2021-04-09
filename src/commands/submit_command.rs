@@ -21,7 +21,6 @@ pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         return;
     }
 
-    //file_util::lock!(submission_path);
     submit_logic(io, client, path);
 }
 
@@ -124,10 +123,6 @@ fn into_locale(arg: &str) -> Result<Language> {
         .or_else(|| Language::from_639_3(arg))
         .with_context(|| format!("Invalid locale: {}", arg))
 }
-
-/*fn into_url(arg: &str) -> Result<Url> {
-    Url::parse(arg).with_context(|| format!("Failed to parse url {}", arg))
-}*/
 
 #[cfg(test)]
 mod tests {

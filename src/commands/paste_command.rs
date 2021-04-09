@@ -156,14 +156,10 @@ mod tests {
 
         let path = "";
 
-        //let directory = env::current_dir().unwrap();
-        //println!("The current directory is {}", directory.display());
-
         std::fs::create_dir("tmc_cli_test_course_dir/").unwrap();
         std::fs::create_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
 
         let current_directory = std::env::current_dir().unwrap();
-        //let pathbuf = env::current_dir().unwrap();
 
         std::env::set_current_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
         paste(&mut io, &mut mock_client, path);
