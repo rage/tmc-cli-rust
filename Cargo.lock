@@ -2392,7 +2392,11 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "chrono",
  "dirs",
@@ -2417,7 +2421,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "base64 0.13.0",
  "dirs",
@@ -2455,7 +2463,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "dirs",
  "log",
@@ -2471,7 +2483,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "fd-lock",
  "isolang",
@@ -2494,7 +2510,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "dirs",
  "flate2",
@@ -2514,7 +2534,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "lazy_static",
  "log",
@@ -2531,7 +2555,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2541,7 +2569,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "impl-enum",
  "log",
@@ -2561,7 +2593,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "dunce",
  "hex",
@@ -2581,7 +2617,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "log",
  "serde",
@@ -2595,7 +2635,11 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
+<<<<<<< HEAD
 source = "git+https://github.com/rage/tmc-langs-rust?rev=e086f45#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+=======
+source = "git+https://github.com/rage/tmc-langs-rust#e086f45e72eae806a6735da88c9c02186e8f7dd2"
+>>>>>>> download_progress_to_latest
 dependencies = [
  "fd-lock",
  "log",

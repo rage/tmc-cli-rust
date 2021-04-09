@@ -2,7 +2,10 @@ use super::command_util;
 use super::command_util::*;
 use crate::interactive;
 use crate::io_module::Io;
-use tmc_client::ClientError;
+use crate::progress_reporting::progress_manager::ProgressBarManager;
+use indicatif::ProgressStyle;
+use tmc_langs::ClientError;
+use tmc_langs::ClientUpdateData;
 
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
@@ -81,17 +84,33 @@ pub fn download_or_update(
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
-        crate::config::get_tmc_dir(PLUGIN).unwrap()
+        //crate::config::get_tmc_dir(PLUGIN).unwrap()
+        tmc_langs::get_projects_dir(PLUGIN).unwrap()
     };
 
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
-            let exercise_ids: Vec<usize> = exercises.iter().map(|t| t.id).collect();
+            let exercise_ids: Vec<usize> = exercises
+                .iter()
+                .filter(|t| !t.disabled && t.unlocked)
+                .map(|t| t.id)
+                .collect();
 
-            // TODO: save tmc course folder to project config?
-            io.println(&parse_download_result(
-                client.download_or_update_exercises(&exercise_ids, pathbuf.as_path()),
-            ))
+            let progress_style = ProgressStyle::default_bar()
+                .template(
+                    "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
+                )
+                .progress_chars("#>-");
+
+            // start manager for 1 event: tmc_langs::download_or_update_exercises
+            let mut manager = ProgressBarManager::new(progress_style, 1, client.is_test_mode());
+            manager.start::<ClientUpdateData>();
+
+            let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());
+
+            manager.join();
+
+            io.println(&parse_download_result(result))
         }
         Err(error) => io.println(&error),
     }
