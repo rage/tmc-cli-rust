@@ -90,7 +90,7 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 mod tests {
     use isolang::Language;
     use reqwest::Url;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use tmc_client::Course;
     use tmc_client::Organization;
     use tmc_client::{
@@ -314,7 +314,8 @@ mod tests {
 
         fn download_or_update_exercises(
             &mut self,
-            _download_params: Vec<(usize, PathBuf)>,
+            _download_params: &[usize],
+            path: &Path,
         ) -> Result<(), ClientError> {
             Ok(())
         }

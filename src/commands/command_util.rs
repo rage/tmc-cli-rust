@@ -1,5 +1,7 @@
-use crate::config::course_config;
-use crate::config::{ConfigValue, CourseConfig, Credentials, TmcConfig};
+use crate::config::{ConfigValue, TmcConfig};
+use toml::de::Error;
+// use anyhow;
+// use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
 use std::env;
@@ -9,6 +11,10 @@ use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
     Organization, SubmissionFinished, TmcClient, Token,
 };
+use tmc_langs::file_util;
+use tmc_langs::CourseConfig;
+use tmc_langs::Credentials;
+// use tmc_langs::DownloadResult;
 
 pub const PLUGIN: &str = "vscode_plugin";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
@@ -42,7 +48,8 @@ pub trait Client {
     ) -> Result<Vec<ExercisesDetails>, String>;
     fn download_or_update_exercises(
         &mut self,
-        download_params: Vec<(usize, PathBuf)>,
+        download_params: &[usize],
+        path: &Path,
     ) -> Result<(), ClientError>;
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
@@ -56,11 +63,12 @@ pub trait Client {
     ) -> Result<NewSubmission, String>;
 }
 
+static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
         let tmc_client = TmcClient::new(
             PathBuf::from("./config"),
-            "https://tmc.mooc.fi".to_string(),
+            SERVER_ADDRESS.to_string(),
             PLUGIN.to_string(),
             "1.0.0".to_string(),
         )
@@ -347,7 +355,7 @@ impl Client for ClientProduction {
                 checksum: "test_checksum".to_string(),
             }]);
         }
-        match self.tmc_client.get_exercises_details(exercise_ids) {
+        match self.tmc_client.get_exercises_details(&exercise_ids) {
             Ok(exercise_details) => Ok(exercise_details),
             Err(_) => Err("Unknown error. Please try again.".to_string()),
         }
@@ -355,13 +363,21 @@ impl Client for ClientProduction {
 
     fn download_or_update_exercises(
         &mut self,
-        download_params: Vec<(usize, PathBuf)>,
+        exercise_ids: &[usize],
+        path: &Path,
     ) -> Result<(), ClientError> {
         if self.test_mode {
             return Ok(());
         }
-        self.tmc_client
-            .download_or_update_exercises(download_params)
+
+        tmc_langs::download_or_update_course_exercises(
+            &self.tmc_client,
+            path, //crate::config::get_tmc_dir(PLUGIN).unwrap().as_path(), //TmcConfig::get_location(PLUGIN).unwrap().as_path(),
+            &exercise_ids,
+            true,
+        )
+        .unwrap();
+        Ok(())
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
@@ -474,17 +490,19 @@ pub fn get_course_by_name(client: &mut dyn Client, course_name: String) -> Optio
     }
 }
 
+static CONFIG_FILE_NAME: &str = "course_config.toml";
+
 /// Checks if current directory or given path
-/// contains valid exercise (i.e .tmc.json file)
+/// contains valid exercise (i.e config file)
 pub fn find_submit_or_paste_config(
-    exercise_name: &mut String,
+    exercise_slug: &mut String,
     course_config: &mut Option<CourseConfig>,
     exercise_dir: &mut PathBuf,
     path: &str,
 ) -> Result<(), String> {
     if path.is_empty() {
         // No exercise path given, so assuming we are in exercise directory.
-        *exercise_name = env::current_dir()
+        *exercise_slug = env::current_dir()
             .unwrap()
             .file_name()
             .unwrap()
@@ -493,8 +511,8 @@ pub fn find_submit_or_paste_config(
             .to_string();
         let mut pathbuf = env::current_dir().unwrap();
         pathbuf.pop(); // we go to the course directory
-        pathbuf.push(course_config::COURSE_CONFIG_FILE_NAME);
-        *course_config = match course_config::load_course_config(pathbuf.as_path()) {
+        pathbuf.push(CONFIG_FILE_NAME);
+        *course_config = match read_new_course_config(pathbuf.as_path()) {
             Ok(conf) => Some(conf),
             Err(_) => {
                 return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
@@ -503,7 +521,7 @@ pub fn find_submit_or_paste_config(
         *exercise_dir = env::current_dir().unwrap();
     } else {
         // Path given, find out course part, exercise name and full path
-        *exercise_name = Path::new(path)
+        *exercise_slug = Path::new(path)
             .to_path_buf()
             .file_name()
             .unwrap()
@@ -514,8 +532,8 @@ pub fn find_submit_or_paste_config(
         part_path.pop();
         let mut course_config_path = env::current_dir().unwrap();
         course_config_path.push(part_path);
-        course_config_path.push(course_config::COURSE_CONFIG_FILE_NAME);
-        *course_config = match course_config::load_course_config(course_config_path.as_path()) {
+        course_config_path.push(CONFIG_FILE_NAME);
+        *course_config = match read_new_course_config(course_config_path.as_path()) {
             Ok(conf) => Some(conf),
             Err(_) => {
                 return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
@@ -525,4 +543,44 @@ pub fn find_submit_or_paste_config(
         exercise_dir.push(Path::new(path).to_path_buf());
     }
     Ok(())
+}
+
+// reads config file from path
+fn read_new_course_config(course_config_path: &Path) -> Result<CourseConfig, String> {
+    if course_config_path.exists() {
+        let bytes_result = file_util::read_file(course_config_path);
+
+        if let Ok(bytes) = bytes_result {
+            let course_config_result: Result<CourseConfig, Error> = toml::from_slice(&bytes);
+            if let Ok(course_config) = course_config_result {
+                Ok(course_config)
+            } else {
+                Err("error parsing course config file".to_string())
+            }
+        } else {
+            Err("error reading course config file".to_string())
+        }
+    } else {
+        Err("could not find config file".to_string())
+    }
+}
+
+// retrieves exercise id for exercise from CourseConfig
+pub fn get_exercise_id_from_config(
+    course_config: &CourseConfig,
+    exercise_slug: &str,
+) -> Result<usize, String> {
+    if course_config.exercises.contains_key(exercise_slug) {
+        Ok(course_config.exercises[exercise_slug].id)
+    } else {
+        Err("could not find exercise in course config".to_string())
+    }
+}
+
+// generates return_url for submissions and pastes
+pub fn generate_return_url(exercise_id: usize) -> String {
+    format!(
+        "{}/api/v8/core/exercises/{}/submissions",
+        SERVER_ADDRESS, exercise_id
+    )
 }

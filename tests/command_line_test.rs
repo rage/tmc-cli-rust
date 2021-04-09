@@ -111,9 +111,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("download")
         .arg("-c")
-        .arg("test-tmc-test-course")
-        .arg("-f")
-        .arg("folder_for_download");
+        .arg("test-tmc-test-course");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("Download was successful!"));
