@@ -100,13 +100,6 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
 
     let new_submission = new_submission_result.unwrap();
 
-    // TODO: can't print while in progress bar
-    /*io.println(&format!(
-        "Submitting... \nYou can find your submission here: {}",
-        &new_submission.show_submission_url
-    ));
-    io.println("");*/
-
     let wait_status = client.wait_for_submission(&new_submission.submission_url);
     match wait_status {
         Ok(_submission_finished) => {
