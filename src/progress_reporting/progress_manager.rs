@@ -5,8 +5,10 @@ use std::cmp::min;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+use tmc_langs_util::progress_reporter::StatusUpdate;
 
 pub struct ProgressBarManager {
+    is_test_mode: bool,
     style: ProgressStyle,
     percentage_progress: Arc<Mutex<f64>>,
     status_message: Arc<Mutex<String>>,
@@ -20,8 +22,15 @@ impl ProgressBarManager {
     /// style: style of progress bar, can be used to change how progress or messages are shown
     /// finishes_count: expected amount of finish stages,
     ///     e.g. 2 for submission (1 for TmcClient::submit, 1 for TmcClient::wait_for_submission)
-    pub fn new(style: ProgressStyle, finishes_count: usize) -> ProgressBarManager {
+    /// is_test_mode: true when in testing mode,
+    ///     more precisely when expected methods won't call progress_reporter methods.
+    pub fn new(
+        style: ProgressStyle,
+        finishes_count: usize,
+        is_test_mode: bool,
+    ) -> ProgressBarManager {
         ProgressBarManager {
+            is_test_mode,
             style,
             percentage_progress: Arc::new(Mutex::new(0.0)),
             status_message: Arc::new(Mutex::new("".to_string())),
@@ -32,8 +41,8 @@ impl ProgressBarManager {
     }
 
     /// Initializes progress callback and starts listening for updates
-    /// Must not print anything to console between start() and join()/force_join() calls.
-    /// T: ex. ClientUpdateData for download and submit
+    /// Other code must not print anything to console between start() and join()/force_join() calls.
+    /// type T is for example: ClientUpdateData for download and submit
     pub fn start<T: 'static + std::marker::Send + std::marker::Sync>(&mut self) {
         let finished_cb = self.is_finished.clone();
         let percentage_cb = self.percentage_progress.clone();
@@ -71,7 +80,11 @@ impl ProgressBarManager {
         });
         self.handle = Some(join_handle);
 
-        tmc_langs_util::progress_reporter::subscribe(callback);
+        if !self.is_test_mode {
+            tmc_langs_util::progress_reporter::subscribe(callback);
+        } else {
+            self.mock_subscribe(callback);
+        }
     }
 
     /// joins progress thread to callers thread
@@ -87,6 +100,32 @@ impl ProgressBarManager {
         self.is_finished
             .store(self.finishes_count, Ordering::SeqCst);
         self.join();
+    }
+
+    /// Used to substitute progress_reporter::subscribe call
+    ///   when we are in test_mode
+    fn mock_subscribe<T, F>(&self, progress_report: F)
+    where
+        T: 'static + Send + Sync,
+        F: 'static + Sync + Send + Fn(StatusUpdate<T>),
+    {
+        let mut finishes_current = 0;
+        let finishes_max = self.finishes_count;
+        // mock necessary amount of stage_finish calls
+        // so progressbar thread knows to quit.
+        while finishes_current < finishes_max {
+            let status_update = StatusUpdate {
+                finished: true,
+                message: "mock finish".to_string(),
+                percent_done: 1.0_f64,
+                time: 0,
+                data: None,
+            };
+            let _r = progress_report(status_update);
+            finishes_current += 1;
+
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
     }
 
     /// Initializes and updates progress bar state

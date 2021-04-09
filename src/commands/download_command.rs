@@ -176,7 +176,7 @@ pub fn download_or_update(
                 .progress_chars("#>-");
 
             // start manager for 1 event: tmc_langs::download_or_update_exercises
-            let mut manager = ProgressBarManager::new(progress_style, 1);
+            let mut manager = ProgressBarManager::new(progress_style, 1, client.is_test_mode());
             manager.start::<ClientUpdateData>();
 
             let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());
@@ -187,14 +187,6 @@ pub fn download_or_update(
         }
         Err(error) => io.println(&error),
     }
-    /*    }
-    };*/
-
-    // TODO: Integration tests skip creation of course folder, so we can't save course information there
-    //if client.is_test_mode() {
-    //    return;
-    //}
-    //save_course_config(client, PathBuf::from(&course_config_path), course.id);
 }
 
 /*fn save_course_config(client: &mut dyn Client, course_config_path: PathBuf, course_id: usize) {
