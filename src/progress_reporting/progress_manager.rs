@@ -112,7 +112,7 @@ impl ProgressBarManager {
         let mut finishes_current = 0;
         let finishes_max = self.finishes_count;
         // mock necessary amount of stage_finish calls
-        // so progressbar thread knows to quit.
+        //   so progressbar thread knows when to quit.
         while finishes_current < finishes_max {
             let status_update = StatusUpdate {
                 finished: true,

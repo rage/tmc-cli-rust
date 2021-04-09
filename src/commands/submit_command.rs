@@ -73,15 +73,6 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     // start manager for 2 events TmcClient::Submit, TmcClient::WaitForSubmission
     let mut manager = ProgressBarManager::new(progress_style, 2, client.is_test_mode());
     manager.start::<ClientUpdateData>();
-    /*let mut manager: Box<dyn ProgressBarTrait> = if !client.is_test_mode() {
-        let mut progressbar = Box::new(ProgressBarManager::new(progress_style, 2));
-        progressbar.start::<ClientUpdateData>();
-        progressbar
-    } else {
-        let mut tester = Box::new(ProgressBarTester::new());
-        tester.start();
-        tester
-    };*/
 
     // Send submission
     let new_submission_result = client.submit(return_url, exercise_dir.as_path(), Some(locale));
