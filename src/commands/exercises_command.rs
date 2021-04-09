@@ -315,9 +315,9 @@ mod tests {
         fn download_or_update_exercises(
             &mut self,
             _download_params: &[usize],
-            path: &Path,
-        ) -> Result<(), ClientError> {
-            Ok(())
+            _path: &Path,
+        ) -> Result<String, ClientError> {
+            Ok("Ok".to_string())
         }
 
         fn get_course_details(

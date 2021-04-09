@@ -84,8 +84,7 @@ pub fn download_or_update(
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
-        //crate::config::get_tmc_dir(PLUGIN).unwrap()
-        tmc_langs::get_projects_dir(PLUGIN).unwrap()
+        get_projects_dir()
     };
 
     match client.get_course_exercises(course.id) {
@@ -116,9 +115,9 @@ pub fn download_or_update(
     }
 }
 
-fn parse_download_result(result: Result<(), ClientError>) -> String {
+fn parse_download_result(result: Result<String, ClientError>) -> String {
     match result {
-        Ok(()) => "Download was successful!".to_string(),
+        Ok(path) => format!("{}/\nDownload was successful!", path),
         Err(ClientError::IncompleteDownloadResult {
             downloaded: successful,
             failed: fail,

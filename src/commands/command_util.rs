@@ -1,4 +1,3 @@
-use crate::config::{ConfigValue, TmcConfig};
 use toml::de::Error;
 // use anyhow;
 // use anyhow::Context;
@@ -12,8 +11,8 @@ use tmc_client::{
     Organization, SubmissionFinished, TmcClient, Token,
 };
 use tmc_langs::file_util;
-use tmc_langs::CourseConfig;
 use tmc_langs::Credentials;
+use tmc_langs::{ConfigValue, CourseConfig, TmcConfig};
 // use tmc_langs::DownloadResult;
 
 pub const PLUGIN: &str = "vscode_plugin";
@@ -50,7 +49,7 @@ pub trait Client {
         &mut self,
         download_params: &[usize],
         path: &Path,
-    ) -> Result<(), ClientError>;
+    ) -> Result<String, ClientError>;
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
@@ -66,13 +65,13 @@ pub trait Client {
 static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
-        let tmc_client = TmcClient::new(
-            PathBuf::from("./config"),
+        let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
             SERVER_ADDRESS.to_string(),
-            PLUGIN.to_string(),
-            "1.0.0".to_string(),
+            PLUGIN,
+            "1.0.0",
         )
         .unwrap();
+
         ClientProduction {
             tmc_client,
             test_mode,
@@ -129,7 +128,7 @@ impl Client for ClientProduction {
     fn load_login(&mut self) -> Result<(), String> {
         if self.test_mode {
             // Test login exists if config-file has key-value pair test_login = "test_logged_in"
-            let config = TmcConfig::load(PLUGIN).unwrap();
+            let config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
             let test_login_exists = match config.get("test_login") {
                 ConfigValue::Value(Some(value)) => {
                     toml::Value::as_str(&value).unwrap() == "test_logged_in"
@@ -159,7 +158,7 @@ impl Client for ClientProduction {
 
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
-                let mut config = TmcConfig::load(PLUGIN).unwrap();
+                let mut config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
 
                 if let Err(_err) = config.insert(
                     "test_login".to_string(),
@@ -168,7 +167,7 @@ impl Client for ClientProduction {
                     return Err("Test login value could not be changed in config file".to_string());
                 }
 
-                if let Err(_err) = config.save() {
+                if let Err(_err) = config.save(get_path().as_path()) {
                     return Err("Problem saving login".to_string());
                 }
 
@@ -281,14 +280,14 @@ impl Client for ClientProduction {
     fn logout(&mut self) {
         if self.test_mode {
             // Remove test login from config file
-            let mut config = match TmcConfig::load(PLUGIN) {
+            let mut config = match TmcConfig::load(PLUGIN, get_path().as_path()) {
                 Ok(config) => config,
                 _ => panic!("Could not load the config"),
             };
             if let Err(_err) = config.remove("test_login") {
                 panic!("Could not remove test login from config in test mode");
             }
-            if let Err(_err) = config.save() {
+            if let Err(_err) = config.save(get_path().as_path()) {
                 panic!("Could not save config after removing test login in test mode");
             }
             return;
@@ -365,9 +364,9 @@ impl Client for ClientProduction {
         &mut self,
         exercise_ids: &[usize],
         path: &Path,
-    ) -> Result<(), ClientError> {
+    ) -> Result<String, ClientError> {
         if self.test_mode {
-            return Ok(());
+            return Ok("Ok".to_string());
         }
 
         tmc_langs::download_or_update_course_exercises(
@@ -377,7 +376,7 @@ impl Client for ClientProduction {
             true,
         )
         .unwrap();
-        Ok(())
+        Ok(format!("Download folder: {}", path.display()))
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
@@ -427,7 +426,7 @@ pub fn get_credentials() -> Option<Credentials> {
 // Returns slug of organization as String (if successful)
 #[allow(dead_code)]
 pub fn get_organization() -> Option<String> {
-    match TmcConfig::load(PLUGIN) {
+    match TmcConfig::load(PLUGIN, get_path().as_path()) {
         Ok(config) => {
             // convert the toml::Value to String (if possible)
             match config.get("organization") {
@@ -442,7 +441,7 @@ pub fn get_organization() -> Option<String> {
 }
 
 pub fn set_organization(org: &str) -> Result<(), String> {
-    let mut config = match TmcConfig::load(PLUGIN) {
+    let mut config = match TmcConfig::load(PLUGIN, get_path().as_path()) {
         Ok(config) => config,
         _ => return Err("Config could not be loaded".to_string()),
     };
@@ -454,7 +453,7 @@ pub fn set_organization(org: &str) -> Result<(), String> {
         return Err("Organization could not be changed".to_string());
     }
 
-    if let Err(_err) = config.save() {
+    if let Err(_err) = config.save(get_path().as_path()) {
         return Err("Problem saving configurations".to_string());
     }
     Ok(())
@@ -583,4 +582,11 @@ pub fn generate_return_url(exercise_id: usize) -> String {
         "{}/api/v8/core/exercises/{}/submissions",
         SERVER_ADDRESS, exercise_id
     )
+}
+
+pub fn get_path() -> PathBuf {
+    TmcConfig::get_location(PLUGIN).unwrap()
+}
+pub fn get_projects_dir() -> PathBuf {
+    tmc_langs::get_projects_dir(PLUGIN).unwrap()
 }
