@@ -49,7 +49,7 @@ pub trait Client {
         &mut self,
         download_params: &[usize],
         path: &Path,
-    ) -> Result<(), ClientError>;
+    ) -> Result<String, ClientError>;
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
@@ -65,20 +65,7 @@ pub trait Client {
 static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
-        // let tmc_client = TmcClient::new(
-        //     PathBuf::from("./config"),
-        //     SERVER_ADDRESS.to_string(),
-        //     PLUGIN.to_string(),
-        //     "1.0.0".to_string(),
-        // )
-        // .unwrap();
-
-        let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
-            SERVER_ADDRESS.to_string(),
-            PLUGIN,
-            "1.0.0",
-        )
-        .unwrap();
+        let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(SERVER_ADDRESS.to_string(), PLUGIN, "1.0.0").unwrap();
 
         ClientProduction {
             tmc_client,
@@ -372,9 +359,9 @@ impl Client for ClientProduction {
         &mut self,
         exercise_ids: &[usize],
         path: &Path,
-    ) -> Result<(), ClientError> {
+    ) -> Result<String, ClientError> {
         if self.test_mode {
-            return Ok(());
+            return Ok("Ok".to_string());
         }
 
         tmc_langs::download_or_update_course_exercises(
@@ -384,7 +371,10 @@ impl Client for ClientProduction {
             true,
         )
         .unwrap();
-        Ok(())
+        Ok(format!(
+            "Download folder: {}",
+            path.display()
+        ))
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {

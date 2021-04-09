@@ -196,9 +196,9 @@ pub fn download_or_update(
     course_config::save_course_information(course_config, course_config_path.as_path());
 }*/
 
-fn parse_download_result(result: Result<(), ClientError>) -> String {
+fn parse_download_result(result: Result<String, ClientError>) -> String {
     match result {
-        Ok(()) => "Download was successful!".to_string(),
+        Ok(path) => format!("{}/\nDownload was successful!", path),
         Err(ClientError::IncompleteDownloadResult {
             downloaded: successful,
             failed: fail,

@@ -316,8 +316,8 @@ mod tests {
             &mut self,
             _download_params: &[usize],
             _path: &Path,
-        ) -> Result<(), ClientError> {
-            Ok(())
+        ) -> Result<String, ClientError> {
+            Ok("Ok".to_string())
         }
 
         fn get_course_details(
