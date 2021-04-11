@@ -30,10 +30,12 @@ mod tests {
     use super::*;
     use isolang::Language;
     use reqwest::Url;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
     use tmc_client::{Organization, SubmissionFinished};
+    use tmc_langs::DownloadResult;
+    use tmc_langs::LangsError;
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,
@@ -181,9 +183,13 @@ mod tests {
 
         fn download_or_update_exercises(
             &mut self,
-            _download_params: Vec<(usize, PathBuf)>,
-        ) -> Result<(), ClientError> {
-            Ok(())
+            _download_params: &[usize],
+            _path: &Path,
+        ) -> Result<DownloadResult, LangsError> {
+            Ok(DownloadResult::Success {
+                downloaded: vec![],
+                skipped: vec![],
+            })
         }
 
         fn get_course_details(

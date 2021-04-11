@@ -156,5 +156,7 @@ where
     }
     terminal.clear().unwrap();
 
+    println!();
+
     result
 }

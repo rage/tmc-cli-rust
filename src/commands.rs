@@ -6,7 +6,7 @@ use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
 use test_command::test;
-mod command_util;
+pub mod command_util;
 mod courses_command;
 mod download_command;
 mod exercises_command;
@@ -42,7 +42,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     io,
                     &mut client,
                     a.value_of("course"),
-                    a.value_of("download_folder"),
+                    a.is_present("currentdir"),
                 );
             } else {
                 io.println("arguments not found");

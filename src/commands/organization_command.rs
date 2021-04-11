@@ -69,7 +69,7 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     } else {
         set_organization_old(io, client)
     };
-    io.println("");
+
     match res {
         Ok(org) => io.println(&format!("Selected {} as organization.", org)),
         Err(msg) => io.println(&msg),

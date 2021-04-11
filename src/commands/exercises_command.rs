@@ -11,7 +11,14 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     };
 
     // Get course by id
-    let course_result = get_course_id_by_name(client, course_name.clone());
+    let course_result = match get_course_id_by_name(client, course_name.clone()) {
+        Ok(result) => result,
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
     if course_result.is_none() {
         io.println(&format!(
             "Could not find a course with name '{}'",
@@ -90,12 +97,14 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 mod tests {
     use isolang::Language;
     use reqwest::Url;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use tmc_client::Course;
     use tmc_client::Organization;
     use tmc_client::{
         ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
     };
+    use tmc_langs::DownloadResult;
+    use tmc_langs::LangsError;
 
     use super::*;
     use std::slice::Iter;
@@ -314,9 +323,13 @@ mod tests {
 
         fn download_or_update_exercises(
             &mut self,
-            _download_params: Vec<(usize, PathBuf)>,
-        ) -> Result<(), ClientError> {
-            Ok(())
+            _download_params: &[usize],
+            _path: &Path,
+        ) -> Result<DownloadResult, LangsError> {
+            Ok(DownloadResult::Success {
+                downloaded: vec![],
+                skipped: vec![],
+            })
         }
 
         fn get_course_details(
