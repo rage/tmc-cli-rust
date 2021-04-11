@@ -1,3 +1,4 @@
+use crate::commands::command_util::ask_exercise_interactive;
 use crate::io_module::Io;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -13,7 +14,24 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
 
             match tmc_langs::find_exercise_directories(pathbuf.as_path()) {
                 Ok(exercises) => match exercises.len() {
-                    0 => Err("No exercises found.".to_string()),
+                    0 => {
+                        // No exercises found, ask with interactive menu
+                        let mut exercise_name = String::from("");
+                        let mut exercise_dir: PathBuf = PathBuf::new();
+                        let mut course_config = None;
+                        match ask_exercise_interactive(
+                            &mut exercise_name,
+                            &mut exercise_dir,
+                            &mut course_config,
+                        ) {
+                            Ok(()) => (),
+                            Err(msg) => {
+                                io.println(&msg);
+                                return;
+                            }
+                        }
+                        test_exercise_path(io, &exercise_dir)
+                    }
                     1 => test_exercise_path(io, exercises[0].as_path()),
                     _ => test_exercises(io, exercises),
                 },

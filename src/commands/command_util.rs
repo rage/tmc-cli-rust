@@ -3,13 +3,14 @@ use reqwest::Url;
 use std::env;
 use std::path::Path;
 use std::path::PathBuf;
+
 use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
     Organization, SubmissionFinished, TmcClient, Token,
 };
 use tmc_langs::file_util;
 use tmc_langs::Credentials;
-use tmc_langs::{ConfigValue, CourseConfig, TmcConfig};
+use tmc_langs::{ConfigValue, CourseConfig, ProjectsConfig, TmcConfig};
 use toml::de::Error;
 
 pub const PLUGIN: &str = "vscode_plugin";
@@ -23,6 +24,8 @@ pub struct ClientProduction {
 
 use mockall::predicate::*;
 use mockall::*;
+
+use crate::interactive::interactive_list;
 #[automock]
 pub trait Client {
     fn load_login(&mut self) -> Result<(), String>;
@@ -113,7 +116,7 @@ impl Client for ClientProduction {
             .paste(submission_url, submission_path, paste_message, locale)
         {
             Err(_client_error) => {
-                Err("Received ClientError when calling paste command from tmc_client".to_string())
+                Err(format!("Received error from tmc server. It is possible that submissions are not accepted for the exercise anymore. Error message:\n{}", _client_error.to_string()))
             }
             Ok(submission) => Ok(submission),
         }
@@ -492,6 +495,7 @@ static CONFIG_FILE_NAME: &str = "course_config.toml";
 
 /// Checks if current directory or given path
 /// contains valid exercise (i.e config file)
+/// Returns Err(msg) if
 pub fn find_submit_or_paste_config(
     exercise_slug: &mut String,
     course_config: &mut Option<CourseConfig>,
@@ -511,9 +515,12 @@ pub fn find_submit_or_paste_config(
         pathbuf.pop(); // we go to the course directory
         pathbuf.push(CONFIG_FILE_NAME);
         *course_config = match read_new_course_config(pathbuf.as_path()) {
-            Ok(conf) => Some(conf),
-            Err(_) => {
-                return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
+            Ok(conf) => match conf {
+                Some(config) => Some(config),
+                None => return Ok(()),
+            },
+            Err(msg) => {
+                return Err(msg);
             }
         };
         *exercise_dir = env::current_dir().unwrap();
@@ -532,9 +539,12 @@ pub fn find_submit_or_paste_config(
         course_config_path.push(part_path);
         course_config_path.push(CONFIG_FILE_NAME);
         *course_config = match read_new_course_config(course_config_path.as_path()) {
-            Ok(conf) => Some(conf),
-            Err(_) => {
-                return Err("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string());
+            Ok(conf) => match conf {
+                Some(config) => Some(config),
+                None => return Ok(()),
+            },
+            Err(msg) => {
+                return Err(msg);
             }
         };
         *exercise_dir = env::current_dir().unwrap();
@@ -543,15 +553,16 @@ pub fn find_submit_or_paste_config(
     Ok(())
 }
 
-// reads config file from path
-fn read_new_course_config(course_config_path: &Path) -> Result<CourseConfig, String> {
+/// Reads config file from path. Returns Ok(CourseConfig) if successful,
+/// Ok(None) if file not found, Err(msg) if error in parsing/reading file
+pub fn read_new_course_config(course_config_path: &Path) -> Result<Option<CourseConfig>, String> {
     if course_config_path.exists() {
         let bytes_result = file_util::read_file(course_config_path);
 
         if let Ok(bytes) = bytes_result {
             let course_config_result: Result<CourseConfig, Error> = toml::from_slice(&bytes);
             if let Ok(course_config) = course_config_result {
-                Ok(course_config)
+                Ok(Some(course_config))
             } else {
                 Err("error parsing course config file".to_string())
             }
@@ -559,7 +570,7 @@ fn read_new_course_config(course_config_path: &Path) -> Result<CourseConfig, Str
             Err("error reading course config file".to_string())
         }
     } else {
-        Err("could not find config file".to_string())
+        Ok(None)
     }
 }
 
@@ -586,6 +597,88 @@ pub fn generate_return_url(exercise_id: usize) -> String {
 pub fn get_path() -> PathBuf {
     TmcConfig::get_location(PLUGIN).unwrap()
 }
+
 pub fn get_projects_dir() -> PathBuf {
     tmc_langs::get_projects_dir(PLUGIN).unwrap()
+}
+
+/// Gives a list of all courses in projects-folder
+pub fn choose_exercise() -> Result<PathBuf, String> {
+    let mut courses: Vec<String> = Vec::new();
+
+    let projects_config = match ProjectsConfig::load(&get_projects_dir()) {
+        Ok(projects_config) => projects_config,
+        Err(_err) => return Err(String::from("Could not load info about projects")),
+    };
+
+    for course in &projects_config.courses {
+        courses.push(course.0.clone());
+    }
+
+    if courses.is_empty() {
+        return Err(format!(
+            "No courses found from current or project directory. Project directory set to {}",
+            get_projects_dir().to_str().unwrap().to_string()
+        ));
+    }
+
+    let chosen_course = match interactive_list("First select course: ", courses) {
+        Some(selection) => selection,
+        None => return Err("Course selection interrupted.".to_string()),
+    };
+
+    let course_config = projects_config.courses.get(&chosen_course).unwrap();
+
+    let mut exercise_list: Vec<String> = Vec::new();
+
+    for exercise in &course_config.exercises {
+        exercise_list.push(exercise.0.clone());
+    }
+
+    if exercise_list.is_empty() {
+        return Err(format!(
+            "No exercises found from chosen course folder. Project directory set to {}",
+            get_projects_dir().to_str().unwrap().to_string()
+        ));
+    }
+
+    let chosen_exercise = match interactive_list("Select exercise: ", exercise_list) {
+        Some(selection) => selection,
+        None => return Err("Exercise selection interrupted.".to_string()),
+    };
+
+    let mut path = get_projects_dir();
+    path.push(chosen_course);
+    path.push(chosen_exercise);
+
+    Ok(path)
+}
+
+/// Shows two interactive selections, for course and then exercise
+/// Mutates parameters according to selection, giving exercise name, exercise dir and path of course_config
+/// Returns error if menu was exited without selecting, if no courses/exercises were found, or if
+/// config file was not read successfully
+pub fn ask_exercise_interactive(
+    exercise_name: &mut String,
+    exercise_dir: &mut PathBuf,
+    course_config: &mut Option<CourseConfig>,
+) -> Result<(), String> {
+    let mut exercise_path = match choose_exercise() {
+        Ok(path) => path,
+        Err(msg) => return Err(msg),
+    };
+    *exercise_name = exercise_path
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+    *exercise_dir = exercise_path.clone();
+    exercise_path.pop();
+    exercise_path.push(CONFIG_FILE_NAME);
+    *course_config = match read_new_course_config(&exercise_path) {
+        Ok(config) => config,
+        Err(msg) => return Err(msg),
+    };
+    Ok(())
 }
