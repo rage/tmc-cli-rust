@@ -1,8 +1,11 @@
 use super::command_util;
 use super::command_util::{find_submit_or_paste_config, Client};
 use crate::io_module::Io;
+use crate::progress_reporting;
+use crate::progress_reporting::ProgressBarManager;
 use isolang::Language;
 use reqwest::Url;
+use tmc_langs::ClientUpdateData;
 /// Sends the course exercise submission with paste message to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.
@@ -54,6 +57,14 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     let paste_msg = io.read_line();
     io.println("");
 
+    // start manager for 1 events TmcClient::paste
+    let mut manager = ProgressBarManager::new(
+        progress_reporting::get_default_style(),
+        1,
+        client.is_test_mode(),
+    );
+    manager.start::<ClientUpdateData>();
+
     // Send submission, handle errors and print link to paste
     let new_submission = client.paste(
         return_url,
@@ -62,10 +73,15 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         Some(Language::Eng),
     );
 
-    io.println(&format!(
-        "Paste submitted to this address: {} \n",
-        new_submission.unwrap().paste_url
-    ));
+    match new_submission {
+        Ok(_submission) => {
+            manager.join();
+        }
+        Err(err) => {
+            manager.force_join();
+            io.println(&format!("Error: {} \n", err));
+        }
+    }
 }
 
 #[cfg(test)]

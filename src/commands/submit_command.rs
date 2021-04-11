@@ -1,9 +1,9 @@
 use super::command_util;
 use super::command_util::*;
 use crate::io_module::Io;
+use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use anyhow::{Context, Result};
-use indicatif::ProgressStyle;
 use tmc_langs::ClientError;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
@@ -62,15 +62,12 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
     }
 
-    // Make style for progress bar:
-    let progress_style = ProgressStyle::default_bar()
-    .template(
-        "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
-    )
-    .progress_chars("#>-");
-
-    // start manager for 2 events TmcClient::Submit, TmcClient::WaitForSubmission
-    let mut manager = ProgressBarManager::new(progress_style, 2, client.is_test_mode());
+    // start manager for 2 events TmcClient::submit, TmcClient::wait_for_submission
+    let mut manager = ProgressBarManager::new(
+        progress_reporting::get_default_style(),
+        2,
+        client.is_test_mode(),
+    );
     manager.start::<ClientUpdateData>();
 
     // Send submission

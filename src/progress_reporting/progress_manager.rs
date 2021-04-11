@@ -7,6 +7,12 @@ use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use tmc_langs_util::progress_reporter::StatusUpdate;
 
+pub fn get_default_style() -> ProgressStyle {
+    ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] [{bar:60.white}] {percent}% ({eta})\n{wide_msg}")
+        .progress_chars("█_░")
+}
+
 pub struct ProgressBarManager {
     is_test_mode: bool,
     style: ProgressStyle,
@@ -18,7 +24,8 @@ pub struct ProgressBarManager {
 }
 
 impl ProgressBarManager {
-    /// creates a new progressbar manager
+    /// creates a new progressbar manager,
+    /// params:
     /// style: style of progress bar, can be used to change how progress or messages are shown
     /// finishes_count: expected amount of finish stages,
     ///     e.g. 2 for submission (1 for TmcClient::submit, 1 for TmcClient::wait_for_submission)
@@ -103,7 +110,7 @@ impl ProgressBarManager {
     }
 
     /// Used to substitute progress_reporter::subscribe call
-    ///   when we are in test_mode
+    ///   when we are in test_mode (for example when executing integration tests)
     fn mock_subscribe<T, F>(&self, progress_report: F)
     where
         T: 'static + Send + Sync,

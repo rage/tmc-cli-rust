@@ -2,10 +2,10 @@ use super::command_util;
 use super::command_util::*;
 use crate::interactive;
 use crate::io_module::Io;
-use crate::progress_reporting::progress_manager::ProgressBarManager;
-use indicatif::ProgressStyle;
-use tmc_langs::ClientError;
+use crate::progress_reporting;
+use crate::progress_reporting::ProgressBarManager;
 use tmc_langs::ClientUpdateData;
+use tmc_langs::DownloadResult;
 
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
@@ -102,37 +102,61 @@ pub fn download_or_update(
                 .map(|t| t.id)
                 .collect();
 
-            let progress_style = ProgressStyle::default_bar()
-                .template(
-                    "{wide_msg} \n{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
-                )
-                .progress_chars("#>-");
+            if exercise_ids.is_empty() {
+                io.println(&format!(
+                    "No valid exercises found for course '{}'",
+                    course.title
+                ));
+                return;
+            }
 
             // start manager for 1 event: tmc_langs::download_or_update_exercises
-            let mut manager = ProgressBarManager::new(progress_style, 1, client.is_test_mode());
+            let mut manager = ProgressBarManager::new(
+                progress_reporting::get_default_style(),
+                1,
+                client.is_test_mode(),
+            );
             manager.start::<ClientUpdateData>();
 
             let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());
 
-            manager.join();
+            match result {
+                Ok(download_result) => {
+                    manager.join();
+                    match download_result {
+                        DownloadResult::Success {
+                            downloaded: _,
+                            skipped: _,
+                        } => {
+                            if client.is_test_mode() {
+                                io.println("Download was successful!");
+                            }
+                        }
+                        DownloadResult::Failure {
+                            downloaded: _,
+                            skipped: _,
+                            failed,
+                        } => {
+                            io.println("");
 
-            io.println(&parse_download_result(result))
+                            for (id, messages) in failed {
+                                io.println(&format!(
+                                    "Failed to download exercise: '{}'",
+                                    id.exercise_slug
+                                ));
+                                for message in messages {
+                                    io.println(&format!("   with message: '{}'", message));
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(err) => {
+                    manager.force_join();
+                    io.println(&format!("Error: {}", err.to_string()));
+                }
+            }
         }
         Err(error) => io.println(&error),
-    }
-}
-
-fn parse_download_result(result: Result<String, ClientError>) -> String {
-    match result {
-        Ok(path) => format!("{}/\nDownload was successful!", path),
-        Err(ClientError::IncompleteDownloadResult {
-            downloaded: successful,
-            failed: fail,
-        }) => {
-            let done = successful.len().to_string();
-            let total = (successful.len() + fail.len()).to_string();
-            format!("[{} / {}] exercises downloaded.", done, total)
-        }
-        _ => "Received an unexpected result from downloading exercises.".to_string(),
     }
 }

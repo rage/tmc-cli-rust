@@ -103,6 +103,8 @@ mod tests {
     use tmc_client::{
         ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
     };
+    use tmc_langs::DownloadResult;
+    use tmc_langs::LangsError;
 
     use super::*;
     use std::slice::Iter;
@@ -323,8 +325,11 @@ mod tests {
             &mut self,
             _download_params: &[usize],
             _path: &Path,
-        ) -> Result<String, ClientError> {
-            Ok("Ok".to_string())
+        ) -> Result<DownloadResult, LangsError> {
+            Ok(DownloadResult::Success {
+                downloaded: vec![],
+                skipped: vec![],
+            })
         }
 
         fn get_course_details(

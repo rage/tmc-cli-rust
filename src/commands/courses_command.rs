@@ -34,6 +34,8 @@ mod tests {
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
     use tmc_client::{Organization, SubmissionFinished};
+    use tmc_langs::DownloadResult;
+    use tmc_langs::LangsError;
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,
@@ -183,8 +185,11 @@ mod tests {
             &mut self,
             _download_params: &[usize],
             _path: &Path,
-        ) -> Result<String, ClientError> {
-            Ok("Ok".to_string())
+        ) -> Result<DownloadResult, LangsError> {
+            Ok(DownloadResult::Success {
+                downloaded: vec![],
+                skipped: vec![],
+            })
         }
 
         fn get_course_details(

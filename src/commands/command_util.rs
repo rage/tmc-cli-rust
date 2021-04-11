@@ -9,6 +9,8 @@ use tmc_client::{
 };
 use tmc_langs::file_util;
 use tmc_langs::Credentials;
+use tmc_langs::DownloadResult;
+use tmc_langs::LangsError;
 use tmc_langs::{ConfigValue, CourseConfig, TmcConfig};
 use toml::de::Error;
 
@@ -46,7 +48,7 @@ pub trait Client {
         &mut self,
         download_params: &[usize],
         path: &Path,
-    ) -> Result<String, ClientError>;
+    ) -> Result<DownloadResult, LangsError>;
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
@@ -112,9 +114,20 @@ impl Client for ClientProduction {
             .tmc_client
             .paste(submission_url, submission_path, paste_message, locale)
         {
-            Err(_client_error) => {
-                Err("Received ClientError when calling paste command from tmc_client".to_string())
-            }
+            Err(client_error) => match client_error {
+                ClientError::HttpError {
+                    url: _,
+                    status,
+                    error,
+                    obsolete_client: _,
+                } => {
+                    return Err(format!("Status {}, message: {}", status, error));
+                }
+                _ => Err(
+                    "Received unhandled ClientError when calling paste command from tmc_client"
+                        .to_string(),
+                ),
+            },
             Ok(submission) => Ok(submission),
         }
     }
@@ -362,14 +375,15 @@ impl Client for ClientProduction {
         &mut self,
         exercise_ids: &[usize],
         path: &Path,
-    ) -> Result<String, ClientError> {
+    ) -> Result<DownloadResult, LangsError> {
         if self.test_mode {
-            return Ok("Ok".to_string());
+            return Ok(DownloadResult::Success {
+                downloaded: vec![],
+                skipped: vec![],
+            });
         }
 
         tmc_langs::download_or_update_course_exercises(&self.tmc_client, path, &exercise_ids, true)
-            .unwrap();
-        Ok(format!("Download folder: {}", path.display()))
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
