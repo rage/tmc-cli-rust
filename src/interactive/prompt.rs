@@ -47,6 +47,7 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
 
     disable_raw_mode().unwrap();
 
+    println!("");
     if let Some(result) = result {
         Some(result)
     } else {
