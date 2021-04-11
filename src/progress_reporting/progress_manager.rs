@@ -10,7 +10,7 @@ use tmc_langs_util::progress_reporter::StatusUpdate;
 pub fn get_default_style() -> ProgressStyle {
     ProgressStyle::default_bar()
         .template("[{elapsed_precise}] [{bar:60.white}] {percent}% ({eta})\n{wide_msg}")
-        .progress_chars("█_░")
+        .progress_chars("██░")
 }
 
 pub struct ProgressBarManager {
