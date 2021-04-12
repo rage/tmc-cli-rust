@@ -1,9 +1,12 @@
+use std::path::PathBuf;
+
 use super::command_util;
 use super::command_util::*;
 use crate::interactive;
 use crate::io_module::Io;
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
+use tmc_client::Course;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::DownloadResult;
 
@@ -22,55 +25,47 @@ pub fn download_or_update(
         return;
     };
 
-    let courses_result = client.list_courses();
-    if courses_result.is_err() {
+    io.println("Fetching courses...");
+    let courses = client.list_courses();
+    if courses.is_err() {
         io.println("Could not list courses.");
         return;
     }
 
+    let mut courses = courses
+        .unwrap()
+        .iter()
+        .map(|course| client.get_course_details(course.id).unwrap())
+        .collect::<Vec<_>>();
+
+    courses.sort_by(|a, b| {
+        a.course
+            .title
+            .to_lowercase()
+            .cmp(&b.course.title.to_lowercase())
+    });
+
     let name_select = if let Some(course) = course_name {
         course.to_string()
     } else {
-        let courses = courses_result.unwrap();
-        let mut course_details = vec![];
-        // Course objects from list_courses() don't contain title, so we have to manually get it from CourseDetails
-        for c in courses {
-            let details = client.get_course_details(c.id);
-            course_details.push(details.unwrap());
-        }
-        course_details.sort_by(|a, b| {
-            a.course
-                .title
-                .to_lowercase()
-                .cmp(&b.course.title.to_lowercase())
-        });
-
-        let result = interactive::interactive_list(
-            "Select your course:",
-            course_details
+        match get_course_name(
+            courses
                 .iter()
                 .map(|course| course.course.title.clone())
                 .collect(),
-        );
-        if result.is_none() {
-            io.println("Course selection was interrupted.");
-            return;
-        }
-        let course_title = result.unwrap();
-
-        // find name of course with title
-        let mut course_name = "".to_string();
-        for c in course_details {
-            if c.course.title.trim() == course_title.trim() {
-                course_name = c.course.name
+        ) {
+            Ok(course) => courses
+                .iter()
+                .find(|c| c.course.title == course)
+                .unwrap()
+                .course
+                .name
+                .clone(),
+            Err(msg) => {
+                io.println(&msg);
+                return;
             }
         }
-        if course_name.is_empty() {
-            io.println("Could not find course by title.");
-            return;
-        }
-
-        course_name
     };
 
     // Get course by name
@@ -94,6 +89,31 @@ pub fn download_or_update(
         get_projects_dir()
     };
 
+    match download_exercises(pathbuf, client, course) {
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+    }
+}
+
+pub fn get_course_name(courses: Vec<String>) -> Result<String, String> {
+    let result = interactive::interactive_list("Select your course:", courses);
+
+    match result {
+        Some(course) => {
+            if course.is_empty() {
+                Err("Could not find a course by the given title".to_string())
+            } else {
+                Ok(course)
+            }
+        }
+        None => Err("Course selection was interrupted".to_string()),
+    }
+}
+
+pub fn download_exercises(
+    pathbuf: PathBuf,
+    client: &mut dyn Client,
+    course: Course,
+) -> Result<String, String> {
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
             let exercise_ids: Vec<usize> = exercises
@@ -103,11 +123,10 @@ pub fn download_or_update(
                 .collect();
 
             if exercise_ids.is_empty() {
-                io.println(&format!(
+                return Err(format!(
                     "No valid exercises found for course '{}'",
                     course.title
                 ));
-                return;
             }
 
             // start manager for 1 event: tmc_langs::download_or_update_exercises
@@ -129,7 +148,7 @@ pub fn download_or_update(
                             skipped: _,
                         } => {
                             if client.is_test_mode() {
-                                io.println("Download was successful!");
+                                return Ok("Download was successful!".to_string());
                             }
                         }
                         DownloadResult::Failure {
@@ -137,26 +156,30 @@ pub fn download_or_update(
                             skipped: _,
                             failed,
                         } => {
-                            io.println("");
+                            let mut res = String::from("\n");
 
                             for (id, messages) in failed {
-                                io.println(&format!(
+                                res.push_str(&format!(
                                     "Failed to download exercise: '{}'",
                                     id.exercise_slug
                                 ));
                                 for message in messages {
-                                    io.println(&format!("   with message: '{}'", message));
+                                    res.push_str(&format!("    with message: '{}'", message));
                                 }
                             }
+
+                            return Err(res);
                         }
                     }
                 }
                 Err(err) => {
                     manager.force_join();
-                    io.println(&format!("Error: {}", err.to_string()));
+                    return Err(format!("Error: {}", err));
                 }
             }
         }
-        Err(error) => io.println(&error),
+        Err(error) => return Err(format!("Error: {}", error)),
     }
+
+    Ok("Exercises downloaded succesfully!".to_string())
 }
