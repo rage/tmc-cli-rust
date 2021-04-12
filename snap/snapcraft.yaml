@@ -1,0 +1,21 @@
+name: tmc-cli-rust
+version: 0.3.3
+summary: Test my code CLI
+description: .
+confinement: classic
+base: core18
+
+parts:
+  tmc-cli-rust:
+    plugin: nil
+    source: . 
+    override-pull: | 
+      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v0.3.3 > tmc
+      chmod +x tmc
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      cp tmc $SNAPCRAFT_PART_INSTALL/bin/
+    build-packages:
+      - curl
+apps:
+  tmc-cli-rust:
+    command: bin/tmc

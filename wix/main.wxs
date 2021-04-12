@@ -33,7 +33,7 @@
 
     <Product
         Id='*'
-        Name='tmc-cli-rust'
+        Name='tmc'
         UpgradeCode='E702315C-E54D-4F15-9513-6A4CCCC7E8D7'
         Manufacturer='HoolaBoola'
         Language='1033'

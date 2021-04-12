@@ -1,5 +1,3 @@
-use crate::config::{ConfigValue, TmcConfig};
-
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Url};
 use std::env;
@@ -11,6 +9,9 @@ use std::path::Path;
 
 use std::cmp::min;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use crate::commands::command_util::get_path;
+use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";
 pub const PLUGIN: &str = "vscode_plugin";
@@ -29,7 +30,7 @@ pub fn check_for_update() {
 }
 
 fn is_it_time_yet() -> bool {
-    let config = TmcConfig::load(PLUGIN).unwrap();
+    let config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
 
     let last_check = match config.get("update-last-checked") {
         ConfigValue::Value(Some(s)) => toml::Value::as_str(&s).unwrap().to_string(),
@@ -54,7 +55,7 @@ fn is_it_time_yet() -> bool {
 }
 
 fn generate_time_stamp() {
-    let mut config = TmcConfig::load(PLUGIN).unwrap();
+    let mut config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
     let now = SystemTime::now();
     let since_the_epoch = now
         .duration_since(UNIX_EPOCH)
@@ -67,7 +68,7 @@ fn generate_time_stamp() {
     ) {
         println!("timestamp could not be changed");
     }
-    if let Err(_err) = config.save() {
+    if let Err(_err) = config.save(get_path().as_path()) {
         println!("Problem saving timestamp");
     }
 }

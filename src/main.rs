@@ -1,12 +1,11 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use std::io::{stdin, stdout};
 
-pub mod config;
-
 pub mod io_module;
 use io_module::IoProduction;
 pub mod commands;
 pub mod interactive;
+pub mod progress_reporting;
 mod updater;
 
 const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
@@ -50,10 +49,9 @@ fn get_matches() -> ArgMatches<'static> {
                         .required(false),
                 )
                 .arg(
-                    Arg::with_name("download_folder")
-                        .short("f")
-                        .long("folder")
-                        .value_name("download folder")
+                    Arg::with_name("currentdir")
+                        .short("d")
+                        .long("currentdir")
                         .required(false),
                 ),
         )
