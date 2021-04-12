@@ -1,4 +1,4 @@
-name: tmc
+name: tmc-cli-rust
 version: 0.3.3
 summary: Test my code CLI
 description: .
@@ -6,7 +6,7 @@ confinement: classic
 base: core18
 
 parts:
-  tmc:
+  tmc-cli-rust:
     plugin: nil
     source: . 
     override-pull: | 
@@ -17,5 +17,5 @@ parts:
     build-packages:
       - curl
 apps:
-  tmc:
+  tmc-cli-rust:
     command: bin/tmc
