@@ -156,15 +156,15 @@ pub fn download_exercises(
                             skipped: _,
                             failed,
                         } => {
-                            let mut res = String::from("\n");
+                            let mut res = String::from("");
 
                             for (id, messages) in failed {
                                 res.push_str(&format!(
-                                    "Failed to download exercise: '{}'",
+                                    "\nFailed to download exercise: '{}'",
                                     id.exercise_slug
                                 ));
                                 for message in messages {
-                                    res.push_str(&format!("    with message: '{}'", message));
+                                    res.push_str(&format!("\n    with message: '{}'", message));
                                 }
                             }
 
