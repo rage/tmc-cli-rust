@@ -1,5 +1,5 @@
 use super::command_util::Client;
-use super::organization_command;
+use super::{command_util, download_command, organization_command};
 use crate::io_module::Io;
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
@@ -41,9 +41,88 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
             };
             if let Err(_err) = res {
                 io.println("Could not set organization");
+                return;
             }
         }
-        Err(message) => io.println(&message),
+        Err(message) => {
+            io.println(&message);
+            return;
+        }
+    }
+
+    if client.is_test_mode() {
+        return;
+    }
+    download_after_login(client, io);
+}
+
+pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
+    io.println("Fetching courses...");
+    let courses = client.list_courses();
+    if courses.is_err() {
+        io.println("Could not list courses.");
+        return;
+    }
+
+    let mut courses = courses
+        .unwrap()
+        .iter()
+        .map(|course| client.get_course_details(course.id).unwrap())
+        .collect::<Vec<_>>();
+
+    courses.sort_by(|a, b| {
+        a.course
+            .title
+            .to_lowercase()
+            .cmp(&b.course.title.to_lowercase())
+    });
+
+    let mut courses_displayed = courses
+        .iter()
+        .map(|course| course.course.title.clone())
+        .collect::<Vec<_>>();
+    let no_download = "Don't download anything".to_string();
+    courses_displayed.insert(0, no_download.clone());
+
+    let name_select = match download_command::get_course_name(courses_displayed) {
+        Ok(course) => {
+            if course == no_download {
+                io.println("No course downloaded.");
+                return;
+            }
+            courses
+                .iter()
+                .find(|c| c.course.title == course)
+                .unwrap()
+                .course
+                .name
+                .clone()
+        }
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
+    // Get course by name
+    let course_result = match command_util::get_course_by_name(client, name_select) {
+        Ok(result) => result,
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
+    if course_result.is_none() {
+        io.println("Could not find course with that name");
+        return;
+    }
+    let course = course_result.unwrap();
+
+    let pathbuf = command_util::get_projects_dir();
+
+    match download_command::download_exercises(pathbuf, client, course) {
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
     }
 }
 
