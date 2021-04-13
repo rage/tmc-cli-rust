@@ -123,9 +123,7 @@ impl Client for ClientProduction {
                     status,
                     error,
                     obsolete_client: _,
-                } => {
-                    return Err(format!("Status {}, message: {}", status, error));
-                }
+                } => Err(format!("Status {}, message: {}", status, error)),
                 _ => Err(
                     "Received unhandled ClientError when calling paste command from tmc_client"
                         .to_string(),

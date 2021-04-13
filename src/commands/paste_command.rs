@@ -72,18 +72,12 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     manager.start::<ClientUpdateData>();
 
     // Send submission, handle errors and print link to paste
-    let new_submission = match client.paste(
+    let new_submission = client.paste(
         return_url,
         exercise_dir.as_path(),
         Some(paste_msg),
         Some(Language::Eng),
-    ) {
-        Ok(submission) => submission,
-        Err(msg) => {
-            io.println(&msg);
-            return;
-        }
-    };
+    );
 
     match new_submission {
         Ok(_submission) => {
