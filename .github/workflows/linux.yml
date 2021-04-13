@@ -47,9 +47,9 @@ jobs:
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu # required to build for 32-bit arch
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/i386-linux-gnu # required to build for 32-bit arch
           rustup target add i686-unknown-linux-gnu
-          cargo build -p tmc-cli-rust --release --verbose --target ${{ matrix.target }}
+          cargo build -p tmc --release --verbose --target ${{ matrix.target }}
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Deploy
-        run: gsutil cp target/${{ matrix.target }}/release/tmc-cli-rust gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}
+        run: gsutil cp target/${{ matrix.target }}/release/tmc gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}
