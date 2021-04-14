@@ -1,3 +1,4 @@
+use crate::commands::command_util;
 use crate::commands::command_util::ask_exercise_interactive;
 use crate::io_module::Io;
 use std::env;
@@ -105,7 +106,7 @@ fn print_result_tests(io: &mut dyn Io, exercises_completed: usize, exercises_tot
         "Total results: {}/{} exercises passed",
         exercises_completed, exercises_total
     ));
-    io.println(&get_progress_string(
+    io.println(&command_util::get_progress_string(
         exercises_completed,
         exercises_total,
         64,
@@ -146,40 +147,13 @@ fn print_result_test(
         io.println("All tests passed! Submit to server with 'tmc submit'");
     }
     if print_progress {
-        io.println(&get_progress_string(tests_passed, tests_total, 64));
+        io.println(&command_util::get_progress_string(
+            tests_passed,
+            tests_total,
+            64,
+        ));
     }
     tests_passed == tests_total
-}
-
-/// Returns a progress bar of size 'length' based on percentage of 'completed' / 'total'
-fn get_progress_string(completed: usize, total: usize, length: usize) -> String {
-    let completed_proportion = if total == 0 {
-        1_f32
-    } else {
-        completed as f32 / total as f32
-    };
-    let completed_percentage_readable = (completed_proportion * 100_f32).floor() as usize;
-    let progress_done = (completed_proportion * length as f32).floor() as usize;
-
-    let mut progress_string = String::with_capacity(length);
-    for _ in 0..progress_done {
-        progress_string.push('█');
-    }
-    for _ in progress_done..length {
-        progress_string.push('░');
-    }
-
-    let spaces = if completed_percentage_readable < 10 {
-        "  "
-    } else if completed_percentage_readable < 100 {
-        " "
-    } else {
-        ""
-    };
-    format!(
-        "{}{}%[{}]",
-        spaces, completed_percentage_readable, progress_string
-    )
 }
 
 #[cfg(test)]
@@ -230,9 +204,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_empty_test() {
-            let progress_string = get_progress_string(0, 100, 64);
+            let progress_string = command_util::get_progress_string(0, 100, 64);
             let expected_string = String::from(
-                "  0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
+                "   0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -240,9 +214,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_empty_2_test() {
-            let progress_string = get_progress_string(0, 1, 64);
+            let progress_string = command_util::get_progress_string(0, 1, 64);
             let expected_string = String::from(
-                "  0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
+                "   0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -250,9 +224,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_full_test() {
-            let progress_string = get_progress_string(100, 100, 64);
+            let progress_string = command_util::get_progress_string(100, 100, 64);
             let expected_string = String::from(
-                "100%[████████████████████████████████████████████████████████████████]",
+                " 100%[████████████████████████████████████████████████████████████████]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -260,9 +234,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_full_2_test() {
-            let progress_string = get_progress_string(1, 1, 64);
+            let progress_string = command_util::get_progress_string(1, 1, 64);
             let expected_string = String::from(
-                "100%[████████████████████████████████████████████████████████████████]",
+                " 100%[████████████████████████████████████████████████████████████████]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -270,18 +244,18 @@ mod tests {
 
         #[test]
         fn generate_progress_string_50_50_test() {
-            let progress_string = get_progress_string(1, 2, 64);
+            let progress_string = command_util::get_progress_string(1, 2, 64);
             let expected_string = String::from(
-                " 50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
+                "  50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);
         }
         #[test]
         fn generate_progress_string_50_50_2_test() {
-            let progress_string = get_progress_string(50, 100, 64);
+            let progress_string = command_util::get_progress_string(50, 100, 64);
             let expected_string = String::from(
-                " 50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
+                "  50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -289,9 +263,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_30_70_test() {
-            let progress_string = get_progress_string(3, 10, 64);
+            let progress_string = command_util::get_progress_string(3, 10, 64);
             let expected_string = String::from(
-                " 30%[███████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
+                "  30%[███████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);
@@ -299,9 +273,9 @@ mod tests {
 
         #[test]
         fn generate_progress_string_79_21_test() {
-            let progress_string = get_progress_string(79, 100, 64);
+            let progress_string = command_util::get_progress_string(79, 100, 64);
             let expected_string = String::from(
-                " 79%[██████████████████████████████████████████████████░░░░░░░░░░░░░░]",
+                "  79%[██████████████████████████████████████████████████░░░░░░░░░░░░░░]",
             );
 
             assert_eq!(progress_string, expected_string);

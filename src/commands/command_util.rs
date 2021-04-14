@@ -694,3 +694,34 @@ pub fn ask_exercise_interactive(
     };
     Ok(())
 }
+
+/// Returns a manual progress bar of size 'length' based on percentage of 'completed' / 'total'
+pub fn get_progress_string(completed: usize, total: usize, length: usize) -> String {
+    let completed_proportion = if total == 0 {
+        1_f32
+    } else {
+        completed as f32 / total as f32
+    };
+    let completed_percentage_readable = (completed_proportion * 100_f32).floor() as usize;
+    let progress_done = (completed_proportion * length as f32).floor() as usize;
+
+    let mut progress_string = String::with_capacity(length);
+    for _ in 0..progress_done {
+        progress_string.push('█');
+    }
+    for _ in progress_done..length {
+        progress_string.push('░');
+    }
+
+    let spaces = if completed_percentage_readable < 10 {
+        "   "
+    } else if completed_percentage_readable < 100 {
+        "  "
+    } else {
+        " "
+    };
+    format!(
+        "{}{}%[{}]",
+        spaces, completed_percentage_readable, progress_string
+    )
+}

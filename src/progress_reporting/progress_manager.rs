@@ -2,6 +2,7 @@ use core::sync::atomic::AtomicUsize;
 use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
 use std::cmp::min;
+use std::collections::VecDeque;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
@@ -9,7 +10,7 @@ use tmc_langs_util::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
     ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] [{bar:60.white}] {percent}% ({eta})\n{wide_msg}")
+        .template("{wide_msg}\n {percent}%[{bar:64.white}] [{elapsed_precise}]")
         .progress_chars("██░")
 }
 
@@ -17,6 +18,7 @@ pub struct ProgressBarManager {
     is_test_mode: bool,
     style: ProgressStyle,
     percentage_progress: Arc<Mutex<f64>>,
+    message_queue: Arc<Mutex<VecDeque<String>>>,
     status_message: Arc<Mutex<String>>,
     finishes_count: usize,
     is_finished: Arc<AtomicUsize>,
@@ -40,6 +42,7 @@ impl ProgressBarManager {
             is_test_mode,
             style,
             percentage_progress: Arc::new(Mutex::new(0.0)),
+            message_queue: Arc::new(Mutex::new(VecDeque::new())),
             status_message: Arc::new(Mutex::new("".to_string())),
             finishes_count,
             is_finished: Arc::new(AtomicUsize::new(0)),
@@ -71,6 +74,7 @@ impl ProgressBarManager {
 
         let style = self.style.clone();
         let max_size = 100;
+        let message_queue_t = self.message_queue.clone();
         let message_t = self.status_message.clone();
         let percentage_t = self.percentage_progress.clone();
         let finishes_count_t = self.finishes_count;
@@ -80,6 +84,7 @@ impl ProgressBarManager {
                 style,
                 max_size,
                 percentage_t,
+                message_queue_t,
                 message_t,
                 finishes_count_t,
                 finished_t,
@@ -92,6 +97,15 @@ impl ProgressBarManager {
         } else {
             self.mock_subscribe(callback);
         }
+    }
+
+    /// Renders a static message under progression status text
+    /// Used for displaying text to user while progress bar is running
+    pub fn println(&mut self, message: String) {
+        let mut message_guard = self.message_queue.lock().expect("Could not lock mutex");
+        //*message_guard = message;
+        (*message_guard).push_back(message);
+        drop(message_guard);
     }
 
     /// joins progress thread to callers thread
@@ -140,22 +154,46 @@ impl ProgressBarManager {
         style: ProgressStyle,
         max_len: usize,
         percentage_progress: Arc<Mutex<f64>>,
+        message_queue: Arc<Mutex<VecDeque<String>>>,
         status_message: Arc<Mutex<String>>,
         finishes_count: usize,
         is_finished: Arc<AtomicUsize>,
     ) {
         let pb = ProgressBar::new(max_len as u64);
         pb.set_style(style);
+        pb.enable_steady_tick(1000);
 
+        let mut last_progress = 1.0_f64;
+
+        let mut last_message = "".to_string();
         loop {
             let guard = percentage_progress.lock().expect("Could not lock mutex");
             let progress = (*guard as f64) * max_len as f64;
-            pb.set_position(min(progress as u64, max_len as u64));
             drop(guard);
 
+            if (progress - last_progress).abs() > 0.01 {
+                //progress has updated since last tick
+                pb.set_position(min(progress as u64, max_len as u64));
+                last_progress = progress;
+            }
+
             let message_guard = status_message.lock().expect("Could not lock mutex");
-            pb.set_message(&*message_guard);
+            let message = (*message_guard).clone();
             drop(message_guard);
+
+            if message != last_message {
+                // message has changed since last tick
+                pb.set_message(&message);
+                last_message = message.clone();
+            }
+
+            let mut message_queue_guard = message_queue.lock().expect("Could not lock mutex");
+            let message_option = (*message_queue_guard).pop_front();
+            drop(message_queue_guard);
+
+            if let Some(popped_message) = message_option {
+                pb.println(popped_message);
+            }
 
             if finishes_count == is_finished.load(Ordering::SeqCst) {
                 break;
@@ -163,7 +201,7 @@ impl ProgressBarManager {
 
             std::thread::sleep(std::time::Duration::from_millis(1000 / 15));
         }
-
+        pb.disable_steady_tick();
         let message_guard = status_message.lock().expect("Could not lock mutex");
         pb.finish_with_message(&*message_guard);
         drop(message_guard);

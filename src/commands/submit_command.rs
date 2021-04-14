@@ -7,6 +7,8 @@ use anyhow::{Context, Result};
 use tmc_langs::ClientError;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
+use tmc_langs::NewSubmission;
+use tmc_langs::SubmissionFinished;
 use url::Url;
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
@@ -67,6 +69,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
     }
 
+    io.println("\n");
     // start manager for 2 events TmcClient::submit, TmcClient::wait_for_submission
     let mut manager = ProgressBarManager::new(
         progress_reporting::get_default_style(),
@@ -99,22 +102,85 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         return;
     }
 
-    let new_submission = new_submission_result.unwrap();
+    let new_submission: NewSubmission = new_submission_result.unwrap();
+    manager.println(format!(
+        "You can view your submission at: {}",
+        new_submission.show_submission_url
+    ));
 
-    let wait_status = client.wait_for_submission(&new_submission.submission_url);
+    let wait_status: Result<SubmissionFinished, ClientError> =
+        client.wait_for_submission(&new_submission.submission_url);
     match wait_status {
-        Ok(_submission_finished) => {
+        Ok(submission_finished) => {
             manager.join();
 
-            io.println(&format!(
-                "Submission finished.\nYou can find your submission here: {}",
-                &new_submission.show_submission_url
-            ));
+            print_wait_for_submission_results(io, submission_finished);
         }
         Err(err) => {
             manager.force_join();
             io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", &new_submission.show_submission_url));
             io.println(&format!("Error message: {:#?}", err));
+        }
+    }
+}
+
+fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: SubmissionFinished) {
+    let mut all_passed = false;
+    if let Some(all_tests_passed) = submission_finished.all_tests_passed {
+        all_passed = all_tests_passed;
+        if all_tests_passed {
+            io.println("All tests passed on server!");
+        }
+    }
+    if !submission_finished.points.is_empty() {
+        io.print("Points permanently awarded: [");
+        for i in 0..submission_finished.points.len() {
+            io.print(&submission_finished.points[i].to_string());
+            if i < submission_finished.points.len() - 1 {
+                io.print(", ");
+            }
+        }
+        io.println("]");
+    } else {
+        io.println("No new points awarded.");
+    }
+
+    if all_passed {
+        if let Some(solution_url) = submission_finished.solution_url {
+            io.println(&format!("Model solution: {}", solution_url));
+        }
+    } else {
+        if let Some(error) = submission_finished.error {
+            io.println(&format!("Error: {}", error));
+        }
+
+        if let Some(test_cases) = submission_finished.test_cases {
+            let mut completed = 0;
+            let mut total = 0;
+            for case in test_cases {
+                if case.successful {
+                    io.println(&format!("Failed: {}", case.name));
+                    if let Some(message) = case.message {
+                        io.println(&format!("    Message: {}", message));
+                    }
+                    if let Some(detailed_message) = case.detailed_message {
+                        io.println(&format!("    Detailed message: {}", detailed_message));
+                    }
+                    if let Some(exceptions) = case.exception {
+                        for exception in exceptions {
+                            io.println(&format!("        Exception: {}", exception));
+                        }
+                    }
+                    completed += 1;
+                }
+                total += 1;
+            }
+            io.println(&format!(
+                "\nTest results: {}/{} tests passed",
+                completed, total
+            ));
+
+            io.println(&command_util::get_progress_string(completed, total, 64));
         }
     }
 }
