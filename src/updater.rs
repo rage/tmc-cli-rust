@@ -14,7 +14,7 @@ use crate::commands::command_util::get_path;
 use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";
-pub const PLUGIN: &str = "vscode_plugin";
+pub const PLUGIN: &str = "tmc_cli_rust";
 pub const DELAY: u128 = 5 * 60 * 1000;
 
 pub fn check_for_update() {
