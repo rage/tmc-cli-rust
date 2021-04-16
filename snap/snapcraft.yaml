@@ -2,7 +2,7 @@ name: tmc-cli-rust
 version: 0.3.3
 summary: Test my code CLI
 description: .
-confinement: classic
+confinement: strict
 base: core18
 
 parts:
