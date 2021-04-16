@@ -1,7 +1,8 @@
 use super::state::AppState;
 use crossterm::{
     event::{poll, read, Event, KeyCode, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use tui::{
     backend::{Backend, CrosstermBackend},
@@ -37,17 +38,18 @@ const POLL_RATE: u64 = 1000;
 /// }
 /// ```
 pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
+    execute!(stdout(), EnterAlternateScreen).unwrap();
+    let backend = CrosstermBackend::new(stdout());
+    let mut terminal = Terminal::new(backend).unwrap();
+
+    terminal.clear().unwrap();
     enable_raw_mode().unwrap();
-
-    let stdout = stdout();
-    let backend = CrosstermBackend::new(stdout);
-    let terminal = Terminal::new(backend).unwrap();
-
-    let result = event_loop(terminal, items, prompt);
+    let result = event_loop(&mut terminal, items, prompt);
 
     disable_raw_mode().unwrap();
 
-    println!();
+    terminal.clear().unwrap();
+    execute!(stdout(), LeaveAlternateScreen).unwrap();
     if let Some(result) = result {
         Some(result)
     } else {
@@ -136,17 +138,15 @@ fn read_keys(app: &mut AppState) -> Option<Option<String>> {
     None
 }
 
-fn event_loop<B>(mut terminal: Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
+fn event_loop<B>(terminal: &mut Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
 where
     B: Backend,
 {
-    terminal.clear().unwrap();
-
     let mut app = AppState::new(items);
 
     let mut result = None;
     loop {
-        draw_terminal(&mut terminal, &mut app, prompt);
+        draw_terminal(terminal, &mut app, prompt);
 
         if let Some(res) = read_keys(&mut app) {
             if res.is_some() {
@@ -155,7 +155,6 @@ where
             break;
         }
     }
-    terminal.clear().unwrap();
 
     println!();
 
