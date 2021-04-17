@@ -1,6 +1,7 @@
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Url};
 use std::env;
+use std::process::Command;
 
 use std::fs;
 use std::io;
@@ -19,16 +20,63 @@ pub const DELAY: u128 = 5 * 60 * 1000;
 
 pub fn check_for_update() {
     if is_it_time_yet() {
-        let new_ver = get_latest_version();
-        if compare_versions(new_ver.clone()) {
-            stash_old_executable();
-            update(new_ver).unwrap();
-            println!("Update completed succesfully!")
-        }
         generate_time_stamp();
+        checktemp();
+        let new_ver = get_latest_version();
+        if compare_versions(new_ver) {
+            println!("Checking for updates...");
+            Command::new("powershell")
+                .args(&[
+                    "-Command",
+                    "Start-Process",
+                    "tmc.exe",
+                    "fetchupdate",
+                    "-Verb",
+                    "RunAs",
+                ])
+                .spawn()
+                .expect("launch failure");
+        }
     }
 }
-
+fn checktemp() {
+    let mut tmp_filepath = env::current_exe().unwrap();
+    tmp_filepath.pop();
+    let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
+    let tmp_filepath = tmp_filepath.join("tmc.exe");
+    if tmp_filepath.exists() {
+        Command::new("cmd")
+            .args(&[
+                "/C",
+                "powershell",
+                "-Command",
+                "Start-Process",
+                "tmc.exe",
+                "cleartemp",
+                "-Verb",
+                "RunAs",
+            ])
+            .spawn()
+            .expect("launch failure");
+    }
+}
+pub fn cleartemp() {
+    println!("Cleaning temp...");
+    let mut tmp_filepath = env::current_exe().unwrap();
+    tmp_filepath.pop();
+    let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
+    let tmp_filepath = tmp_filepath.join("tmc.exe");
+    fs::remove_file(&tmp_filepath).unwrap();
+    println!("Temp cleared!");
+}
+pub fn process_update() {
+    let new_ver = get_latest_version();
+    if compare_versions(new_ver.clone()) {
+        stash_old_executable();
+        update(new_ver).unwrap();
+        println!("Update completed succesfully!")
+    }
+}
 fn is_it_time_yet() -> bool {
     let config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
 
@@ -74,7 +122,6 @@ fn generate_time_stamp() {
 }
 
 fn get_latest_version() -> String {
-    println!("Checking for updates...");
     let url = GITHUB_URL;
     let mut headers = header::HeaderMap::new();
     headers.insert(
@@ -179,7 +226,7 @@ fn stash_old_executable() {
     let tmp_filepath = tmp_filepath.join("tmc.exe");
 
     if tmp_filepath.exists() {
-        //fs::remove_file(&tmp_filepath).unwrap();
+        fs::remove_file(&tmp_filepath).unwrap();
     }
 
     fs::rename(&filepath, &tmp_filepath).unwrap();
