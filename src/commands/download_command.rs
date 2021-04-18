@@ -152,7 +152,7 @@ pub fn download_exercises(
                             }
                         }
                         DownloadResult::Failure {
-                            downloaded: _,
+                            downloaded,
                             skipped: _,
                             failed,
                         } => {
@@ -168,6 +168,13 @@ pub fn download_exercises(
                                 }
                             }
 
+                            if !downloaded.is_empty() {
+                                res.push_str(&format!(
+                                    "\n\nSuccessful downloads saved to {}\\",
+                                    pathbuf.to_str().unwrap()
+                                ));
+                            }
+
                             return Err(res);
                         }
                     }
@@ -181,5 +188,8 @@ pub fn download_exercises(
         Err(error) => return Err(format!("Error: {}", error)),
     }
 
-    Ok("Exercises downloaded succesfully!".to_string())
+    Ok(format!(
+        "Exercises downloaded successfully to {}\\",
+        pathbuf.to_str().unwrap()
+    ))
 }
