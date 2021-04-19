@@ -1,11 +1,11 @@
 use super::command_util::*;
-use crate::io_module::Io;
+use crate::io_module::{Io,PrintColor};
 use tmc_client::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     }
 
@@ -13,15 +13,15 @@ pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
 
     match courses_result {
         Ok(course_list) => print_courses(io, course_list),
-        Err(error) => io.println(&error),
+        Err(error) => io.println(&error, PrintColor::Normal),
     }
 }
 
 /// Prints course names
 fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
-    io.println("");
+    io.println("", PrintColor::Normal);
     for course in course_list {
-        io.println(&course.name);
+        io.println(&course.name, PrintColor::Normal);
     }
 }
 
@@ -54,12 +54,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }

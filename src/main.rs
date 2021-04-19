@@ -1,5 +1,7 @@
+use termcolor::{BufferWriter, ColorChoice};
+
 use clap::{App, Arg, ArgMatches, SubCommand};
-use std::io::{stdin, stdout};
+use std::io::stdin;
 
 pub mod io_module;
 use io_module::IoProduction;
@@ -12,9 +14,10 @@ const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
 fn main() {
     let mut stdin = stdin();
-    let mut output = stdout();
+    let mut bufferwriter = BufferWriter::stderr(ColorChoice::Always);
+    let mut output = bufferwriter.buffer();
 
-    let mut io = IoProduction::new(&mut output, &mut stdin);
+    let mut io = IoProduction::new(&mut bufferwriter, &mut output, &mut stdin);
 
     let matches = get_matches();
     match matches.occurrences_of("no-update") {

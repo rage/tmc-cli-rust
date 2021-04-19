@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use super::command_util;
 use super::command_util::*;
 use crate::interactive;
-use crate::io_module::Io;
+use crate::io_module::{Io,PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use tmc_client::Course;
@@ -21,14 +21,14 @@ pub fn download_or_update(
 ) {
     // Get a client that has credentials
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     };
 
-    io.println("Fetching courses...");
+    io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();
     if courses.is_err() {
-        io.println("Could not list courses.");
+        io.println("Could not list courses.", PrintColor::Normal);
         return;
     }
 
@@ -62,7 +62,7 @@ pub fn download_or_update(
                 .name
                 .clone(),
             Err(msg) => {
-                io.println(&msg);
+                io.println(&msg, PrintColor::Normal);
                 return;
             }
         }
@@ -72,13 +72,13 @@ pub fn download_or_update(
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg);
+            io.println(&msg, PrintColor::Normal);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name");
+        io.println("Could not find course with that name", PrintColor::Normal);
         return;
     }
     let course = course_result.unwrap();
@@ -90,7 +90,7 @@ pub fn download_or_update(
     };
 
     match download_exercises(pathbuf, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
     }
 }
 

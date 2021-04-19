@@ -1,7 +1,7 @@
 use super::command_util;
 use super::command_util::Client;
 use crate::interactive;
-use crate::io_module::Io;
+use crate::io_module::{Io,PrintColor};
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
@@ -10,19 +10,19 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
     let mut last_pinned = true;
 
-    io.println("Available Organizations:\n");
+    io.println("Available Organizations:\n", PrintColor::Normal);
 
     for org in &orgs {
         if org.pinned != last_pinned {
-            io.println("----------");
+            io.println("----------", PrintColor::Normal);
         }
-        io.print(&org.name);
-        io.print(" Slug: ");
-        io.println(&org.slug);
+        io.print(&org.name, PrintColor::Normal);
+        io.print(" Slug: ", PrintColor::Normal);
+        io.println(&org.slug, PrintColor::Normal);
         last_pinned = org.pinned;
     }
 
-    io.print("\nChoose organization by writing its slug: ");
+    io.print("\nChoose organization by writing its slug: ", PrintColor::Normal);
     let mut slug = io.read_line();
     slug = slug.trim().to_string();
 
@@ -60,7 +60,7 @@ pub fn set_organization(client: &mut dyn Client) -> Result<String, String> {
 // Check if logged in, then ask for organization
 pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     };
 
@@ -71,7 +71,7 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     };
 
     match res {
-        Ok(org) => io.println(&format!("Selected {} as organization.", org)),
-        Err(msg) => io.println(&msg),
+        Ok(org) => io.println(&format!("Selected {} as organization.", org), PrintColor::Normal),
+        Err(msg) => io.println(&msg, PrintColor::Normal),
     }
 }

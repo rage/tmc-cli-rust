@@ -1,6 +1,6 @@
 use crate::commands::command_util;
 use crate::commands::command_util::ask_exercise_interactive;
-use crate::io_module::Io;
+use crate::io_module::{Io,PrintColor};
 use std::env;
 use std::path::{Path, PathBuf};
 use tmc_langs::RunResult;
@@ -27,7 +27,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
                         ) {
                             Ok(()) => (),
                             Err(msg) => {
-                                io.println(&msg);
+                                io.println(&msg, PrintColor::Normal);
                                 return;
                             }
                         }
@@ -46,7 +46,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
     };
 
     if let Err(err) = status {
-        io.println(&err);
+        io.println(&err, PrintColor::Normal);
     }
 }
 
@@ -101,16 +101,16 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<b
 
 /// Prints the end result of running multiple tests
 fn print_result_tests(io: &mut dyn Io, exercises_completed: usize, exercises_total: usize) {
-    io.println("");
+    io.println("", PrintColor::Normal);
     io.println(&format!(
         "Total results: {}/{} exercises passed",
         exercises_completed, exercises_total
-    ));
+    ), PrintColor::Normal);
     io.println(&command_util::get_progress_string(
         exercises_completed,
         exercises_total,
         64,
-    ));
+    ), PrintColor::Normal);
 }
 
 /// Prints the result of running tests for a single exercise
@@ -120,8 +120,8 @@ fn print_result_test(
     exercise_name: &str,
     print_progress: bool,
 ) -> bool {
-    io.println("");
-    io.println(&format!("Testing: {}", exercise_name));
+    io.println("", PrintColor::Normal);
+    io.println(&format!("Testing: {}", exercise_name), PrintColor::Normal);
 
     let mut tests_passed = 0;
     let mut tests_total = 0;
@@ -132,26 +132,26 @@ fn print_result_test(
         }
 
         if !test_result.successful {
-            io.println(&format!("Failed '{}'", test_result.name));
-            io.println(&format!("\t{}", test_result.message));
-            io.println("");
+            io.println(&format!("Failed '{}'", test_result.name), PrintColor::Normal);
+            io.println(&format!("\t{}", test_result.message), PrintColor::Normal);
+            io.println("", PrintColor::Normal);
         }
     }
 
-    io.println("");
+    io.println("", PrintColor::Normal);
     io.println(&format!(
         "Test results: {}/{} tests passed",
         tests_passed, tests_total
-    ));
+    ), PrintColor::Normal);
     if tests_passed == tests_total {
-        io.println("All tests passed! Submit to server with 'tmc submit'");
+        io.println("All tests passed! Submit to server with 'tmc submit'", PrintColor::Normal);
     }
     if print_progress {
         io.println(&command_util::get_progress_string(
             tests_passed,
             tests_total,
             64,
-        ));
+        ), PrintColor::Normal);
     }
     tests_passed == tests_total
 }
@@ -180,12 +180,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }

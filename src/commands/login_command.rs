@@ -1,23 +1,27 @@
 use super::command_util::Client;
 use super::{command_util, download_command, organization_command};
-use crate::io_module::Io;
+use crate::io_module::{Io,PrintColor};
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
+    //io.println("Success color.", PrintColor::Success);
+    //io.println("Normal color.", PrintColor::Normal);
+    //io.println("Failed color.", PrintColor::Failed);
+
     if let Ok(()) = client.load_login() {
-        io.println("You are already logged in.");
+        io.println("You are already logged in.", PrintColor::Normal);
         return;
     };
 
-    io.print("Email / username: ");
+    io.print("Email / username: ", PrintColor::Normal);
     let mut username = io.read_line();
     username = username.trim().to_string();
 
     if username.is_empty() {
-        io.println("Username cannot be empty!");
+        io.println("Username cannot be empty!", PrintColor::Normal);
         return;
     }
 
-    io.print("Password: ");
+    io.print("Password: ", PrintColor::Normal);
 
     let mut password;
 
@@ -32,7 +36,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
 
     match client.try_login(username, password) {
         Ok(message) => {
-            io.println(&message);
+            io.println(&message, PrintColor::Normal);
 
             let res = if interactive_mode {
                 organization_command::set_organization(client)
@@ -40,12 +44,12 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
                 organization_command::set_organization_old(io, client)
             };
             if let Err(_err) = res {
-                io.println("Could not set organization");
+                io.println("Could not set organization", PrintColor::Normal);
                 return;
             }
         }
         Err(message) => {
-            io.println(&message);
+            io.println(&message, PrintColor::Normal);
             return;
         }
     }
@@ -57,10 +61,10 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
 }
 
 pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
-    io.println("Fetching courses...");
+    io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();
     if courses.is_err() {
-        io.println("Could not list courses.");
+        io.println("Could not list courses.", PrintColor::Normal);
         return;
     }
 
@@ -87,7 +91,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let name_select = match download_command::get_course_name(courses_displayed) {
         Ok(course) => {
             if course == no_download {
-                io.println("No course downloaded.");
+                io.println("No course downloaded.", PrintColor::Normal);
                 return;
             }
             courses
@@ -99,7 +103,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
                 .clone()
         }
         Err(msg) => {
-            io.println(&msg);
+            io.println(&msg, PrintColor::Normal);
             return;
         }
     };
@@ -108,13 +112,13 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg);
+            io.println(&msg, PrintColor::Normal);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name");
+        io.println("Could not find course with that name", PrintColor::Normal);
         return;
     }
     let course = course_result.unwrap();
@@ -122,7 +126,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let pathbuf = command_util::get_projects_dir();
 
     match download_command::download_exercises(pathbuf, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
     }
 }
 
@@ -157,12 +161,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }
