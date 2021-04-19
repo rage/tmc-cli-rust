@@ -17,7 +17,7 @@ mod paste_command;
 mod submit_command;
 mod test_command;
 
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     //println!("{:#?}", matches.subcommand());

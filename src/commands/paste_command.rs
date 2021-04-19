@@ -1,6 +1,6 @@
 use super::command_util;
 use super::command_util::{ask_exercise_interactive, find_submit_or_paste_config, Client};
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use isolang::Language;

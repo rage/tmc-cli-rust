@@ -1,5 +1,5 @@
 use super::command_util::*;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 
 use tmc_client::CourseExercise;
 
@@ -20,10 +20,10 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     };
 
     if course_result.is_none() {
-        io.println(&format!(
-            "Could not find a course with name '{}'",
-            course_name
-        ), PrintColor::Normal);
+        io.println(
+            &format!("Could not find a course with name '{}'", course_name),
+            PrintColor::Normal,
+        );
         return;
     }
     let course_id = course_result.unwrap();
@@ -89,7 +89,10 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
             "Not completed"
         };
 
-        io.println(&format!("  {}: {}", completion_status, &exercise.name), PrintColor::Normal);
+        io.println(
+            &format!("  {}: {}", completion_status, &exercise.name),
+            PrintColor::Normal,
+        );
     }
 }
 

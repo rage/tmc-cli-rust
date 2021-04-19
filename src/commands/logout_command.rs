@@ -1,5 +1,5 @@
 use super::command_util::Client;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 
 pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {

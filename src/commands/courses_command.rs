@@ -1,5 +1,5 @@
 use super::command_util::*;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 use tmc_client::Course;
 
 /// Lists available courses from clients organization

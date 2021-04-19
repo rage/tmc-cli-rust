@@ -1,6 +1,6 @@
 use super::command_util;
 use super::command_util::*;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use anyhow::{Context, Result};
@@ -91,10 +91,13 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
                 error,
                 obsolete_client: _,
             } => {
-                io.println(&format!(
-                    "\nGot error '{}' \n    while submitting exercise to address {}",
-                    error, url
-                ), PrintColor::Normal);
+                io.println(
+                    &format!(
+                        "\nGot error '{}' \n    while submitting exercise to address {}",
+                        error, url
+                    ),
+                    PrintColor::Normal,
+                );
             }
             _ => {
                 io.println("Error during submission", PrintColor::Normal);
@@ -136,7 +139,10 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
     if !submission_finished.points.is_empty() {
         io.print("Points permanently awarded: [", PrintColor::Normal);
         for i in 0..submission_finished.points.len() {
-            io.print(&submission_finished.points[i].to_string(), PrintColor::Normal);
+            io.print(
+                &submission_finished.points[i].to_string(),
+                PrintColor::Normal,
+            );
             if i < submission_finished.points.len() - 1 {
                 io.print(", ", PrintColor::Normal);
             }
@@ -148,7 +154,10 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
 
     if all_passed {
         if let Some(solution_url) = submission_finished.solution_url {
-            io.println(&format!("Model solution: {}", solution_url), PrintColor::Normal);
+            io.println(
+                &format!("Model solution: {}", solution_url),
+                PrintColor::Normal,
+            );
         }
     } else {
         if let Some(error) = submission_finished.error {
@@ -165,23 +174,32 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
                         io.println(&format!("    Message: {}", message), PrintColor::Normal);
                     }
                     if let Some(detailed_message) = case.detailed_message {
-                        io.println(&format!("    Detailed message: {}", detailed_message), PrintColor::Normal);
+                        io.println(
+                            &format!("    Detailed message: {}", detailed_message),
+                            PrintColor::Normal,
+                        );
                     }
                     if let Some(exceptions) = case.exception {
                         for exception in exceptions {
-                            io.println(&format!("        Exception: {}", exception), PrintColor::Normal);
+                            io.println(
+                                &format!("        Exception: {}", exception),
+                                PrintColor::Normal,
+                            );
                         }
                     }
                     completed += 1;
                 }
                 total += 1;
             }
-            io.println(&format!(
-                "\nTest results: {}/{} tests passed",
-                completed, total
-            ), PrintColor::Normal);
+            io.println(
+                &format!("\nTest results: {}/{} tests passed", completed, total),
+                PrintColor::Normal,
+            );
 
-            io.println(&command_util::get_progress_string(completed, total, 64), PrintColor::Normal);
+            io.println(
+                &command_util::get_progress_string(completed, total, 64),
+                PrintColor::Normal,
+            );
         }
     }
 }

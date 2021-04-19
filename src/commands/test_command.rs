@@ -1,6 +1,6 @@
 use crate::commands::command_util;
 use crate::commands::command_util::ask_exercise_interactive;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 use std::env;
 use std::path::{Path, PathBuf};
 use tmc_langs::RunResult;
@@ -102,15 +102,17 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<b
 /// Prints the end result of running multiple tests
 fn print_result_tests(io: &mut dyn Io, exercises_completed: usize, exercises_total: usize) {
     io.println("", PrintColor::Normal);
-    io.println(&format!(
-        "Total results: {}/{} exercises passed",
-        exercises_completed, exercises_total
-    ), PrintColor::Normal);
-    io.println(&command_util::get_progress_string(
-        exercises_completed,
-        exercises_total,
-        64,
-    ), PrintColor::Normal);
+    io.println(
+        &format!(
+            "Total results: {}/{} exercises passed",
+            exercises_completed, exercises_total
+        ),
+        PrintColor::Normal,
+    );
+    io.println(
+        &command_util::get_progress_string(exercises_completed, exercises_total, 64),
+        PrintColor::Normal,
+    );
 }
 
 /// Prints the result of running tests for a single exercise
@@ -132,26 +134,34 @@ fn print_result_test(
         }
 
         if !test_result.successful {
-            io.println(&format!("Failed '{}'", test_result.name), PrintColor::Normal);
+            io.println(
+                &format!("Failed '{}'", test_result.name),
+                PrintColor::Normal,
+            );
             io.println(&format!("\t{}", test_result.message), PrintColor::Normal);
             io.println("", PrintColor::Normal);
         }
     }
 
     io.println("", PrintColor::Normal);
-    io.println(&format!(
-        "Test results: {}/{} tests passed",
-        tests_passed, tests_total
-    ), PrintColor::Normal);
+    io.println(
+        &format!(
+            "Test results: {}/{} tests passed",
+            tests_passed, tests_total
+        ),
+        PrintColor::Normal,
+    );
     if tests_passed == tests_total {
-        io.println("All tests passed! Submit to server with 'tmc submit'", PrintColor::Normal);
+        io.println(
+            "All tests passed! Submit to server with 'tmc submit'",
+            PrintColor::Normal,
+        );
     }
     if print_progress {
-        io.println(&command_util::get_progress_string(
-            tests_passed,
-            tests_total,
-            64,
-        ), PrintColor::Normal);
+        io.println(
+            &command_util::get_progress_string(tests_passed, tests_total, 64),
+            PrintColor::Normal,
+        );
     }
     tests_passed == tests_total
 }

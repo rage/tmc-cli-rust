@@ -36,7 +36,11 @@ pub trait Io {
 }
 
 impl IoProduction<'_> {
-    pub fn new<'a>(bufferwriter: &'a mut BufferWriter, output: &'a mut Buffer, input: &'a mut dyn Read) -> IoProduction<'a> {
+    pub fn new<'a>(
+        bufferwriter: &'a mut BufferWriter,
+        output: &'a mut Buffer,
+        input: &'a mut dyn Read,
+    ) -> IoProduction<'a> {
         let reader = BufReader::new(input);
         IoProduction {
             bufferwriter,

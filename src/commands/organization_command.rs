@@ -1,7 +1,7 @@
 use super::command_util;
 use super::command_util::Client;
 use crate::interactive;
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
@@ -22,7 +22,10 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
         last_pinned = org.pinned;
     }
 
-    io.print("\nChoose organization by writing its slug: ", PrintColor::Normal);
+    io.print(
+        "\nChoose organization by writing its slug: ",
+        PrintColor::Normal,
+    );
     let mut slug = io.read_line();
     slug = slug.trim().to_string();
 
@@ -71,7 +74,10 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     };
 
     match res {
-        Ok(org) => io.println(&format!("Selected {} as organization.", org), PrintColor::Normal),
+        Ok(org) => io.println(
+            &format!("Selected {} as organization.", org),
+            PrintColor::Normal,
+        ),
         Err(msg) => io.println(&msg, PrintColor::Normal),
     }
 }

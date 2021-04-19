@@ -1,6 +1,6 @@
 use super::command_util::Client;
 use super::{command_util, download_command, organization_command};
-use crate::io_module::{Io,PrintColor};
+use crate::io_module::{Io, PrintColor};
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     //io.println("Success color.", PrintColor::Success);
