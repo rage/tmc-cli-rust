@@ -36,7 +36,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
 
     match client.try_login(username, password) {
         Ok(message) => {
-            io.println(&message, PrintColor::Normal);
+            io.println(&message, PrintColor::Success);
 
             let res = if interactive_mode {
                 organization_command::set_organization(client)
@@ -44,7 +44,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
                 organization_command::set_organization_old(io, client)
             };
             if let Err(_err) = res {
-                io.println("Could not set organization", PrintColor::Normal);
+                io.println("Could not set organization", PrintColor::Failed);
                 return;
             }
         }
