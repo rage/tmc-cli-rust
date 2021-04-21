@@ -125,37 +125,6 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     }
 }
 
-/*
-
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, JsonSchema)]
-pub struct SubmissionFinished {
-    pub api_version: usize,
-    pub all_tests_passed: Option<bool>,
-    pub user_id: usize,
-    pub login: String,
-    pub course: String,
-    pub exercise_name: String,
-    pub status: SubmissionStatus,
-    pub points: Vec<String>,
-    pub valgrind: Option<String>,
-    pub submission_url: String,
-    pub solution_url: Option<String>,
-    pub submitted_at: String,
-    pub processing_time: Option<usize>,
-    pub reviewed: bool,
-    pub requests_review: bool,
-    pub paste_url: Option<String>,
-    pub message_for_paste: Option<String>,
-    pub missing_review_points: Vec<String>,
-    pub test_cases: Option<Vec<TestCase>>,
-    pub feedback_questions: Option<Vec<SubmissionFeedbackQuestion>>,
-    pub feedback_answer_url: Option<String>,
-    pub error: Option<String>,
-    pub validations: Option<StyleValidationResult>,
-}
-
-*/
-
 fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: SubmissionFinished) {
     let mut all_passed = false;
     if let Some(all_tests_passed) = submission_finished.all_tests_passed {
