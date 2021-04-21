@@ -15,7 +15,7 @@ use tmc_langs::LangsError;
 use tmc_langs::{ConfigValue, CourseConfig, ProjectsConfig, TmcConfig};
 use toml::de::Error;
 
-pub const PLUGIN: &str = "vscode_plugin";
+pub const PLUGIN: &str = "tmc_cli_rust";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 

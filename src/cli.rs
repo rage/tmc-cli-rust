@@ -83,6 +83,14 @@ pub fn build_cli() -> App<'static, 'static> {
                         .required(false),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("fetchupdate")
+                .about("Finishes the autoupdater. Administator rights needed."),
+        )
+        .subcommand(
+            SubCommand::with_name("cleartemp")
+                .about("Removes tempfiles. Administator rights needed."),
+        )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .arg(
             Arg::with_name("no-update")

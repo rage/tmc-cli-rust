@@ -97,6 +97,14 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             paste_command::paste(io, &mut client, path);
         }
         ("logout", _) => logout(io, &mut client),
+        ("fetchupdate", _) => {
+            use crate::updater::process_update;
+            process_update();
+        }
+        ("cleartemp", _) => {
+            use crate::updater::cleartemp;
+            cleartemp();
+        }
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given
     }
