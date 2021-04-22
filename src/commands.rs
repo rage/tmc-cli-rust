@@ -1,3 +1,4 @@
+use crate::updater;
 use command_util::ClientProduction;
 use courses_command::list_courses;
 use download_command::download_or_update;
@@ -98,12 +99,13 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("logout", _) => logout(io, &mut client),
         ("fetchupdate", _) => {
-            use crate::updater::process_update;
-            process_update();
+            updater::process_update();
         }
         ("cleartemp", _) => {
-            use crate::updater::cleartemp;
-            cleartemp();
+            updater::cleartemp();
+        }
+        ("elevateddownload", _) => {
+            download_command::elevated_download(io, &mut client);
         }
         (_, Some(_)) => (), // Not implemented yet
         (_, None) => (),    // No subcommand was given

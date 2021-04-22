@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process::Command;
 
 use super::command_util;
 use super::command_util::*;
@@ -82,15 +83,40 @@ pub fn download_or_update(
         return;
     }
     let course = course_result.unwrap();
-
     let pathbuf = if currentdir {
         std::env::current_dir().unwrap()
     } else {
         get_projects_dir()
     };
 
+    let tmp_course = course.name.clone();
+    let tmp_path = pathbuf.clone();
+    let tmp_path = tmp_path.to_str().unwrap();
     match download_exercises(pathbuf, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+        Ok(msg) => io.println(&format!("\n{}", msg)),
+        Err(msg) => {
+            if msg.contains("Failed to create file") {
+                io.println("Starting new cmd with administrator privileges...");
+                let temp_file_path = get_projects_dir();
+                let temp_file_path = temp_file_path.join("temp.txt");
+                std::fs::write(temp_file_path, format!("{};{}", tmp_path, tmp_course)).unwrap();
+                Command::new("cmd")
+                    .args(&[
+                        "/C",
+                        "powershell",
+                        "-Command",
+                        "Start-Process",
+                        "tmc.exe",
+                        "elevateddownload",
+                        "-Verb",
+                        "RunAs",
+                    ])
+                    .spawn()
+                    .expect("launch failure");
+            } else {
+                io.println(&format!("\n{:?}", msg))
+            }
+        }
     }
 }
 
@@ -192,4 +218,46 @@ pub fn download_exercises(
         "Exercises downloaded successfully to {}\\",
         pathbuf.to_str().unwrap()
     ))
+}
+pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
+    use std::io::prelude::*;
+    let temp_file_path = get_projects_dir();
+    let temp_file_path = temp_file_path.join("temp.txt");
+    let mut file = std::fs::File::open(temp_file_path.clone()).unwrap();
+    let mut params = String::new();
+    file.read_to_string(&mut params).unwrap();
+    std::fs::remove_file(temp_file_path).unwrap();
+    let split = params.split(';');
+    let vec = split.collect::<Vec<&str>>();
+    let path = PathBuf::from(vec[0]);
+    let name_select = String::from(vec[1]);
+
+    // Get course by name
+    let course_result = match command_util::get_course_by_name(client, name_select) {
+        Ok(result) => result,
+        Err(msg) => {
+            io.println(&msg);
+            return;
+        }
+    };
+
+    if course_result.is_none() {
+        io.println("Could not find course with that name");
+        return;
+    }
+    let course = course_result.unwrap();
+
+    match download_exercises(path, client, course) {
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+    }
+    pause();
+}
+fn pause() {
+    use std::io;
+    use std::io::prelude::*;
+    let mut stdin = io::stdin();
+    let mut stdout = io::stdout();
+    write!(stdout, "Press any enter to continue...").unwrap();
+    stdout.flush().unwrap();
+    let _ = stdin.read(&mut [0u8]).unwrap();
 }

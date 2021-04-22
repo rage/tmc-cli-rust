@@ -1,4 +1,4 @@
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
@@ -85,11 +85,18 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("fetchupdate")
+                .setting(AppSettings::Hidden)
                 .about("Finishes the autoupdater. Administator rights needed."),
         )
         .subcommand(
             SubCommand::with_name("cleartemp")
+                .setting(AppSettings::Hidden)
                 .about("Removes tempfiles. Administator rights needed."),
+        )
+        .subcommand(
+            SubCommand::with_name("elevateddownload")
+                .setting(AppSettings::Hidden)
+                .about("Downloads course from the tempfile. Administator rights needed."),
         )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .arg(
