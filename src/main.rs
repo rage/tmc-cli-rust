@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-=======
 use termcolor::{BufferWriter, ColorChoice};
 
-use clap::{App, Arg, ArgMatches, SubCommand};
->>>>>>> command-line-colors
 use std::io::{stdin, stdout};
 
 pub mod io_module;
@@ -28,7 +24,7 @@ fn main() {
         &mut buffer,
         &mut stdout,
         &mut stdin,
-        matches.occurrences_of("testmode"),
+        matches.is_present("testmode"),
     );
 
     match matches.occurrences_of("no-update") {

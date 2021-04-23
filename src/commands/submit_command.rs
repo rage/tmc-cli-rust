@@ -176,7 +176,7 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
                         let formatted = message.replace("\n", "\n        ");
                         io.println(&format!("        {}", formatted), PrintColor::Normal);
                     }
-                    io.println("");
+                    io.println("", PrintColor::Normal);
                 }
                 total += 1;
             }

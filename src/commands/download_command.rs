@@ -96,7 +96,10 @@ pub fn download_or_update(
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
         Err(msg) => {
             if msg.contains("Failed to create file") {
-                io.println("Starting new cmd with administrator privileges...", PrintColor::Normal);
+                io.println(
+                    "Starting new cmd with administrator privileges...",
+                    PrintColor::Normal,
+                );
                 let temp_file_path = get_projects_dir();
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(temp_file_path, format!("{};{}", tmp_path, tmp_course)).unwrap();
@@ -236,19 +239,19 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg);
+            io.println(&msg, PrintColor::Normal);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name");
+        io.println("Could not find course with that name", PrintColor::Normal);
         return;
     }
     let course = course_result.unwrap();
 
     match download_exercises(path, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg)),
+        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
     }
     pause();
 }
