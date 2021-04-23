@@ -34,13 +34,22 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
     Err(format!("No such organization for the given slug: {}", slug))
 }
 
-pub fn set_organization(client: &mut dyn Client) -> Result<String, String> {
+pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
+    io.println("Fetching organizations...");
     let mut orgs = client.get_organizations().unwrap();
+    let pinned = orgs
+        .iter()
+        .filter(|org| org.pinned)
+        .map(|org| org.name.clone())
+        .collect();
+
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
 
-    let org_name = interactive::interactive_list(
-        "Select your organization:",
-        orgs.iter().map(|org| org.name.clone()).collect(),
+    let all = orgs.iter().map(|org| org.name.clone()).collect();
+
+    let org_name = interactive::interactive_list_with_pages(
+        "Select your organization  (Switch between views with Left and Right keys)",
+        vec![pinned, all],
     );
 
     if org_name.is_none() {
@@ -65,7 +74,7 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     };
 
     let res = if interactive_mode {
-        set_organization(client)
+        set_organization(io, client)
     } else {
         set_organization_old(io, client)
     };

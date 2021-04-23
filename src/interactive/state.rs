@@ -82,15 +82,64 @@ impl<T: Clone> StatefulList<T> {
 pub struct AppState {
     pub items: StatefulList<String>,
     pub filter: String,
+    pages: Vec<(Vec<String>, String)>,
+    page_nro: usize,
 }
 
 impl AppState {
     pub fn new(items: Vec<String>) -> AppState {
-        let mut items = StatefulList::with_items(items);
+        let filter = String::from("");
+        let pages = vec![(items, filter.clone())];
+        let mut items = StatefulList::with_items(pages[0].0.clone());
         items.next();
         AppState {
             items,
-            filter: String::from(""),
+            filter,
+            pages,
+            page_nro: 0,
+        }
+    }
+
+    pub fn new_with_pages(items: Vec<Vec<String>>) -> AppState {
+        let pages = items
+            .iter()
+            .map(|list| (list.to_owned(), String::new()))
+            .collect::<Vec<_>>();
+
+        let mut items = StatefulList::with_items(pages[0].0.clone());
+        items.next();
+        AppState {
+            items,
+            filter: pages[0].1.clone(),
+            pages,
+            page_nro: 0,
+        }
+    }
+
+    pub fn next_page(&mut self) {
+        if self.pages.len() > 0 {
+            if self.page_nro < self.pages.len() - 1 {
+                self.page_nro += 1;
+            } else {
+                self.page_nro = 0;
+            }
+            self.items = StatefulList::with_items(self.pages[self.page_nro].0.clone());
+            self.filter = self.pages[self.page_nro].1.clone();
+            self.items.next();
+        }
+    }
+
+    pub fn previous_page(&mut self) {
+        if self.pages.len() > 0 {
+            if self.page_nro > 0 {
+                self.page_nro -= 1;
+            } else {
+                self.page_nro = self.pages.len() - 1;
+            }
+
+            self.items = StatefulList::with_items(self.pages[self.page_nro].0.clone());
+            self.filter = self.pages[self.page_nro].1.clone();
+            self.items.next();
         }
     }
 

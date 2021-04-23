@@ -44,7 +44,29 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
 
     terminal.clear().unwrap();
     enable_raw_mode().unwrap();
-    let result = event_loop(&mut terminal, items, prompt);
+    let app = AppState::new(items);
+    let result = event_loop(&mut terminal, app, prompt);
+
+    disable_raw_mode().unwrap();
+
+    terminal.clear().unwrap();
+    execute!(stdout(), LeaveAlternateScreen).unwrap();
+    if let Some(result) = result {
+        Some(result)
+    } else {
+        None
+    }
+}
+
+pub fn interactive_list_with_pages(prompt: &str, items: Vec<Vec<String>>) -> Option<String> {
+    execute!(stdout(), EnterAlternateScreen).unwrap();
+    let backend = CrosstermBackend::new(stdout());
+    let mut terminal = Terminal::new(backend).unwrap();
+
+    terminal.clear().unwrap();
+    enable_raw_mode().unwrap();
+    let app = AppState::new_with_pages(items);
+    let result = event_loop(&mut terminal, app, prompt);
 
     disable_raw_mode().unwrap();
 
@@ -113,11 +135,19 @@ fn read_keys(app: &mut AppState) -> Option<Option<String>> {
             }
             return match x.code {
                 KeyCode::Esc => Some(None),
-                KeyCode::Up | KeyCode::Left => {
+                KeyCode::Up => {
                     app.items.previous();
                     None
                 }
-                KeyCode::Down | KeyCode::Right => {
+                KeyCode::Left => {
+                    app.previous_page();
+                    None
+                }
+                KeyCode::Right => {
+                    app.next_page();
+                    None
+                }
+                KeyCode::Down => {
                     app.items.next();
                     None
                 }
@@ -138,12 +168,10 @@ fn read_keys(app: &mut AppState) -> Option<Option<String>> {
     None
 }
 
-fn event_loop<B>(terminal: &mut Terminal<B>, items: Vec<String>, prompt: &str) -> Option<String>
+fn event_loop<B>(terminal: &mut Terminal<B>, mut app: AppState, prompt: &str) -> Option<String>
 where
     B: Backend,
 {
-    let mut app = AppState::new(items);
-
     let mut result = None;
     loop {
         draw_terminal(terminal, &mut app, prompt);

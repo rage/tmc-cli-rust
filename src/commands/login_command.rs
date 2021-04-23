@@ -35,7 +35,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
             io.println(&message);
 
             let res = if interactive_mode {
-                organization_command::set_organization(client)
+                organization_command::set_organization(io, client)
             } else {
                 organization_command::set_organization_old(io, client)
             };
