@@ -1,16 +1,24 @@
 name: tmc-cli-rust
-version: 0.3.3
+version: 0.3.5
 summary: Test my code CLI
 description: .
 confinement: strict
 base: core18
+
+plugs:
+  home-folder-permissions:
+    interface: personal-files
+    read:
+      - $HOME
+    write:
+      - $HOME
 
 parts:
   tmc-cli-rust:
     plugin: nil
     source: . 
     override-pull: | 
-      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v0.3.3 > tmc
+      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v0.3.5 > tmc
       chmod +x tmc
       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
       cp tmc $SNAPCRAFT_PART_INSTALL/bin/
@@ -19,3 +27,5 @@ parts:
 apps:
   tmc-cli-rust:
     command: bin/tmc
+    plugs:
+      - home-folder-permissions

@@ -1,12 +1,12 @@
 use super::command_util::*;
-use crate::io_module::Io;
+use crate::io_module::{Io, PrintColor};
 
 use tmc_client::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     };
 
@@ -14,30 +14,30 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     let course_result = match get_course_id_by_name(client, course_name.clone()) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg);
+            io.println(&msg, PrintColor::Normal);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println(&format!(
-            "Could not find a course with name '{}'",
-            course_name
-        ));
+        io.println(
+            &format!("Could not find a course with name '{}'", course_name),
+            PrintColor::Normal,
+        );
         return;
     }
     let course_id = course_result.unwrap();
 
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
-        Err(error) => io.println(&error),
+        Err(error) => io.println(&error, PrintColor::Normal),
     }
 }
 
 /// Prints information about given exercises
 fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseExercise>) {
-    io.println("");
-    io.println(&format!("Course name: {}", course_name));
+    io.println("", PrintColor::Normal);
+    io.println(&format!("Course name: {}", course_name), PrintColor::Normal);
 
     let none = "none".to_string();
     let mut prev_deadline = "".to_string();
@@ -51,22 +51,22 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
         // Print deadline if it exists
         if let Some(dl) = exercise.deadline {
             if prev_deadline != dl {
-                io.println(&format!("Deadline: {}", &dl));
+                io.println(&format!("Deadline: {}", &dl), PrintColor::Normal);
                 prev_deadline = dl.clone();
             }
         } else if prev_deadline != none {
-            io.println(&format!("Deadline: {}", &none));
+            io.println(&format!("Deadline: {}", &none), PrintColor::Normal);
             prev_deadline = none.clone();
         }
 
         // TODO: Do we need soft deadline?
         if let Some(dl) = exercise.soft_deadline {
             if prev_soft_deadline != dl {
-                io.println(&format!("Soft deadline: {}", &dl));
+                io.println(&format!("Soft deadline: {}", &dl), PrintColor::Normal);
                 prev_soft_deadline = dl.clone();
             }
         } else if prev_soft_deadline != none {
-            io.println(&format!("Soft deadline: {}", &none));
+            io.println(&format!("Soft deadline: {}", &none), PrintColor::Normal);
             prev_soft_deadline = none.clone();
         }
 
@@ -89,7 +89,10 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
             "Not completed"
         };
 
-        io.println(&format!("  {}: {}", completion_status, &exercise.name));
+        io.println(
+            &format!("  {}: {}", completion_status, &exercise.name),
+            PrintColor::Normal,
+        );
     }
 }
 
@@ -126,12 +129,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }

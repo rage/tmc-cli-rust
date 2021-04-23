@@ -18,7 +18,7 @@ mod paste_command;
 mod submit_command;
 mod test_command;
 
-use crate::io_module::Io;
+use crate::io_module::{Io, PrintColor};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     //println!("{:#?}", matches.subcommand());
@@ -46,7 +46,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     a.is_present("currentdir"),
                 );
             } else {
-                io.println("arguments not found");
+                io.println("arguments not found", PrintColor::Normal);
             }
         }
         ("organization", args) => {
@@ -75,10 +75,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 if let Some(c) = a.value_of("course") {
                     list_exercises(io, &mut client, String::from(c));
                 } else {
-                    io.println("argument for course not found");
+                    io.println("argument for course not found", PrintColor::Normal);
                 }
             } else {
-                io.println("argument not found for course");
+                io.println("argument not found for course", PrintColor::Normal);
             }
         }
         ("test", args) => {
