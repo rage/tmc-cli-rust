@@ -1,6 +1,6 @@
 use super::command_util;
 use super::command_util::{ask_exercise_interactive, find_submit_or_paste_config, Client};
-use crate::io_module::Io;
+use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use isolang::Language;
@@ -16,7 +16,7 @@ use tmc_langs::ClientUpdateData;
 /// Returns an error if user is not logged in.
 pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     };
 
@@ -34,14 +34,14 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
 
     if course_config.is_none() {
         if client.is_test_mode() {
-            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.");
+            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Normal);
             return;
         }
         // Did not find course config, use interactive selection if possible
         match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
             Ok(()) => (),
             Err(msg) => {
-                io.println(&msg);
+                io.println(&msg, PrintColor::Normal);
                 return;
             }
         }
@@ -55,14 +55,14 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
             return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
         }
         Err(err) => {
-            io.println(&err);
+            io.println(&err, PrintColor::Normal);
             return;
         }
     }
 
-    io.println("Write a paste message, enter sends it:");
+    io.println("Write a paste message, enter sends it:", PrintColor::Normal);
     let paste_msg = io.read_line();
-    io.println("");
+    io.println("", PrintColor::Normal);
 
     // start manager for 1 events TmcClient::paste
     let mut manager = ProgressBarManager::new(
@@ -86,7 +86,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
         Err(err) => {
             manager.force_join();
-            io.println(&format!("Error: {} \n", err));
+            io.println(&format!("Error: {} \n", err), PrintColor::Normal);
         }
     }
 }
@@ -121,12 +121,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }

@@ -1,14 +1,14 @@
 use super::command_util::Client;
-use crate::io_module::Io;
+use crate::io_module::{Io, PrintColor};
 
 pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(&error);
+        io.println(&error, PrintColor::Normal);
         return;
     };
 
     client.logout();
-    io.println("Logged out successfully.");
+    io.println("Logged out successfully.", PrintColor::Normal);
 }
 
 #[cfg(test)]
@@ -41,12 +41,12 @@ mod tests {
             .to_string()
         }
 
-        fn print(&mut self, output: &str) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) {
             print!("{}", output);
             self.list.push(output.to_string());
         }
 
-        fn println(&mut self, output: &str) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) {
             println!("{}", output);
             self.list.push(output.to_string());
         }
