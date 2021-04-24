@@ -38,7 +38,7 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
 }
 
 pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
-    io.println("Fetching organizations...");
+    io.println("Fetching organizations...", PrintColor::Normal);
     let mut orgs = client.get_organizations().unwrap();
     let pinned = orgs
         .iter()
