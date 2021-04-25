@@ -296,7 +296,7 @@ mod tests {
 
         login(&mut io, &mut mock, false);
 
-        assert_eq!(13, io.buffer_length());
+        assert_eq!(14, io.buffer_length());
 
         if io.buffer_length() == 13 {
             assert!(io
