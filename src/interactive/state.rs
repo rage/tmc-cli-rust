@@ -117,7 +117,7 @@ impl AppState {
     }
 
     pub fn next_page(&mut self) {
-        if self.pages.is_empty() {
+        if !self.pages.is_empty() {
             if self.page_nro < self.pages.len() - 1 {
                 self.page_nro += 1;
             } else {
@@ -130,7 +130,7 @@ impl AppState {
     }
 
     pub fn previous_page(&mut self) {
-        if self.pages.is_empty() {
+        if !self.pages.is_empty() {
             if self.page_nro > 0 {
                 self.page_nro -= 1;
             } else {
