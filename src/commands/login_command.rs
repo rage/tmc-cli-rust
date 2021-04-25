@@ -53,7 +53,12 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     if client.is_test_mode() {
         return;
     }
-    download_after_login(client, io);
+
+    if interactive_mode {
+        download_after_login(client, io);
+    } else {
+        io.println("Logged in and selected organization", PrintColor::Success);
+    }
 }
 
 pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
