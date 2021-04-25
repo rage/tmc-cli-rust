@@ -27,7 +27,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
                         ) {
                             Ok(()) => (),
                             Err(msg) => {
-                                io.println(&msg, PrintColor::Normal);
+                                io.println(&msg, PrintColor::Failed);
                                 return;
                             }
                         }
@@ -46,7 +46,7 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
     };
 
     if let Err(err) = status {
-        io.println(&err, PrintColor::Normal);
+        io.println(&err, PrintColor::Failed);
     }
 }
 
@@ -136,7 +136,7 @@ fn print_result_test(
         if !test_result.successful {
             io.println(
                 &format!("Failed '{}'", test_result.name),
-                PrintColor::Normal,
+                PrintColor::Failed,
             );
             io.println(&format!("\t{}", test_result.message), PrintColor::Normal);
             io.println("", PrintColor::Normal);
@@ -154,7 +154,7 @@ fn print_result_test(
     if tests_passed == tests_total {
         io.println(
             "All tests passed! Submit to server with 'tmc submit'",
-            PrintColor::Normal,
+            PrintColor::Success,
         );
     }
     if print_progress {

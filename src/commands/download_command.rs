@@ -22,14 +22,14 @@ pub fn download_or_update(
 ) {
     // Get a client that has credentials
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     };
 
     io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();
     if courses.is_err() {
-        io.println("Could not list courses.", PrintColor::Normal);
+        io.println("Could not list courses.", PrintColor::Failed);
         return;
     }
 
@@ -63,7 +63,7 @@ pub fn download_or_update(
                 .name
                 .clone(),
             Err(msg) => {
-                io.println(&msg, PrintColor::Normal);
+                io.println(&msg, PrintColor::Failed);
                 return;
             }
         }
@@ -73,13 +73,13 @@ pub fn download_or_update(
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg, PrintColor::Normal);
+            io.println(&msg, PrintColor::Failed);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Normal);
+        io.println("Could not find course with that name", PrintColor::Failed);
         return;
     }
     let course = course_result.unwrap();
@@ -93,7 +93,7 @@ pub fn download_or_update(
     let tmp_path = pathbuf.clone();
     let tmp_path = tmp_path.to_str().unwrap();
     match download_exercises(pathbuf, client, course) {
-        Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
+        Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
         Err(msg) => {
             if msg.contains("Failed to create file") {
                 io.println(
@@ -117,7 +117,7 @@ pub fn download_or_update(
                     .spawn()
                     .expect("launch failure");
             } else {
-                io.println(&format!("\n{:?}", msg), PrintColor::Normal)
+                io.println(&msg, PrintColor::Normal)
             }
         }
     }
@@ -239,19 +239,20 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg, PrintColor::Normal);
+            io.println(&msg, PrintColor::Failed);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Normal);
+        io.println("Could not find course with that name", PrintColor::Failed);
         return;
     }
     let course = course_result.unwrap();
-
+    io.println("", PrintColor::Normal);
     match download_exercises(path, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
+        Ok(msg) => io.println(&format!("{}", msg), PrintColor::Success),
+        Err(msg) => io.println(&format!("{}", msg), PrintColor::Failed),
     }
     pause();
 }

@@ -3,12 +3,12 @@ use crate::io_module::{Io, PrintColor};
 
 pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     };
 
     client.logout();
-    io.println("Logged out successfully.", PrintColor::Normal);
+    io.println("Logged out successfully.", PrintColor::Success);
 }
 
 #[cfg(test)]

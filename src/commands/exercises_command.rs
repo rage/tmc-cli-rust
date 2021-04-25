@@ -6,7 +6,7 @@ use tmc_client::CourseExercise;
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     };
 
@@ -14,7 +14,7 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     let course_result = match get_course_id_by_name(client, course_name.clone()) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg, PrintColor::Normal);
+            io.println(&msg, PrintColor::Failed);
             return;
         }
     };
@@ -22,7 +22,7 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
     if course_result.is_none() {
         io.println(
             &format!("Could not find a course with name '{}'", course_name),
-            PrintColor::Normal,
+            PrintColor::Failed,
         );
         return;
     }
@@ -30,7 +30,7 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
 
     match client.get_course_exercises(course_id) {
         Ok(exercises) => print_exercises(io, course_name, exercises),
-        Err(error) => io.println(&error, PrintColor::Normal),
+        Err(error) => io.println(&error, PrintColor::Failed),
     }
 }
 

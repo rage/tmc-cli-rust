@@ -16,7 +16,7 @@ use tmc_langs::ClientUpdateData;
 /// Returns an error if user is not logged in.
 pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     };
 
@@ -34,14 +34,14 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
 
     if course_config.is_none() {
         if client.is_test_mode() {
-            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Normal);
+            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Failed);
             return;
         }
         // Did not find course config, use interactive selection if possible
         match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
             Ok(()) => (),
             Err(msg) => {
-                io.println(&msg, PrintColor::Normal);
+                io.println(&msg, PrintColor::Failed);
                 return;
             }
         }
@@ -86,7 +86,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
         Err(err) => {
             manager.force_join();
-            io.println(&format!("Error: {} \n", err), PrintColor::Normal);
+            io.println(&format!("Error: {} ", err), PrintColor::Normal);
         }
     }
 }
@@ -161,41 +161,6 @@ mod tests {
                 .buffer_get(0)
                 .to_string()
                 .eq(&"Not logged in message.".to_string()));
-        }
-    }
-
-    //#[test]
-    fn paste_command_when_path_is_empty_and_config_file_not_exists_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-
-        let mut mock_client = MockClient::new();
-        mock_client.expect_load_login().returning(|| Ok(()));
-
-        let path = "";
-
-        std::fs::create_dir("tmc_cli_test_course_dir/").unwrap();
-        std::fs::create_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
-
-        let current_directory = std::env::current_dir().unwrap();
-
-        std::env::set_current_dir("tmc_cli_test_course_dir/exercise_dir/").unwrap();
-        paste(&mut io, &mut mock_client, path);
-
-        std::env::set_current_dir(current_directory.to_str().unwrap().to_string()).unwrap();
-        std::fs::remove_dir_all("tmc_cli_test_course_dir/").unwrap();
-
-        assert_eq!(1, io.buffer_length());
-        if io.buffer_length() == 1 {
-            assert!(io
-                .buffer_get(0)
-                .to_string()
-                .eq(&"Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string()));
         }
     }
 }

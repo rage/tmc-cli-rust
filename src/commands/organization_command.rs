@@ -10,7 +10,8 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
     let mut last_pinned = true;
 
-    io.println("Available Organizations:\n", PrintColor::Normal);
+    io.println("Available Organizations:", PrintColor::Normal);
+    io.println("", PrintColor::Normal);
 
     for org in &orgs {
         if org.pinned != last_pinned {

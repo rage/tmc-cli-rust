@@ -17,7 +17,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     username = username.trim().to_string();
 
     if username.is_empty() {
-        io.println("Username cannot be empty!", PrintColor::Normal);
+        io.println("Username cannot be empty!", PrintColor::Failed);
         return;
     }
 
@@ -49,7 +49,7 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
             }
         }
         Err(message) => {
-            io.println(&message, PrintColor::Normal);
+            io.println(&message, PrintColor::Failed);
             return;
         }
     }

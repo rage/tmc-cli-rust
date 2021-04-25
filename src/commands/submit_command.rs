@@ -19,7 +19,7 @@ use url::Url;
 /// Returns an error if user is not logged in.
 pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     }
 
@@ -43,14 +43,14 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
 
     if course_config.is_none() {
         if client.is_test_mode() {
-            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Normal);
+            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Failed);
             return;
         }
         // Did not find course config, use interactive selection if possible
         match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
             Ok(()) => (),
             Err(msg) => {
-                io.println(&msg, PrintColor::Normal);
+                io.println(&msg, PrintColor::Failed);
                 return;
             }
         }
@@ -65,7 +65,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
             return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
         }
         Err(err) => {
-            io.println(&err, PrintColor::Normal);
+            io.println(&err, PrintColor::Failed);
             return;
         }
     }
@@ -96,11 +96,11 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
                         "\nGot error '{}' \n    while submitting exercise to address {}",
                         error, url
                     ),
-                    PrintColor::Normal,
+                    PrintColor::Failed,
                 );
             }
             _ => {
-                io.println("Error during submission", PrintColor::Normal);
+                io.println("Error during submission", PrintColor::Failed);
             }
         }
         return;
@@ -133,7 +133,7 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
     if let Some(all_tests_passed) = submission_finished.all_tests_passed {
         all_passed = all_tests_passed;
         if all_tests_passed {
-            io.println("All tests passed on server!", PrintColor::Normal);
+            io.println("All tests passed on server!", PrintColor::Success);
         }
     }
     if !submission_finished.points.is_empty() {
@@ -161,7 +161,7 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
         }
     } else {
         if let Some(error) = submission_finished.error {
-            io.println(&format!("Error: {}", error), PrintColor::Normal);
+            io.println(&format!("Error: {}", error), PrintColor::Failed);
         }
 
         if let Some(test_cases) = submission_finished.test_cases {
@@ -171,7 +171,7 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
                 if case.successful {
                     completed += 1;
                 } else {
-                    io.println(&format!("Failed: {}", case.name), PrintColor::Normal);
+                    io.println(&format!("Failed: {}", case.name), PrintColor::Failed);
                     if let Some(message) = case.message {
                         let formatted = message.replace("\n", "\n        ");
                         io.println(&format!("        {}", formatted), PrintColor::Normal);
@@ -269,29 +269,5 @@ mod tests {
                 .to_string()
                 .eq(&"Not logged in.".to_string()));
         }
-    }
-
-    //#[test]
-    fn submit_with_proper_login_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-
-        let mut mock = MockClient::new();
-        mock.expect_load_login().returning(|| Ok(()));
-
-        let path = "";
-
-        submit(&mut io, &mut mock, path);
-
-        assert_eq!(1, io.buffer_length());
-        assert!(io
-            .buffer_get(0)
-            .to_string()
-            .eq(&"Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.".to_string()));
     }
 }

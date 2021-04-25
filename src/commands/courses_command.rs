@@ -5,7 +5,7 @@ use tmc_client::Course;
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     }
 
@@ -13,7 +13,7 @@ pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
 
     match courses_result {
         Ok(course_list) => print_courses(io, course_list),
-        Err(error) => io.println(&error, PrintColor::Normal),
+        Err(error) => io.println(&error, PrintColor::Failed),
     }
 }
 
