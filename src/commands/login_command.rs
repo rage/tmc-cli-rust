@@ -3,12 +3,8 @@ use super::{command_util, download_command, organization_command};
 use crate::io_module::{Io, PrintColor};
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
-    //io.println("Success color.", PrintColor::Success);
-    //io.println("Normal color.", PrintColor::Normal);
-    //io.println("Failed color.", PrintColor::Failed);
-
     if let Ok(()) = client.load_login() {
-        io.println("You are already logged in.", PrintColor::Normal);
+        io.println("You are already logged in.", PrintColor::Failed);
         return;
     };
 
@@ -64,7 +60,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();
     if courses.is_err() {
-        io.println("Could not list courses.", PrintColor::Normal);
+        io.println("Could not list courses.", PrintColor::Failed);
         return;
     }
 
@@ -103,7 +99,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
                 .clone()
         }
         Err(msg) => {
-            io.println(&msg, PrintColor::Normal);
+            io.println(&msg, PrintColor::Failed);
             return;
         }
     };
@@ -112,13 +108,13 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let course_result = match command_util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
-            io.println(&msg, PrintColor::Normal);
+            io.println(&msg, PrintColor::Failed);
             return;
         }
     };
 
     if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Normal);
+        io.println("Could not find course with that name", PrintColor::Failed);
         return;
     }
     let course = course_result.unwrap();
@@ -126,7 +122,8 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let pathbuf = command_util::get_projects_dir();
 
     match download_command::download_exercises(pathbuf, client, course) {
-        Ok(msg) | Err(msg) => io.println(&format!("\n{}", msg), PrintColor::Normal),
+        Ok(msg) => io.println(&msg, PrintColor::Success),
+        Err(msg) => io.println(&msg, PrintColor::Failed),
     }
 }
 

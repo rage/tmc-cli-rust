@@ -117,7 +117,7 @@ pub fn download_or_update(
                     .spawn()
                     .expect("launch failure");
             } else {
-                io.println(&msg, PrintColor::Normal)
+                io.println(&msg, PrintColor::Failed)
             }
         }
     }
