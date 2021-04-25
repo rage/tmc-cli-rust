@@ -251,8 +251,8 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     let course = course_result.unwrap();
     io.println("", PrintColor::Normal);
     match download_exercises(path, client, course) {
-        Ok(msg) => io.println(&format!("{}", msg), PrintColor::Success),
-        Err(msg) => io.println(&format!("{}", msg), PrintColor::Failed),
+        Ok(msg) => io.println(&msg, PrintColor::Success),
+        Err(msg) => io.println(&msg, PrintColor::Failed),
     }
     pause();
 }
