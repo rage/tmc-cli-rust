@@ -116,7 +116,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             updater::process_update();
         }
         ("cleartemp", _) => {
-            updater::cleartemp();
+            updater::cleartemp().unwrap();
         }
         ("elevateddownload", _) => {
             download_command::elevated_download(io, &mut client);
