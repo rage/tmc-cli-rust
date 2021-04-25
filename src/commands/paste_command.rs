@@ -55,7 +55,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
             return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
         }
         Err(err) => {
-            io.println(&err, PrintColor::Normal);
+            io.println(&err, PrintColor::Failed);
             return;
         }
     }
@@ -86,7 +86,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
         Err(err) => {
             manager.force_join();
-            io.println(&format!("Error: {} ", err), PrintColor::Normal);
+            io.println(&format!("Error: {} ", err), PrintColor::Failed);
         }
     }
 }
