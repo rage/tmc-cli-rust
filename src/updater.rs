@@ -23,19 +23,9 @@ pub fn check_for_update() {
         generate_time_stamp();
         checktemp();
         let new_ver = get_latest_version();
+        println!("Checking for updates...");
         if compare_versions(new_ver) {
-            println!("Checking for updates...");
-            Command::new("powershell")
-                .args(&[
-                    "-Command",
-                    "Start-Process",
-                    "tmc.exe",
-                    "fetchupdate",
-                    "-Verb",
-                    "RunAs",
-                ])
-                .spawn()
-                .expect("launch failure");
+            process_update();
         }
     }
 }
@@ -45,37 +35,59 @@ fn checktemp() {
     let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
     let tmp_filepath = tmp_filepath.join("tmc.exe");
     if tmp_filepath.exists() {
-        Command::new("cmd")
-            .args(&[
-                "/C",
-                "powershell",
-                "-Command",
-                "Start-Process",
-                "tmc.exe",
-                "cleartemp",
-                "-Verb",
-                "RunAs",
-            ])
-            .spawn()
-            .expect("launch failure");
+        if let Err(e) = cleartemp() {
+            match e.kind() {
+                std::io::ErrorKind::PermissionDenied => {
+                    println!("Permission Denied! Restarting with administrator privileges...");
+                    elevate("cleartemp".to_string());
+                    return;
+                }
+                _ => {
+                    println!("{:#?}", e);
+                }
+            }
+        }
     }
 }
-pub fn cleartemp() {
+pub fn cleartemp() -> Result<(), std::io::Error> {
     println!("Cleaning temp...");
     let mut tmp_filepath = env::current_exe().unwrap();
     tmp_filepath.pop();
     let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
     let tmp_filepath = tmp_filepath.join("tmc.exe");
-    fs::remove_file(&tmp_filepath).unwrap();
+    fs::remove_file(&tmp_filepath)?;
     println!("Temp cleared!");
+    Ok(())
 }
 pub fn process_update() {
     let new_ver = get_latest_version();
-    if compare_versions(new_ver.clone()) {
-        stash_old_executable();
-        update(new_ver).unwrap();
-        println!("Update completed succesfully!")
+    match stash_old_executable() {
+        Err(e) => match e.kind() {
+            std::io::ErrorKind::PermissionDenied => {
+                println!("Permission Denied! Restarting with administrator privileges...");
+                elevate("fetchupdate".to_string());
+                return;
+            }
+            _ => {
+                println!("{:#?}", e);
+            }
+        },
+        _ => update(new_ver).unwrap(),
     }
+    println!("Update completed succesfully!")
+}
+fn elevate(command: String) {
+    Command::new("powershell")
+        .args(&[
+            "-Command",
+            "Start-Process",
+            "tmc.exe",
+            &command,
+            "-Verb",
+            "RunAs",
+        ])
+        .spawn()
+        .expect("launch failure");
 }
 fn is_it_time_yet() -> bool {
     let config = TmcConfig::load(PLUGIN, get_path().as_path()).unwrap();
@@ -173,11 +185,12 @@ fn compare_versions(version: String) -> bool {
     false
 }
 
-fn update(version: String) -> Result<(), Box<dyn std::error::Error>> {
+fn update(version: String) -> Result<(), std::io::Error> {
     use io::BufRead;
     let resp = reqwest::blocking::Client::new()
         .get(generate_download_url(version))
-        .send()?;
+        .send()
+        .unwrap();
     let size = resp
         .headers()
         .get(reqwest::header::CONTENT_LENGTH)
@@ -190,8 +203,8 @@ fn update(version: String) -> Result<(), Box<dyn std::error::Error>> {
     if !resp.status().is_success() {
         panic!("Download request failed with status: {:?}", resp.status());
     }
-    let filepath = env::current_exe().unwrap();
-    let mut dest = fs::File::create(&filepath).unwrap();
+    let filepath = env::current_exe()?;
+    let mut dest = fs::File::create(&filepath)?;
     let mut src = io::BufReader::new(resp);
     let mut downloaded = 0;
     let pb = ProgressBar::new(size);
@@ -216,20 +229,21 @@ fn update(version: String) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn stash_old_executable() {
+fn stash_old_executable() -> Result<(), std::io::Error> {
     let filepath = env::current_exe().unwrap();
 
     let mut tmp_filepath = env::current_exe().unwrap();
     tmp_filepath.pop();
     let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
-    fs::create_dir_all(&tmp_filepath).unwrap();
+    fs::create_dir_all(&tmp_filepath)?;
     let tmp_filepath = tmp_filepath.join("tmc.exe");
 
     if tmp_filepath.exists() {
-        fs::remove_file(&tmp_filepath).unwrap();
+        fs::remove_file(&tmp_filepath)?;
     }
 
-    fs::rename(&filepath, &tmp_filepath).unwrap();
+    fs::rename(&filepath, &tmp_filepath)?;
+    Ok(())
 }
 
 fn generate_download_url(version: String) -> Url {
