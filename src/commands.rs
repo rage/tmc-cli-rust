@@ -49,6 +49,20 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 io.println("arguments not found", PrintColor::Normal);
             }
         }
+        ("update", args) => {
+            //TODO: Make own commandfile when tmc-langs-rust supports update
+            //with folder as a parameter
+            if let Some(a) = args {
+                download_or_update(
+                    io,
+                    &mut client,
+                    a.value_of("course"),
+                    a.is_present("currentdir"),
+                );
+            } else {
+                io.println("arguments not found", PrintColor::Normal);
+            }
+        }
         ("organization", args) => {
             if let Some(args) = args {
                 let interactive_mode;
