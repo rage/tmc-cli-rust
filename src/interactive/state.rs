@@ -122,7 +122,10 @@ impl AppState {
             .items
             .items
             .iter()
-            .filter(|item| item.to_lowercase().contains(&self.filter.to_lowercase()))
+            .filter(|item| {
+                item.to_lowercase().contains(&self.filter.to_lowercase())
+                    || item.to_lowercase().contains("view all")
+            })
             .cloned()
             .collect();
 
