@@ -58,27 +58,6 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
     }
 }
 
-pub fn interactive_list_with_pages(prompt: &str, items: Vec<Vec<String>>) -> Option<String> {
-    execute!(stdout(), EnterAlternateScreen).unwrap();
-    let backend = CrosstermBackend::new(stdout());
-    let mut terminal = Terminal::new(backend).unwrap();
-
-    terminal.clear().unwrap();
-    enable_raw_mode().unwrap();
-    let app = AppState::new_with_pages(items);
-    let result = event_loop(&mut terminal, app, prompt);
-
-    disable_raw_mode().unwrap();
-
-    terminal.clear().unwrap();
-    execute!(stdout(), LeaveAlternateScreen).unwrap();
-    if let Some(result) = result {
-        Some(result)
-    } else {
-        None
-    }
-}
-
 fn draw_terminal<B>(terminal: &mut Terminal<B>, app: &mut AppState, prompt: &str)
 where
     B: Backend,
@@ -140,11 +119,11 @@ fn read_keys(app: &mut AppState) -> Option<Option<String>> {
                     None
                 }
                 KeyCode::Left => {
-                    app.previous_page();
+                    app.items.previous();
                     None
                 }
                 KeyCode::Right => {
-                    app.next_page();
+                    app.items.next();
                     None
                 }
                 KeyCode::Down => {
