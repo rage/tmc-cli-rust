@@ -1,6 +1,6 @@
 use super::command_util;
 use super::command_util::Client;
-use crate::interactive;
+use crate::interactive::{self, interactive_list};
 use crate::io_module::{Io, PrintColor};
 
 // Asks for organization from user and saves it into file
@@ -41,20 +41,28 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
 pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
     io.println("Fetching organizations...", PrintColor::Normal);
     let mut orgs = client.get_organizations().unwrap();
-    let pinned = orgs
+    let mut pinned = orgs
         .iter()
         .filter(|org| org.pinned)
         .map(|org| org.name.clone())
-        .collect();
+        .collect::<Vec<_>>();
 
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
 
-    let all = orgs.iter().map(|org| org.name.clone()).collect();
+    let others = String::from("View all organizations");
+    pinned.push(others.clone());
 
-    let org_name = interactive::interactive_list_with_pages(
-        "Select your organization  (Switch between views with Left and Right keys)",
-        vec![pinned, all],
-    );
+    let prompt = String::from("Select your organization: ");
+    let mut org_name = interactive::interactive_list(&prompt, pinned);
+
+    org_name = match org_name {
+        None => return Err("No organization chosen".to_string()),
+        Some(result) if result.eq(&others) => {
+            let all = orgs.iter().map(|org| org.name.clone()).collect();
+            interactive_list(&prompt, all)
+        }
+        option => option,
+    };
 
     if org_name.is_none() {
         return Err("No organization chosen".to_string());
