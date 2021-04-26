@@ -15,28 +15,11 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
 
             match tmc_langs::find_exercise_directories(pathbuf.as_path()) {
                 Ok(exercises) => match exercises.len() {
-                    0 => {
-                        // No exercises found, ask with interactive menu
-                        let mut exercise_name = String::from("");
-                        let mut exercise_dir: PathBuf = PathBuf::new();
-                        let mut course_config = None;
-                        match ask_exercise_interactive(
-                            &mut exercise_name,
-                            &mut exercise_dir,
-                            &mut course_config,
-                        ) {
-                            Ok(()) => (),
-                            Err(msg) => {
-                                io.println(&msg, PrintColor::Failed);
-                                return;
-                            }
-                        }
-                        test_exercise_path(io, &exercise_dir)
-                    }
+                    0 => ask_interactively_and_test(io),
                     1 => test_exercise_path(io, exercises[0].as_path()),
                     _ => test_exercises(io, exercises),
                 },
-                Err(error) => Err(format!("No exercises found: {}", error)),
+                Err(_) => ask_interactively_and_test(io),
             }
         }
         Err(error) => Err(format!(
@@ -48,6 +31,21 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
     if let Err(err) = status {
         io.println(&err, PrintColor::Failed);
     }
+}
+
+/// Asks with interactive menu what exercise should be tested and runs tests
+fn ask_interactively_and_test(io: &mut dyn Io) -> Result<(), String> {
+    // No exercises found, ask with interactive menu
+    let mut exercise_name = String::from("");
+    let mut exercise_dir: PathBuf = PathBuf::new();
+    let mut course_config = None;
+    match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
+        Ok(()) => (),
+        Err(msg) => {
+            return Err(msg);
+        }
+    }
+    test_exercise_path(io, &exercise_dir)
 }
 
 /// Wrapper around test_exercise funtion to get uniform Result type

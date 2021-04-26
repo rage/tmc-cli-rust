@@ -24,13 +24,15 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     let mut course_config = None;
     let mut exercise_dir = std::path::PathBuf::new();
 
-    find_submit_or_paste_config(
+    if let Err(error) = find_submit_or_paste_config(
         &mut exercise_name,
         &mut course_config,
         &mut exercise_dir,
         path,
-    )
-    .unwrap();
+    ) {
+        io.println(&error, PrintColor::Failed);
+        return;
+    }
 
     if course_config.is_none() {
         if client.is_test_mode() {

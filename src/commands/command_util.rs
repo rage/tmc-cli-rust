@@ -507,7 +507,7 @@ static CONFIG_FILE_NAME: &str = "course_config.toml";
 
 /// Checks if current directory or given path
 /// contains valid exercise (i.e config file)
-/// Returns Err(msg) if
+/// Returns Err(msg) if given invalid path (including root )
 pub fn find_submit_or_paste_config(
     exercise_slug: &mut String,
     course_config: &mut Option<CourseConfig>,
@@ -516,13 +516,10 @@ pub fn find_submit_or_paste_config(
 ) -> Result<(), String> {
     if path.is_empty() {
         // No exercise path given, so assuming we are in exercise directory.
-        *exercise_slug = env::current_dir()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
+        *exercise_slug = match env::current_dir().unwrap().file_name() {
+            Some(file_name) => file_name.to_str().unwrap().to_string(),
+            None => return Ok(()),
+        };
         let mut pathbuf = env::current_dir().unwrap();
         pathbuf.pop(); // we go to the course directory
         pathbuf.push(CONFIG_FILE_NAME);
@@ -531,20 +528,18 @@ pub fn find_submit_or_paste_config(
                 Some(config) => Some(config),
                 None => return Ok(()),
             },
-            Err(msg) => {
-                return Err(msg);
+            Err(_) => {
+                *course_config = None;
+                return Ok(());
             }
         };
         *exercise_dir = env::current_dir().unwrap();
     } else {
         // Path given, find out course part, exercise name and full path
-        *exercise_slug = Path::new(path)
-            .to_path_buf()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
+        *exercise_slug = match Path::new(path).to_path_buf().file_name() {
+            Some(file_name) => file_name.to_str().unwrap().to_string(),
+            None => return Err("Invalid exercise path given".to_string()),
+        };
         let mut part_path = Path::new(path).to_path_buf();
         part_path.pop();
         let mut course_config_path = env::current_dir().unwrap();
@@ -553,7 +548,7 @@ pub fn find_submit_or_paste_config(
         *course_config = match read_new_course_config(course_config_path.as_path()) {
             Ok(conf) => match conf {
                 Some(config) => Some(config),
-                None => return Ok(()),
+                None => return Err("Invalid exercise path given".to_string()),
             },
             Err(msg) => {
                 return Err(msg);

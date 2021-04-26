@@ -73,7 +73,7 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<Stri
 // Check if logged in, then ask for organization
 pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Normal);
+        io.println(&error, PrintColor::Failed);
         return;
     };
 
@@ -86,8 +86,8 @@ pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: 
     match res {
         Ok(org) => io.println(
             &format!("Selected {} as organization.", org),
-            PrintColor::Normal,
+            PrintColor::Success,
         ),
-        Err(msg) => io.println(&msg, PrintColor::Normal),
+        Err(msg) => io.println(&msg, PrintColor::Failed),
     }
 }
