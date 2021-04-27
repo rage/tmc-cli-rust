@@ -6,11 +6,7 @@ pub fn build_cli() -> App<'static, 'static> {
     App::new("Test My Code client written in Rust")
         .setting(AppSettings::ArgRequiredElseHelp)
         .version(PKG_VERSION.unwrap())
-        .about("Does awesome things")
-        .subcommand(
-            SubCommand::with_name("config")
-                .about("Set/unset TMC-CLI properties and change settings"),
-        )
+        .about("Client for downloading, testing and submitting exercises through the Test My Code system")
         .subcommand(SubCommand::with_name("courses").about("List the available courses"))
         .subcommand(
             SubCommand::with_name("download")
@@ -34,7 +30,6 @@ pub fn build_cli() -> App<'static, 'static> {
                 .about("List the exercises for a specific course")
                 .arg(Arg::with_name("course").value_name("course").required(true)),
         )
-        .subcommand(SubCommand::with_name("info").about("Show info about the current directory"))
         .subcommand(
             SubCommand::with_name("login")
                 .about("Login to TMC server")
@@ -110,4 +105,5 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("testmode")
                 .help("Only for internal testing, disables server connection"),
         )
+        
 }
