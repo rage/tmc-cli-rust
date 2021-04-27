@@ -507,8 +507,10 @@ static CONFIG_FILE_NAME: &str = "course_config.toml";
 
 /// Checks if current directory or given path
 /// contains valid exercise (i.e config file)
-/// Returns Err(msg) if given invalid path (including root )
-pub fn find_submit_or_paste_config(
+/// Returns Err(msg) if given invalid path (including root)
+/// Returns Ok(()) if no path given, but if current dir is not
+/// an exercise, leaves course_config as None
+pub fn find_course_config_for_exercise(
     exercise_slug: &mut String,
     course_config: &mut Option<CourseConfig>,
     exercise_dir: &mut PathBuf,
@@ -581,7 +583,7 @@ pub fn read_new_course_config(course_config_path: &Path) -> Result<Option<Course
     }
 }
 
-// retrieves exercise id for exercise from CourseConfig
+/// Retrieves exercise id for exercise from CourseConfig
 pub fn get_exercise_id_from_config(
     course_config: &CourseConfig,
     exercise_slug: &str,
@@ -593,7 +595,7 @@ pub fn get_exercise_id_from_config(
     }
 }
 
-// generates return_url for submissions and pastes
+/// Generates return_url for submissions and pastes
 pub fn generate_return_url(exercise_id: usize) -> String {
     format!(
         "{}/api/v8/core/exercises/{}/submissions",
@@ -609,7 +611,8 @@ pub fn get_projects_dir() -> PathBuf {
     tmc_langs::get_projects_dir(PLUGIN).unwrap()
 }
 
-/// Gives a list of all courses in projects-folder
+/// Choose course and then exercise interactively, return exercise path
+/// or Err(String) if either menu is interrupted or no items found
 pub fn choose_exercise() -> Result<PathBuf, String> {
     let mut courses: Vec<String> = Vec::new();
 

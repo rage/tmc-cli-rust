@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use super::command_util;
-use super::command_util::*;
+use super::command_util::{get_projects_dir, Client};
 use crate::interactive;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
