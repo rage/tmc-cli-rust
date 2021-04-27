@@ -1,51 +1,48 @@
 use crate::commands::command_util;
-use crate::commands::command_util::ask_exercise_interactive;
+use crate::commands::command_util::{ask_exercise_interactive, find_submit_or_paste_config};
 use crate::io_module::{Io, PrintColor};
-use std::env;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tmc_langs::RunResult;
 
-/// Executes tmc tests for exercise(s)
+/// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
+/// If not, asks exercise with an interactive menu.
 pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
-    let status = match env::current_dir() {
-        Ok(mut pathbuf) => {
-            if let Some(exercise) = exercise_folder {
-                pathbuf.push(exercise);
-            }
+    let mut exercise_name = "".to_string();
+    let mut course_config = None;
+    let mut exercise_dir = std::path::PathBuf::new();
 
-            match tmc_langs::find_exercise_directories(pathbuf.as_path()) {
-                Ok(exercises) => match exercises.len() {
-                    0 => ask_interactively_and_test(io),
-                    1 => test_exercise_path(io, exercises[0].as_path()),
-                    _ => test_exercises(io, exercises),
-                },
-                Err(_) => ask_interactively_and_test(io),
+    let path = std::env::current_dir().unwrap();
+    let mut path = path.to_str().unwrap();
+    if let Some(folder) = exercise_folder {
+        path = folder;
+    }
+
+    if let Err(error) = find_submit_or_paste_config(
+        &mut exercise_name,
+        &mut course_config,
+        &mut exercise_dir,
+        path,
+    ) {
+        if !exercise_folder.is_none() {
+            io.println(&error, PrintColor::Failed);
+            return;
+        }
+    }
+
+    if course_config.is_none() {
+        // Did not find course config, use interactive selection if possible
+        match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
+            Ok(()) => (),
+            Err(msg) => {
+                io.println(&msg, PrintColor::Failed);
+                return;
             }
         }
-        Err(error) => Err(format!(
-            "Invalid directory / Insufficient permissions: {}",
-            error
-        )),
-    };
+    }
 
-    if let Err(err) = status {
+    if let Err(err) = test_exercise_path(io, &exercise_dir) {
         io.println(&err, PrintColor::Failed);
     }
-}
-
-/// Asks with interactive menu what exercise should be tested and runs tests
-fn ask_interactively_and_test(io: &mut dyn Io) -> Result<(), String> {
-    // No exercises found, ask with interactive menu
-    let mut exercise_name = String::from("");
-    let mut exercise_dir: PathBuf = PathBuf::new();
-    let mut course_config = None;
-    match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
-        Ok(()) => (),
-        Err(msg) => {
-            return Err(msg);
-        }
-    }
-    test_exercise_path(io, &exercise_dir)
 }
 
 /// Wrapper around test_exercise funtion to get uniform Result type
@@ -55,25 +52,6 @@ fn test_exercise_path(io: &mut dyn Io, path: &Path) -> Result<(), String> {
     } else {
         Ok(())
     }
-}
-/// Executes tmc tests for multiple exercises
-fn test_exercises(io: &mut dyn Io, paths: Vec<PathBuf>) -> Result<(), String> {
-    let mut exercises_completed = 0_usize;
-    let mut exercises_total = 0_usize;
-    for exercise_path in paths {
-        match test_exercise(io, exercise_path.as_path(), false) {
-            Ok(passed) => {
-                exercises_total += 1;
-                if passed {
-                    exercises_completed += 1;
-                }
-            }
-            Err(err) => return Err(err), // Stops iteration on first error
-        }
-    }
-
-    print_result_tests(io, exercises_completed, exercises_total);
-    Ok(())
 }
 
 /// Executes tests for a single exercise, returns true if all tests passed (false if not).
@@ -95,22 +73,6 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> Result<b
         )),
         Err(error) => Err(error.to_string()), // For example "Error in plugin" on a python exercise, if python wasn't installed on the system
     }
-}
-
-/// Prints the end result of running multiple tests
-fn print_result_tests(io: &mut dyn Io, exercises_completed: usize, exercises_total: usize) {
-    io.println("", PrintColor::Normal);
-    io.println(
-        &format!(
-            "Total results: {}/{} exercises passed",
-            exercises_completed, exercises_total
-        ),
-        PrintColor::Normal,
-    );
-    io.println(
-        &command_util::get_progress_string(exercises_completed, exercises_total, 64),
-        PrintColor::Normal,
-    );
 }
 
 /// Prints the result of running tests for a single exercise
@@ -483,72 +445,6 @@ mod tests {
             assert!(
                 !all_tests_passed,
                 "print_result_test returned true, expected false"
-            );
-        }
-
-        #[test]
-        fn print_multiple_completed_tests_results_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
-
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
-
-            print_result_tests(&mut io, 10, 10);
-
-            assert_eq!(io.list[0], "");
-
-            assert!(
-                io.list[1].contains("Total results"),
-                "line does not contain 'Total results'"
-            );
-            assert!(
-                io.list[1].contains("10/10"),
-                "line does not contain total completed exercises '10/10'"
-            );
-            assert!(
-                io.list[2].contains("█"),
-                "line does not contain progress char '█'"
-            );
-            assert!(
-                !io.list[2].contains("░"),
-                "line contains progress char '░', which should not appear at 100% completed"
-            );
-        }
-
-        #[test]
-        fn print_multiple_failed_tests_results_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
-
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
-
-            print_result_tests(&mut io, 5, 10);
-
-            assert_eq!(io.list[0], "");
-
-            assert!(
-                io.list[1].contains("Total results"),
-                "line does not contain 'Total results'"
-            );
-            assert!(
-                io.list[1].contains("5/10"),
-                "line does not contain total completed exercises '10/10'"
-            );
-            assert!(
-                io.list[2].contains("█"),
-                "line does not contain progress char '█'"
-            );
-            assert!(
-                io.list[2].contains("░"),
-                "line does not contain progress char '░'"
             );
         }
     }
