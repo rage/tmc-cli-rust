@@ -1,5 +1,5 @@
 use super::command_util;
-use super::command_util::*;
+use super::command_util::{ask_exercise_interactive, find_course_config_for_exercise, Client};
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
@@ -33,7 +33,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     let mut course_config = None;
     let mut exercise_dir = std::path::PathBuf::new();
 
-    if let Err(error) = find_submit_or_paste_config(
+    if let Err(error) = find_course_config_for_exercise(
         &mut exercise_name,
         &mut course_config,
         &mut exercise_dir,
@@ -205,8 +205,8 @@ fn into_locale(arg: &str) -> Result<Language> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use command_util::MockClient;
     use std::slice::Iter;
-
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,

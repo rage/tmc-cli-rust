@@ -1,5 +1,5 @@
 use crate::commands::command_util;
-use crate::commands::command_util::{ask_exercise_interactive, find_submit_or_paste_config};
+use crate::commands::command_util::{ask_exercise_interactive, find_course_config_for_exercise};
 use crate::io_module::{Io, PrintColor};
 use std::path::Path;
 use tmc_langs::RunResult;
@@ -17,13 +17,13 @@ pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
         path = folder;
     }
 
-    if let Err(error) = find_submit_or_paste_config(
+    if let Err(error) = find_course_config_for_exercise(
         &mut exercise_name,
         &mut course_config,
         &mut exercise_dir,
         path,
     ) {
-        if !exercise_folder.is_none() {
+        if exercise_folder.is_some() {
             io.println(&error, PrintColor::Failed);
             return;
         }
