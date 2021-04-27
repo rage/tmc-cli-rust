@@ -64,7 +64,8 @@ After restarting the terminal, this should work:
 
 #### Using the Windows installer
 
-Download the installer 'tmc-cli-rust.msi' at ... TODO
+Windows installer can be found [here](https://github.com/rage/tmc-cli-rust/tree/dev/installer).
+Download and run the newest installer found. After installation, the application updates automatically.
 
 ### Manual installation
 
@@ -188,6 +189,11 @@ Soft deadline: none
 
 
 ## Contribution
+Notes for further development:
+
+We've used [cargo-wix](https://github.com/volks73/cargo-wix) to create the Windows Installer.
+Further instructions for it's usage can be found on the given repository.
+Please mind that the License.rtf has been modified (for the copyright part) and changed the manufacturer has been to University of Helsinki in the main.wxs file. We have not implemented creating the installer in the GitHub Actions, so it needs to be done manually.
 
 ### Formatting
 
