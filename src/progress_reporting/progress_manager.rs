@@ -6,11 +6,12 @@ use std::collections::VecDeque;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+use terminal_size;
 use tmc_langs_util::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
     ProgressStyle::default_bar()
-        .template("{wide_msg}\n {percent}%[{bar:64.white}] [{elapsed_precise}]")
+        .template("{wide_msg}\n {percent}%[{bar:25.white}] [{elapsed_precise}]")
         .progress_chars("██░")
 }
 
@@ -178,8 +179,15 @@ impl ProgressBarManager {
             }
 
             let message_guard = status_message.lock().expect("Could not lock mutex");
-            let message = (*message_guard).clone();
+            let mut message = (*message_guard).clone();
             drop(message_guard);
+
+            // message is splitted to fit to the terminal window
+            if let Some((terminal_size::Width(w), terminal_size::Height(_h))) = terminal_size::terminal_size() {
+                if usize::from(w) < message.len() {
+                    let _over = message.split_off(usize::from(w));
+                }
+            }
 
             if message != last_message {
                 // message has changed since last tick
