@@ -364,6 +364,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap_generate"
+version = "3.0.0-beta.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adf420f8b687b628d2915ccfd43a660c437a170432e3fbcb66944e8717a0d68f"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "cloudabi"
 version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2425,6 +2434,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "clap",
+ "clap_generate",
  "crossterm 0.19.0",
  "dirs",
  "indicatif",
