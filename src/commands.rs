@@ -26,102 +26,78 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     let mut client = ClientProduction::new(matches.is_present("testmode"));
 
     match matches.subcommand() {
-        ("login", args) => {
-            if let Some(args) = args {
-                let interactive_mode;
-                if args.is_present("non-interactive") {
-                    interactive_mode = false;
-                } else {
-                    interactive_mode = true;
-                }
-                login(io, &mut client, interactive_mode)
-            }
+        Some(("login", args)) => {
+            let interactive_mode = !args.is_present("non-interactive");
+            login(io, &mut client, interactive_mode)
         }
-        ("download", args) => {
-            if let Some(a) = args {
-                download_or_update(
-                    io,
-                    &mut client,
-                    a.value_of("course"),
-                    a.is_present("currentdir"),
-                );
-            } else {
-                io.println("arguments not found", PrintColor::Normal);
-            }
+        Some(("download", args)) => {
+            download_or_update(
+                io,
+                &mut client,
+                args.value_of("course"),
+                args.is_present("currentdir"),
+            );
+            //io.println("arguments not found", PrintColor::Normal);
         }
-        ("update", args) => {
+        Some(("update", args)) => {
             //TODO: Make own commandfile when tmc-langs-rust supports update
             //with folder as a parameter
-            if let Some(a) = args {
-                download_or_update(
-                    io,
-                    &mut client,
-                    a.value_of("course"),
-                    a.is_present("currentdir"),
-                );
-            } else {
-                io.println("arguments not found", PrintColor::Normal);
-            }
+            download_or_update(
+                io,
+                &mut client,
+                args.value_of("course"),
+                args.is_present("currentdir"),
+            );
+            //io.println("arguments not found", PrintColor::Normal);
         }
-        ("organization", args) => {
-            if let Some(args) = args {
-                let interactive_mode;
-                if args.is_present("non-interactive") {
-                    interactive_mode = false;
-                } else {
-                    interactive_mode = true;
-                }
-                organization(io, &mut client, interactive_mode)
-            }
+        Some(("organization", args)) => {
+            let interactive_mode = !args.is_present("non-interactive");
+            organization(io, &mut client, interactive_mode)
         }
-        ("courses", _) => list_courses(io, &mut client),
-        ("submit", args) => {
+        Some(("courses", _)) => list_courses(io, &mut client),
+        Some(("submit", args)) => {
             let path;
-            if let Some(a) = args {
-                path = a.value_of("exercise").unwrap_or("");
+            if args.is_present("exercise") {
+                path = args.value_of("exercise").unwrap_or("");
             } else {
                 path = "";
             }
             submit_command::submit(io, &mut client, path);
         }
-        ("exercises", args) => {
-            if let Some(a) = args {
-                if let Some(c) = a.value_of("course") {
-                    list_exercises(io, &mut client, String::from(c));
-                } else {
-                    io.println("argument for course not found", PrintColor::Normal);
-                }
+        Some(("exercises", args)) => {
+            if let Some(c) = args.value_of("course") {
+                list_exercises(io, &mut client, String::from(c));
             } else {
-                io.println("argument not found for course", PrintColor::Normal);
+                io.println("argument for course not found", PrintColor::Normal);
             }
         }
-        ("test", args) => {
-            if let Some(a) = args {
-                test(io, a.value_of("exercise"));
+        Some(("test", args)) => {
+            if args.is_present("exercise") {
+                test(io, args.value_of("exercise"));
             } else {
                 test(io, None);
             }
         }
-        ("paste", args) => {
+        Some(("paste", args)) => {
             let path;
-            if let Some(a) = args {
-                path = a.value_of("exercise").unwrap_or("");
+            if args.is_present("exercise") {
+                path = args.value_of("exercise").unwrap_or("");
             } else {
                 path = "";
             }
             paste_command::paste(io, &mut client, path);
         }
-        ("logout", _) => logout(io, &mut client),
-        ("fetchupdate", _) => {
+        Some(("logout", _)) => logout(io, &mut client),
+        Some(("fetchupdate", _)) => {
             updater::process_update();
         }
-        ("cleartemp", _) => {
+        Some(("cleartemp", _)) => {
             updater::cleartemp().unwrap();
         }
-        ("elevateddownload", _) => {
+        Some(("elevateddownload", _)) => {
             download_command::elevated_download(io, &mut client);
         }
-        (_, Some(_)) => (), // Not implemented yet
-        (_, None) => (),    // No subcommand was given
+        None => (),
+        _ => (),
     }
 }

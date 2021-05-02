@@ -183,7 +183,9 @@ impl ProgressBarManager {
             drop(message_guard);
 
             // message is splitted to fit to the terminal window
-            if let Some((terminal_size::Width(w), terminal_size::Height(_h))) = terminal_size::terminal_size() {
+            if let Some((terminal_size::Width(w), terminal_size::Height(_h))) =
+                terminal_size::terminal_size()
+            {
                 if usize::from(w) < message.len() {
                     let _over = message.split_off(usize::from(w));
                 }
