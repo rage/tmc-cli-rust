@@ -8,12 +8,13 @@ authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
 edition = "2018"
 description = "Command line interface for TMC, written in Rust."
 license = "Apache-2.0"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 url = "2.2.1"
-clap = "3.0.0-beta.2"
+clap = "2.3.3"
 assert_cmd = "0.10"
 predicates = "1"
 anyhow = "1"
@@ -37,5 +38,4 @@ termcolor = "1.1"
 terminal_size = "0.1.16"
 
 [build-dependencies]
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
+clap = "2.3.3"

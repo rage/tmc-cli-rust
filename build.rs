@@ -1,17 +1,18 @@
-use clap;
-//use clap_generate::{generate_to, generators::Zsh};
-use std::io::Error;
+use clap::Shell;
 
 include!("src/cli.rs");
 
-fn main() -> Result<(), Error> {
-    let _outdir = match std::env::var_os("OUT_DIR") {
-        None => return Ok(()),
+fn main() {
+    let outdir = match std::env::var_os("OUT_DIR") {
+        None => {
+            println!("Hellooo");
+            return;
+        }
         Some(outdir) => outdir,
     };
 
-    let mut _app = build_cli();
-    //generate_to::<Zsh, _, _>(&mut app, "tmc", outdir);
+    println!("{:?}", outdir);
 
-    Ok(())
+    let mut app = build_cli();
+    app.gen_completions("tmc", Shell::Zsh, outdir);
 }

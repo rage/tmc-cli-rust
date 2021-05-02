@@ -1,108 +1,108 @@
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 const PKG_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
-pub fn build_cli() -> App<'static> {
+pub fn build_cli() -> App<'static, 'static> {
     App::new("Test My Code client written in Rust")
         .setting(AppSettings::ArgRequiredElseHelp)
         .version(PKG_VERSION.unwrap())
         .about("Client for downloading, testing and submitting exercises through the Test My Code system")
-        .subcommand(App::new("courses").about("List the available courses"))
+        .subcommand(SubCommand::with_name("courses").about("List the available courses"))
         .subcommand(
-            App::new("download")
+            SubCommand::with_name("download")
                 .about("Downloads course exercises")
                 .arg(
-                    Arg::new("course")
-                        .short('c')
+                    Arg::with_name("course")
+                        .short("c")
                         .long("course")
                         .value_name("course name")
                         .required(false),
                 )
                 .arg(
-                    Arg::new("currentdir")
-                        .short('d')
+                    Arg::with_name("currentdir")
+                        .short("d")
                         .long("currentdir")
                         .required(false),
                 ),
         )
         .subcommand(
-            App::new("exercises")
+            SubCommand::with_name("exercises")
                 .about("List the exercises for a specific course")
-                .arg(Arg::new("course").value_name("course").required(true)),
+                .arg(Arg::with_name("course").value_name("course").required(true)),
         )
         .subcommand(
-            App::new("login")
+            SubCommand::with_name("login")
                 .about("Login to TMC server")
                 .arg(
-                    Arg::new("non-interactive")
-                        .short('n')
-                        .about("Initiates the non-interactive mode.")
+                    Arg::with_name("non-interactive")
+                        .short("n")
+                        .help("Initiates the non-interactive mode.")
                         .long("non-interactive"),
                 ),
         )
-        .subcommand(App::new("logout").about("Logout from TMC server"))
+        .subcommand(SubCommand::with_name("logout").about("Logout from TMC server"))
         .subcommand(
-            App::new("organization")
+            SubCommand::with_name("organization")
                 .about("Change organization")
                 .arg(
-                    Arg::new("non-interactive")
-                        .short('n')
-                        .about("Initiates the non-interactive mode.")
+                    Arg::with_name("non-interactive")
+                        .short("n")
+                        .help("Initiates the non-interactive mode.")
                         .long("non-interactive"),
                 ),
         )
         .subcommand(
-            App::new("paste")
+            SubCommand::with_name("paste")
                 .about("Submit exercise to TMC pastebin")
                 .arg(
-                    Arg::new("exercise")
+                    Arg::with_name("exercise")
                         .value_name("exercise")
                         .required(false),
                 ),
         )
         .subcommand(
-            App::new("submit")
+            SubCommand::with_name("submit")
                 .about("Submit exercises to TMC server")
                 .arg(
-                    Arg::new("exercise")
+                    Arg::with_name("exercise")
                         .value_name("exercise")
                         .required(false),
                 ),
         )
         .subcommand(
-            App::new("test")
+            SubCommand::with_name("test")
                 .about("Run local exercise tests")
                 .arg(
-                    Arg::new("exercise")
+                    Arg::with_name("exercise")
                         .value_name("exercise")
                         .required(false),
                 ),
         )
         .subcommand(
-            App::new("fetchupdate")
+            SubCommand::with_name("fetchupdate")
                 .setting(AppSettings::Hidden)
                 .about("Finishes the autoupdater. Administator rights needed."),
         )
         .subcommand(
-            App::new("cleartemp")
+            SubCommand::with_name("cleartemp")
                 .setting(AppSettings::Hidden)
                 .about("Removes tempfiles. Administator rights needed."),
         )
         .subcommand(
-            App::new("elevateddownload")
+            SubCommand::with_name("elevateddownload")
                 .setting(AppSettings::Hidden)
                 .about("Downloads course from the tempfile. Administator rights needed."),
         )
-        .subcommand(App::new("update").about("Update exercises"))
+        .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .arg(
-            Arg::new("no-update")
-                .short('d')
+            Arg::with_name("no-update")
+                .short("d")
                 .long("no-update")
-                .about("Disable auto update temporarily"),
+                .help("Disable auto update temporarily"),
         )
         .arg(
-            Arg::new("testmode")
+            Arg::with_name("testmode")
                 .long("testmode")
-                .about("Only for internal testing, disables server connection"),
+                .help("Only for internal testing, disables server connection"),
         )
 }
