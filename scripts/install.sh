@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -euo pipefail
 
 echo "~ Installing TMC-CLI ~"
@@ -96,16 +97,66 @@ else
   PROFILEFILE=$HOME/.shrc
   echo "Defaulting to .shrc for environment variables, if this is incorrect, please copy these manually to correct file."
 fi
-# Removes old aliases
+# Removes old aliases and such
 sed -i '/alias tmc=/d' "$PROFILEFILE"
+sed -i "/export TMC_LANGS_CONFIG_DIR=/d" "$PROFILEFILE"
 
 echo $PROFILEFILE
 
+COMPLETIONS_PATH=$HOME/.local/share/tmc-autocomplete
+
+
+CMD=$PWD/$filename
+
 # Saves new alias to .bashrc
-echo "alias tmc='$PWD/$filename'" >> "$PROFILEFILE"
+echo "alias tmc='$CMD'" >> "$PROFILEFILE"
 echo "export TMC_LANGS_CONFIG_DIR='$HOME/tmc-config'" >> "$PROFILEFILE"
 
 echo ""
+
+
+
+#
+#
+# Auto-complete scripts
+# 
+#
+if [ "$SHELLNAME" = "bash" ]; then
+ 
+
+  echo "Generating auto-complete scripts to $COMPLETIONS_PATH"
+  echo ""
+  echo "" 
+
+  # removing possibly existing sourcing
+  sed -i '/source/!b;/tmc-autocomplete/d' "$PROFILEFILE"
+
+
+  # creating the completions directory, if it doesn't exist
+  eval "mkdir -p $COMPLETIONS_PATH"
+
+  # calling the generate-completions subcommand to generate the completion script
+  eval "$CMD generate-completions --bash > $COMPLETIONS_PATH/tmc.bash"
+
+  # adding the line to .bashrc so that bash knows where to look for
+  echo "source $COMPLETIONS_PATH/tmc.bash" >> "$PROFILEFILE"
+
+elif [ "$SHELLNAME" = "zsh" ]; then
+  echo "Generating auto-complete scripts to $COMPLETIONS_PATH"
+  echo ""
+  echo ""
+
+  # removing possibly existing definitions
+  sed -i "/compdef _tmc/d" "$PROFILEFILE"
+  sed -i '/fpath/!b;/tmc-autocomplete/d' "$PROFILEFILE"
+
+  eval "mkdir -p $COMPLETIONS_PATH"
+  eval "$CMD generate-completions --bash > $COMPLETIONS_PATH/_tmc"
+
+  echo "fpath=($COMPLETIONS_PATH/_tmc " '$fpath)' >> "$PROFILEFILE"
+
+  echo "compdef _tmc tmc" >> "$PROFILEFILE"
+fi
 
 echo "Installation complete. Please restart the terminal."
 echo "After opening a new terminal, you can try using TMC-CLI from the command line with:"
