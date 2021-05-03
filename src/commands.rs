@@ -1,5 +1,5 @@
 use crate::updater;
-use command_util::ClientProduction;
+use command_util::{get_organization, Client, ClientProduction};
 use courses_command::list_courses;
 use download_command::download_or_update;
 use exercises_command::list_exercises;
@@ -25,6 +25,43 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
 
     let mut client = ClientProduction::new(matches.is_present("testmode"));
 
+    // Authorize the client and raise error if not logged in when required
+    match matches.subcommand().0 {
+        "login" => {
+            if let Ok(()) = client.load_login() {
+                io.println(
+                    "Already logged in. Please logout first with 'tmc logout'",
+                    PrintColor::Failed,
+                );
+                return;
+            }
+        }
+        "test" => (),
+        _ => {
+            if let Err(_) = client.load_login() {
+                io.println(
+                    "No login found. Login to use this command with 'tmc login'",
+                    PrintColor::Failed,
+                );
+                return;
+            }
+        }
+    };
+
+    // Check that organization is set
+    match matches.subcommand().0 {
+        "download" | "courses" => {
+            if get_organization().is_none() {
+                io.println(
+                    "No organization found. Run 'tmc organization' first.",
+                    PrintColor::Failed,
+                );
+                return;
+            }
+        }
+        _ => (),
+    };
+
     match matches.subcommand() {
         ("login", args) => {
             if let Some(args) = args {
@@ -46,7 +83,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     a.is_present("currentdir"),
                 );
             } else {
-                io.println("arguments not found", PrintColor::Normal);
+                io.println("Error: Arguments not found", PrintColor::Failed);
             }
         }
         ("update", args) => {
@@ -60,7 +97,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                     a.is_present("currentdir"),
                 );
             } else {
-                io.println("arguments not found", PrintColor::Normal);
+                io.println("Error: Arguments not found", PrintColor::Failed);
             }
         }
         ("organization", args) => {

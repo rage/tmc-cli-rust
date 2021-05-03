@@ -5,11 +5,6 @@ use tmc_client::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    };
-
     // Get course by id
     let course_result = match get_course_id_by_name(client, course_name.clone()) {
         Ok(result) => result,

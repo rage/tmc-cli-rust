@@ -20,12 +20,6 @@ pub fn download_or_update(
     course_name: Option<&str>,
     currentdir: bool,
 ) {
-    // Get a client that has credentials
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    };
-
     if get_organization().is_none() {
         io.println(
             "No organization found. Run 'tmc organization' first.",

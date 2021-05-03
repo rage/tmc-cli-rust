@@ -150,9 +150,7 @@ impl Client for ClientProduction {
             if test_login_exists {
                 return Ok(());
             } else {
-                return Err(
-                    "No login found. You need to be logged in to use this command".to_string(),
-                );
+                return Err("No login found".to_string());
             }
         }
 
