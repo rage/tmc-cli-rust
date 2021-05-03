@@ -65,11 +65,6 @@ mod tests {
     }
 
     #[cfg(test)]
-    fn get_organization() -> Option<String> {
-        Some(String::from("mock-org"))
-    }
-
-    #[cfg(test)]
     pub struct ClientTest {}
 
     #[cfg(test)]

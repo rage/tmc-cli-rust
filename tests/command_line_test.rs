@@ -2,8 +2,6 @@ use assert_cmd::prelude::*;
 use predicates::prelude::*;
 use std::process::Command;
 
-// Get the package name specified in Cargo.toml -> less to take care of in case the name needs to
-// be changed
 const PKG_NAME: Option<&'static str> = option_env!("CARGO_PKG_NAME");
 
 #[test]

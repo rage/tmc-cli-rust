@@ -21,14 +21,12 @@ mod test_command;
 use crate::io_module::{Io, PrintColor};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
-    //println!("{:#?}", matches.subcommand());
-
     let mut client = ClientProduction::new(matches.is_present("testmode"));
 
     // Authorize the client and raise error if not logged in when required
     match matches.subcommand().0 {
         "login" => {
-            if let Ok(()) = client.load_login() {
+            if client.load_login().is_ok() {
                 io.println(
                     "Already logged in. Please logout first with 'tmc logout'",
                     PrintColor::Failed,
@@ -38,7 +36,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         "test" => (),
         _ => {
-            if let Err(_) = client.load_login() {
+            if client.load_login().is_err() {
                 io.println(
                     "No login found. Login to use this command with 'tmc login'",
                     PrintColor::Failed,
@@ -158,7 +156,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         ("elevateddownload", _) => {
             download_command::elevated_download(io, &mut client);
         }
-        (_, Some(_)) => (), // Not implemented yet
-        (_, None) => (),    // No subcommand was given
+        (_, Some(_)) => (),
+        (_, None) => (), // No subcommand was given
     }
 }
