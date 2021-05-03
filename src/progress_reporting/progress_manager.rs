@@ -6,7 +6,6 @@ use std::collections::VecDeque;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
-use terminal_size;
 use tmc_langs_util::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
@@ -183,7 +182,9 @@ impl ProgressBarManager {
             drop(message_guard);
 
             // message is splitted to fit to the terminal window
-            if let Some((terminal_size::Width(w), terminal_size::Height(_h))) = terminal_size::terminal_size() {
+            if let Some((terminal_size::Width(w), terminal_size::Height(_h))) =
+                terminal_size::terminal_size()
+            {
                 if usize::from(w) < message.len() {
                     let _over = message.split_off(usize::from(w));
                 }

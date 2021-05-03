@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use super::command_util;
-use super::command_util::{get_projects_dir, Client};
+use super::command_util::{get_organization, get_projects_dir, Client};
 use crate::interactive;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
@@ -25,6 +25,14 @@ pub fn download_or_update(
         io.println(&error, PrintColor::Failed);
         return;
     };
+
+    if get_organization().is_none() {
+        io.println(
+            "No organization found. Run 'tmc organization' first.",
+            PrintColor::Failed,
+        );
+        return;
+    }
 
     io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();

@@ -105,5 +105,4 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("testmode")
                 .help("Only for internal testing, disables server connection"),
         )
-        
 }

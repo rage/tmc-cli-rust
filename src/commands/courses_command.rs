@@ -1,4 +1,4 @@
-use super::command_util::*;
+use super::command_util::{get_organization, Client};
 use crate::io_module::{Io, PrintColor};
 use tmc_client::Course;
 
@@ -6,6 +6,14 @@ use tmc_client::Course;
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
     if let Err(error) = client.load_login() {
         io.println(&error, PrintColor::Failed);
+        return;
+    }
+
+    if get_organization().is_none() {
+        io.println(
+            "No organization found. Run 'tmc organization' first.",
+            PrintColor::Failed,
+        );
         return;
     }
 
