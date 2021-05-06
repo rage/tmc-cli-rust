@@ -6,7 +6,6 @@ use exercises_command::list_exercises;
 use login_command::login;
 use logout_command::logout;
 use organization_command::organization;
-use test_command::test;
 pub mod command_util;
 mod courses_command;
 mod download_command;
@@ -111,13 +110,11 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("courses", _) => list_courses(io, &mut client),
         ("submit", args) => {
-            let path;
             if let Some(a) = args {
-                path = a.value_of("exercise").unwrap_or("");
+                submit_command::submit(io, &mut client, a.value_of("exercise"));
             } else {
-                path = "";
+                submit_command::submit(io, &mut client, None);
             }
-            submit_command::submit(io, &mut client, path);
         }
         ("exercises", args) => {
             if let Some(a) = args {
@@ -132,19 +129,17 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("test", args) => {
             if let Some(a) = args {
-                test(io, a.value_of("exercise"));
+                test_command::test(io, a.value_of("exercise"), matches.is_present("testmode"));
             } else {
-                test(io, None);
+                test_command::test(io, None, matches.is_present("testmode"));
             }
         }
         ("paste", args) => {
-            let path;
             if let Some(a) = args {
-                path = a.value_of("exercise").unwrap_or("");
+                paste_command::paste(io, &mut client, a.value_of("exercise"));
             } else {
-                path = "";
+                paste_command::paste(io, &mut client, None);
             }
-            paste_command::paste(io, &mut client, path);
         }
         ("logout", _) => logout(io, &mut client),
         ("fetchupdate", _) => {

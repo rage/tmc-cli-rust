@@ -149,8 +149,9 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            projects_dir: &Path,
+            course_slug: &str,
+            exercise_slug: &str,
             _paste_message: Option<String>,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
@@ -197,10 +198,11 @@ mod tests {
         fn logout(&mut self) {}
         fn submit(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            projects_dir: &Path,
+            course_slug: &str,
+            exercise_slug: &str,
             _locale: Option<Language>,
-        ) -> Result<NewSubmission, ClientError> {
+        ) -> Result<NewSubmission, LangsError> {
             Ok(NewSubmission {
                 show_submission_url: "".to_string(),
                 paste_url: "".to_string(),

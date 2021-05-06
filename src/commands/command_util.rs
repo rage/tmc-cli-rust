@@ -1,19 +1,16 @@
 use isolang::Language;
-use reqwest::Url;
-use std::env;
 use std::path::Path;
 use std::path::PathBuf;
 
+use std::env;
 use tmc_client::{
     ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
     Organization, SubmissionFinished, TmcClient, Token,
 };
-use tmc_langs::file_util;
 use tmc_langs::Credentials;
 use tmc_langs::DownloadResult;
 use tmc_langs::LangsError;
-use tmc_langs::{ConfigValue, CourseConfig, ProjectsConfig, TmcConfig};
-use toml::de::Error;
+use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
 
 pub const PLUGIN: &str = "tmc_cli_rust";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
@@ -38,10 +35,11 @@ pub trait Client {
     fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError>;
     fn submit(
         &self,
-        submission_url: Url,
-        submission_path: &Path,
+        projects_dir: &Path,
+        course_slug: &str,
+        exercise_slug: &str,
         locale: Option<Language>,
-    ) -> Result<NewSubmission, ClientError>;
+    ) -> Result<NewSubmission, LangsError>;
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String>;
     fn get_exercise_details(
         &mut self,
@@ -57,8 +55,9 @@ pub trait Client {
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
     fn paste(
         &self,
-        submission_url: Url,
-        submission_path: &Path,
+        projects_dir: &Path,
+        course_slug: &str,
+        exercise_slug: &str,
         paste_message: Option<String>,
         locale: Option<Language>,
     ) -> Result<NewSubmission, String>;
@@ -105,25 +104,30 @@ impl ClientProduction {
 impl Client for ClientProduction {
     fn paste(
         &self,
-        submission_url: Url,
-        submission_path: &Path,
+        projects_dir: &Path,
+        course_slug: &str,
+        exercise_slug: &str,
         paste_message: Option<String>,
         locale: Option<Language>,
     ) -> Result<NewSubmission, String> {
         if self.test_mode {
             return Err("Integration test input not yet implemented for paste command".to_string());
         }
-        match self
-            .tmc_client
-            .paste(submission_url, submission_path, paste_message, locale)
-        {
+        match tmc_langs::paste_exercise(
+            &self.tmc_client,
+            projects_dir,
+            course_slug,
+            exercise_slug,
+            paste_message,
+            locale,
+        ) {
             Err(client_error) => match client_error {
-                ClientError::HttpError {
+                LangsError::TmcClient(ClientError::HttpError {
                     url: _,
                     status,
                     error,
                     obsolete_client: _,
-                } => Err(format!("Status {}, message: {}", status, error)),
+                }) => Err(format!("Status {}, message: {}", status, error)),
                 _ => Err(
                     "Received unhandled ClientError when calling paste command from tmc_client"
                         .to_string(),
@@ -313,10 +317,11 @@ impl Client for ClientProduction {
     }
     fn submit(
         &self,
-        submission_url: Url,
-        submission_path: &Path,
+        projects_dir: &Path,
+        course_slug: &str,
+        exercise_slug: &str,
         locale: Option<Language>,
-    ) -> Result<NewSubmission, ClientError> {
+    ) -> Result<NewSubmission, LangsError> {
         if self.test_mode {
             return Ok(NewSubmission {
                 show_submission_url: "https://tmc.mooc.fi/submissions/7400888".to_string(),
@@ -324,8 +329,13 @@ impl Client for ClientProduction {
                 submission_url: "https://tmc.mooc.fi/api/v8/core/submissions/7400888".to_string(),
             });
         }
-        self.tmc_client
-            .submit(submission_url, submission_path, locale)
+        tmc_langs::submit_exercise(
+            &self.tmc_client,
+            projects_dir,
+            course_slug,
+            exercise_slug,
+            locale,
+        )
     }
 
     fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String> {
@@ -501,104 +511,38 @@ pub fn get_course_by_name(
     }
 }
 
-static CONFIG_FILE_NAME: &str = "course_config.toml";
-
-/// Checks if current directory or given path
-/// contains valid exercise (i.e config file)
-/// Returns Err(msg) if given invalid path (including root)
-/// Returns Ok(()) if no path given, but if current dir is not
-/// an exercise, leaves course_config as None
-pub fn find_course_config_for_exercise(
-    exercise_slug: &mut String,
-    course_config: &mut Option<CourseConfig>,
-    exercise_dir: &mut PathBuf,
-    path: &str,
-) -> Result<(), String> {
-    if path.is_empty() {
-        // No exercise path given, so assuming we are in exercise directory.
-        *exercise_slug = match env::current_dir().unwrap().file_name() {
-            Some(file_name) => file_name.to_str().unwrap().to_string(),
-            None => return Ok(()),
-        };
-        let mut pathbuf = env::current_dir().unwrap();
-        pathbuf.pop(); // we go to the course directory
-        pathbuf.push(CONFIG_FILE_NAME);
-        *course_config = match read_new_course_config(pathbuf.as_path()) {
-            Ok(conf) => match conf {
-                Some(config) => Some(config),
-                None => return Ok(()),
-            },
-            Err(_) => {
-                *course_config = None;
-                return Ok(());
-            }
-        };
-        *exercise_dir = env::current_dir().unwrap();
-    } else {
-        // Path given, find out course part, exercise name and full path
-        *exercise_slug = match Path::new(path).to_path_buf().file_name() {
-            Some(file_name) => file_name.to_str().unwrap().to_string(),
-            None => return Err("Invalid exercise path given".to_string()),
-        };
-        let mut part_path = Path::new(path).to_path_buf();
-        part_path.pop();
-        let mut course_config_path = env::current_dir().unwrap();
-        course_config_path.push(part_path);
-        course_config_path.push(CONFIG_FILE_NAME);
-        *course_config = match read_new_course_config(course_config_path.as_path()) {
-            Ok(conf) => match conf {
-                Some(config) => Some(config),
-                None => return Err("Invalid exercise path given".to_string()),
-            },
-            Err(msg) => {
-                return Err(msg);
-            }
-        };
-        *exercise_dir = env::current_dir().unwrap();
-        exercise_dir.push(Path::new(path).to_path_buf());
+/// Finds an exercise
+/// Priority to check for valid exercise path:
+/// 1. Checks optional parameter
+/// 2. Checks current directory
+/// 3. Checks central ProjectsConfig with interactive menu
+///
+/// # Errors
+/// Returns an error if the last chance, interactive menu, fails.
+pub fn exercise_pathfinder(path: Option<&str>, test_mode: bool) -> Result<PathBuf, String> {
+    if test_mode {
+        return Err("Invalid exercise path given".to_string());
     }
-    Ok(())
-}
 
-/// Reads config file from path. Returns Ok(CourseConfig) if successful,
-/// Ok(None) if file not found, Err(msg) if error in parsing/reading file
-pub fn read_new_course_config(course_config_path: &Path) -> Result<Option<CourseConfig>, String> {
-    if course_config_path.exists() {
-        let bytes_result = file_util::read_file(course_config_path);
+    let current_path = if let Some(ex_path) = path {
+        Some(PathBuf::from(ex_path))
+    } else {
+        env::current_dir().ok()
+    };
 
-        if let Ok(bytes) = bytes_result {
-            let course_config_result: Result<CourseConfig, Error> = toml::from_slice(&bytes);
-            if let Ok(course_config) = course_config_result {
-                Ok(Some(course_config))
-            } else {
-                Err("error parsing course config file".to_string())
+    match current_path {
+        Some(ex_path) => match is_exercise_dir(ex_path.clone()) {
+            Ok(is_ex_path) => {
+                if is_ex_path {
+                    Ok(ex_path)
+                } else {
+                    choose_exercise()
+                }
             }
-        } else {
-            Err("error reading course config file".to_string())
-        }
-    } else {
-        Ok(None)
+            Err(_err) => choose_exercise(),
+        },
+        None => choose_exercise(),
     }
-}
-
-/// Retrieves exercise id for exercise from CourseConfig
-pub fn get_exercise_id_from_config(
-    course_config: &CourseConfig,
-    exercise_slug: &str,
-) -> Result<usize, String> {
-    if course_config.exercises.contains_key(exercise_slug) {
-        Ok(course_config.exercises[exercise_slug].id)
-    } else {
-        Err("could not find exercise in course config".to_string())
-    }
-}
-
-/// Generates return_url for submissions and pastes
-pub fn generate_return_url(exercise_id: usize) -> String {
-    format!(
-        "{}/api/v8/core/exercises/{}/submissions",
-        SERVER_ADDRESS, exercise_id
-    )
 }
 
 pub fn get_path() -> PathBuf {
@@ -662,33 +606,42 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     Ok(path)
 }
 
-/// Shows two interactive selections, for course and then exercise
-/// Mutates parameters according to selection, giving exercise name, exercise dir and path of course_config
-/// Returns error if menu was exited without selecting, if no courses/exercises were found, or if
-/// config file was not read successfully
-pub fn ask_exercise_interactive(
-    exercise_name: &mut String,
-    exercise_dir: &mut PathBuf,
-    course_config: &mut Option<CourseConfig>,
-) -> Result<(), String> {
-    let mut exercise_path = match choose_exercise() {
-        Ok(path) => path,
-        Err(msg) => return Err(msg),
-    };
-    *exercise_name = exercise_path
+/// Parses an exercise path into (projects_dir, course_name, exercise_name)
+///
+/// # Errors
+/// Returns an error if there was problems reading file_names
+pub fn parse_exercise_dir(mut exercise_dir: PathBuf) -> Result<(PathBuf, String, String), String> {
+    let exercise_slug = exercise_dir
         .file_name()
-        .unwrap()
+        .ok_or("could not get exercise name")?
         .to_str()
-        .unwrap()
+        .ok_or("could not get exercise name")?
         .to_string();
-    *exercise_dir = exercise_path.clone();
-    exercise_path.pop();
-    exercise_path.push(CONFIG_FILE_NAME);
-    *course_config = match read_new_course_config(&exercise_path) {
-        Ok(config) => config,
-        Err(msg) => return Err(msg),
-    };
-    Ok(())
+
+    exercise_dir.pop();
+    let course_slug = exercise_dir
+        .file_name()
+        .ok_or("could not get exercise name")?
+        .to_str()
+        .ok_or("could not get exercise name")?
+        .to_string();
+
+    exercise_dir.pop();
+
+    Ok((exercise_dir, course_slug, exercise_slug))
+}
+
+/// Checks if provided directory contains an exercise
+///
+/// # Errors
+/// Returns an error if it failed to load ProjectsConfig
+/// Or failed to read paths
+pub fn is_exercise_dir(dir: PathBuf) -> Result<bool, String> {
+    let (projects_dir, course_slug, _exercise_slug) = parse_exercise_dir(dir)?;
+    let config = ProjectsConfig::load(projects_dir.as_path())
+        .map_err(|_e| "error loading projects config")?;
+
+    Ok(config.courses.contains_key(&course_slug))
 }
 
 /// Returns a manual progress bar of size 'length' based on percentage of 'completed' / 'total'

@@ -1,46 +1,23 @@
 use crate::commands::command_util;
-use crate::commands::command_util::{ask_exercise_interactive, find_course_config_for_exercise};
 use crate::io_module::{Io, PrintColor};
 use std::path::Path;
 use tmc_langs::RunResult;
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
-pub fn test(io: &mut dyn Io, exercise_folder: Option<&str>) {
-    let mut exercise_name = "".to_string();
-    let mut course_config = None;
-    let mut exercise_dir = std::path::PathBuf::new();
-
-    let path = std::env::current_dir().unwrap();
-    let mut path = path.to_str().unwrap();
-    if let Some(folder) = exercise_folder {
-        path = folder;
-    }
-
-    if let Err(error) = find_course_config_for_exercise(
-        &mut exercise_name,
-        &mut course_config,
-        &mut exercise_dir,
-        path,
-    ) {
-        if exercise_folder.is_some() {
-            io.println(&error, PrintColor::Failed);
+pub fn test(io: &mut dyn Io, path: Option<&str>, test_mode: bool) {
+    let exercise_path = match command_util::exercise_pathfinder(path, test_mode) {
+        Ok(ex_path) => ex_path,
+        Err(err) => {
+            io.println(
+                &format!("Error finding exercise: {}", err),
+                PrintColor::Failed,
+            );
             return;
         }
-    }
+    };
 
-    if course_config.is_none() {
-        // Did not find course config, use interactive selection if possible
-        match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
-            Ok(()) => (),
-            Err(msg) => {
-                io.println(&msg, PrintColor::Failed);
-                return;
-            }
-        }
-    }
-
-    if let Err(err) = test_exercise_path(io, &exercise_dir) {
+    if let Err(err) = test_exercise_path(io, &exercise_path) {
         io.println(&err, PrintColor::Failed);
     }
 }
