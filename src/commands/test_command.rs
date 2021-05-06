@@ -5,8 +5,8 @@ use tmc_langs::RunResult;
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
-pub fn test(io: &mut dyn Io, path: Option<&str>, test_mode: bool) {
-    let exercise_path = match command_util::exercise_pathfinder(path, test_mode) {
+pub fn test(io: &mut dyn Io, path: Option<&str>) {
+    let exercise_path = match command_util::exercise_pathfinder(path) {
         Ok(ex_path) => ex_path,
         Err(err) => {
             io.println(

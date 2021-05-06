@@ -14,7 +14,7 @@ use tmc_langs::ClientUpdateData;
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
 pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
-    let exercise_path = match command_util::exercise_pathfinder(path, client.is_test_mode()) {
+    let exercise_path = match command_util::exercise_pathfinder(path) {
         Ok(ex_path) => ex_path,
         Err(err) => {
             io.println(

@@ -519,17 +519,21 @@ pub fn get_course_by_name(
 ///
 /// # Errors
 /// Returns an error if the last chance, interactive menu, fails.
-pub fn exercise_pathfinder(path: Option<&str>, test_mode: bool) -> Result<PathBuf, String> {
-    if test_mode {
-        return Err("Invalid exercise path given".to_string());
+pub fn exercise_pathfinder(path: Option<&str>) -> Result<PathBuf, String> {
+    // check if parameter was given
+    if let Some(ex_path) = path {
+        let buf = PathBuf::from(ex_path);
+        if is_exercise_dir(buf.clone()).is_ok() {
+            return Ok(buf);
+        } else {
+            return Err("Invalid exercise path given".to_string());
+        }
     }
 
-    let current_path = if let Some(ex_path) = path {
-        Some(PathBuf::from(ex_path))
-    } else {
-        env::current_dir().ok()
-    };
+    let current_path = env::current_dir().ok();
 
+    // check if current path is an exercise_dir,
+    // in any other case use interactive menu
     match current_path {
         Some(ex_path) => match is_exercise_dir(ex_path.clone()) {
             Ok(is_ex_path) => {

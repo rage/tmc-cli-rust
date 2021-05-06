@@ -22,7 +22,7 @@ pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
 fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
     let locale = into_locale("fin").unwrap();
 
-    let exercise_path = match command_util::exercise_pathfinder(path, client.is_test_mode()) {
+    let exercise_path = match command_util::exercise_pathfinder(path) {
         Ok(ex_path) => ex_path,
         Err(err) => {
             io.println(

@@ -129,9 +129,9 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("test", args) => {
             if let Some(a) = args {
-                test_command::test(io, a.value_of("exercise"), matches.is_present("testmode"));
+                test_command::test(io, a.value_of("exercise"));
             } else {
-                test_command::test(io, None, matches.is_present("testmode"));
+                test_command::test(io, None);
             }
         }
         ("paste", args) => {
