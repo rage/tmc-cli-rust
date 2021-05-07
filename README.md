@@ -10,28 +10,13 @@ Command line interface for TMC, written in Rust.
 The old Java CLI can be found at [testmycode/tmc-cli](https://github.com/testmycode/tmc-cli) 
 
 ## Table of Contents
-1. [Project documentation](#project-documentation)
-2. [Installation](#installation)
-3. [Commands](#commands)
-4. [Usage manual](#usage-manual)
-5. [Contribution](#contribution)
+
+1. [Installation](#installation)
+2. [Commands](#commands)
+3. [Usage manual](#usage-manual)
+4. [Contribution](#contribution)
+5. [Project documentation](#project-documentation)
 6. [Credits](#credits)
-
-## Project documentation
-
-*These documentations are written in Finnish*
-
-#### Root folder
-https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
-
-#### Product & Sprint backlogs
-https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchilN9Q/edit#gid=0 
-
-#### Work time monitoring
-https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchilN9Q/edit#gid=1477657539
-
-#### Client meetings
-https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
 ## Installation
 
@@ -119,12 +104,10 @@ FLAG | Description
 
 SUBCOMMAND | Description
 :--- | :---
-`config` | Set/unset TMC-CLI properties and change settings
 `courses` | List the available courses
 `download` | Downloads course exercises
 `exercises` | List the exercises for a specific course
-`help` | List every command
-`info` | Show info about the current directory
+`help` | Prints this message or the help of the given subcommand(s)
 `login` | Login to TMC server
 `logout` | Logout from TMC server
 `organization` | Change organization
@@ -158,7 +141,7 @@ Select your organization:            Press keys
 
 ```
 
-After you have selected your organization, you can choose course with interactive menu which exercises will be download. Press keyboard characters to filter. If you don't want to download anything, select *Don't download anything* with keyboard arrows.
+After you have selected your organization, you can choose course with interactive menu. Exercises of the course will be downloaded. Press keyboard characters to filter. If you don't want to download anything, select *Don't download anything* with keyboard arrows.
 
 ```
 Select your course:                  Press keys
@@ -184,7 +167,7 @@ Select your course:                  ohjelmoinn
    Ohjelmoinnin MOOC 2021
 ```
 
-After course is selected, exercises are downloaded. Download folder is informed to the user.
+After course is selected, exercises are downloaded. Download folder is informed for the user.
 
 ```
 Successfully downloaded 15 out of 15 exercises.
@@ -232,7 +215,7 @@ Give suitable course name as an argument `tmc download -c [COURSE_NAME]`.
 
 *Or*
 
-Give suitable course name as an argument `tmc download -c [COURSE_NAME` and use `-d` flag to download to the current directory.
+Give suitable course name as an argument and use `-d` flag to download to the current directory: `tmc download -c [COURSE_NAME] -d`.
 
 ```
 ~ $ tmc download
@@ -339,19 +322,39 @@ Points permanently awarded: [1.excercise1]
 Model solution: https://examplewebpage
 ```
 
+### Update
+
+You can download the latest exercises with `tmc update`, if some modifications have done to the exercise. You can choose course with interactive menu.
+
 ## Contribution
 
 Notes for further development:
 
 We've used [cargo-wix](https://github.com/volks73/cargo-wix) to create the Windows Installer.
 Further instructions for it's usage can be found on the given repository.
-Please mind that the License.rtf has been modified (for the copyright part) and changed the manufacturer has been to University of Helsinki in the main.wxs file. We have not implemented creating the installer in the GitHub Actions, so it needs to be done manually.
+Please mind that the *License.rtf* has been modified (for the copyright part) and changed the manufacturer has been to University of Helsinki in the *main.wxs* file. We have not implemented creating the installer in the GitHub Actions, so it needs to be done manually.
 
 ### Formatting
 
 Code should be formatted with [rustfmt](https://github.com/rust-lang/rustfmt)
 
 The recommended linter is [rust-clippy](https://github.com/rust-lang/rust-clippy)
+
+## Project documentation
+
+*These documentations are written in Finnish*
+
+### Root folder
+https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
+
+### Product & Sprint backlogs
+https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchilN9Q/edit#gid=0 
+
+### Work time monitoring
+https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchilN9Q/edit#gid=1477657539
+
+### Client meetings
+https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
 ## Credits
 
