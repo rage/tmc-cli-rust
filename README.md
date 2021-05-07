@@ -9,7 +9,7 @@ Command line interface for TMC, written in Rust.
 
 The old Java CLI can be found at [testmycode/tmc-cli](https://github.com/testmycode/tmc-cli) 
 
-# Table of Contents
+## Table of Contents
 1. [Project documentation](#project-documentation)
 2. [Installation](#installation)
 3. [Commands](#commands)
@@ -139,21 +139,70 @@ Manual for using the program.
 
 ### Logging in
 
-You can log in using `tmc login`. This saves your TMC login information to a configuration file in <linux config path> (or %APPDATA%\tmc-vscode_plugin on Windows) - you will only have to log in once.
+You can log in using `tmc login`. This saves your TMC login information to a configuration file in /home/username/tmc-config/tmc-tmc_cli_rust (or %APPDATA%\tmc-tmc_cli_rust on Windows) - you will only have to log in once.
 
 ```
 ~ $ tmc login
-Email / username:
-Password:
-All available organizations will be listed.
-Choose organization by writing its slug:
+Email / username: username
+Password: 
+Logged in successfully!
 ```
 
-You can change your organization with the command `organization`. All available organizations will be listed.
+After you have logged in, you can choose your organization with interactive menu. To see all organizations, select *View all organizations* with keyboard arrows. Press keyboard characters to filter.
+
+```
+Select your organization:            Press keys
+>> MOOC                              to filter
+   Helsingin Yliopisto
+   View all organizations
+
+```
+
+After you have selected your organization, you can choose course with interactive menu which exercises will be download. Press keyboard characters to filter. If you don't want to download anything, select *Don't download anything* with keyboard arrows.
+
+```
+Select your course:                  Press keys
+>> Don't download anything           to filter
+   2013 Object-oriented programming,
+   2013 Object-oriented programming,
+   Aikatauluton Ohjelmoinnin MOOC, Oh
+   Aikatauluton Ohjelmoinnin MOOC, Oh
+   Cyber Security Base Advanced Topic
+   Java Programming I                
+   Java Programming II
+   Ohjelmoinnin MOOC 2021
+   Securing Software 2020
+   Securing Software 2021
+```
+
+When filtering, only courses with filtered name are shown.
+
+```
+Select your course:                  ohjelmoinn
+>> Aikatauluton Ohjelmoinnin MOOC, Oh
+   Aikatauluton Ohjelmoinnin MOOC, Oh
+   Ohjelmoinnin MOOC 2021
+```
+
+After course is selected, exercises are downloaded. Download folder is informed to the user.
+
+```
+Successfully downloaded 15 out of 15 exercises.
+ 100%[█████████████████████████] [00:00:00]
+Exercises downloaded successfully to /home/user/.local/share/tmc/tmc_cli_rust\
+```
+
+### Organization
+
+You can change your organization with the command `tmc organization`. To see all organizations, select *View all organizations* with keyboard arrows. All available organizations will be listed. You can choose your organization with interactive menu.
+
+```
+~ $ tmc organization
+```
 
 ### Logging out
 
-you can log out using 'tmc logout'. This will remove your login token from the configuration file.
+You can log out using 'tmc logout'. This will remove your login token from the configuration file.
 
 ```
 ~ $ tmc logout
@@ -171,34 +220,54 @@ Once you have logged in, you can list all the available courses on the server wi
 
 *Either*
 
-When you have already selected your organization, simply run `tmc download` and select right course to download.
+When you have already selected your organization, simply run `tmc download` and select right course to download with interactive menu.
 
 *Or*
 
-Navigate to a suitable directory in which you wish to download your exercises. Then, run `tmc download [COURSE_NAME] .`. 
+Navigate to a suitable directory in which you wish to download your exercises. Then, run `tmc download -d` to download to the current directory after course is selected with interactive menu. 
 
 *Or*
 
-Enter suitable filepath as an argument `tmc download [COURSE_NAME] [FILEPATH]`
-This will download all available exercises into it.
+Give suitable course name as an argument `tmc download -c [COURSE_NAME]`.
 
+*Or*
+
+Give suitable course name as an argument `tmc download -c [COURSE_NAME` and use `-d` flag to download to the current directory.
 
 ```
-~ $ tmc download test-course tmc-courses/test-course
-[12 / 15] exercises downloaded.
+~ $ tmc download
+Fetching courses...
+Successfully downloaded 37 out of 37 exercises.
+ 100%[█████████████████████████] [00:00:01]
 ```
 
 ### Running tests
 
-After you've completed an exercise and wish to run tests on it, navigate to the exercise directory and run `tmc test`. If you are in the course root directory, you can also give the name of the exercise as argument: `tmc test exercise1`.
+After you've completed an exercise and wish to run tests on it, just write command `tmc test`. You can choose course and exercise with interactive menu.
 
 ```
-~/tmc-courses/test-course/exercise1 $ tmc test
+~ $ tmc test
+
 Testing: exercise1
 
 Test results: 1/1 tests passed
 All tests passed! Submit to server with 'tmc submit'
-100%[████████████████████████████████████████████████████████████████]
+ 100%[████████████████████████████████████████████████████████████████]
+```
+
+*Or*
+
+Navigate to the exercise directory and run `tmc test`.
+
+```
+~/tmc-courses/test-course/exercise1 $ tmc test
+
+Testing: exercise1
+
+Test results: 1/1 tests passed
+All tests passed! Submit to server with 'tmc submit'
+ 100%[████████████████████████████████████████████████████████████████]
+
 ```
 
 ### Listing exercises
@@ -213,6 +282,61 @@ Soft deadline: none
   Completed: exercise1
   Completed: exercise2
   Not completed: exercise3
+```
+
+### Paste
+
+When you want to send your current solution for an exercise to someone else for review, just write command `tmc paste`. You can choose course and exercise with interactive menu. Give your paste message when program asks *Write a paste message, enter sends it*.
+
+```
+~ $ tmc paste
+Write a paste message, enter sends it:
+example paste message
+
+Paste finished, running at https://examplewebpage
+ 100%[█████████████████████████] [00:00:00]
+```
+
+*Or*
+
+Navigate to the exercise directory and run `tmc paste`. Give your paste message when program asks *Write a paste message, enter sends it*.
+
+```
+~/tmc-courses/test-course/exercise1 $ tmc paste
+Write a paste message, enter sends it:
+example paste message
+
+Paste finished, running at https://examplewebpage
+ 100%[█████████████████████████] [00:00:00]
+```
+
+### Submit
+
+You can send your solution to the server with `tmc submit`. You can choose course and exercise with interactive menu.
+
+```
+~ $ tmc submit
+You can view your submission at: https://examplewebpage
+Submission finished processing!
+ 100%[█████████████████████████] [00:00:02]
+All tests passed on server!
+Points permanently awarded: [1.excercise1]
+Model solution: https://examplewebpage
+
+```
+
+*Or*
+
+Navigate to the exercise directory and run `tmc submit`.
+
+```
+~/tmc-courses/test-course/exercise1 $ tmc submit
+You can view your submission at: https://examplewebpage
+Submission finished processing!
+ 100%[█████████████████████████] [00:00:02]
+All tests passed on server!
+Points permanently awarded: [1.excercise1]
+Model solution: https://examplewebpage
 ```
 
 ## Contribution
@@ -231,7 +355,7 @@ The recommended linter is [rust-clippy](https://github.com/rust-lang/rust-clippy
 
 ## Credits
 
-Software will be developed during spring 2021 as a part of the course *Ohjelmistotuotantoprojekti* in the University of Helsinki.
+Software was developed during spring 2021 as a part of the course *Ohjelmistotuotantoprojekti* in the University of Helsinki.
 
 ### Original developers
 
