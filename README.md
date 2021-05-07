@@ -324,7 +324,7 @@ Model solution: https://examplewebpage
 
 ### Update
 
-You can download the latest exercises with `tmc update`, if some modifications have done to the exercise. You can choose course with interactive menu.
+If some updates have done to the exercises by your organization, you can download the latest exercises with `tmc update`. You can choose course with interactive menu.
 
 ## Contribution
 
