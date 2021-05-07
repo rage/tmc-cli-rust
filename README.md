@@ -9,6 +9,14 @@ Command line interface for TMC, written in Rust.
 
 The old Java CLI can be found at [testmycode/tmc-cli](https://github.com/testmycode/tmc-cli) 
 
+# Table of Contents
+1. [Project documentation](#project-documentation)
+2. [Installation](#installation)
+3. [Commands](#commands)
+4. [Usage manual](#usage-manual)
+5. [Contribution](#contribution)
+6. [Credits](#credits)
+
 ## Project documentation
 
 *These documentations are written in Finnish*
@@ -25,11 +33,13 @@ https://docs.google.com/spreadsheets/d/1KxWFXeK85lhkcf2Z5QLoIwfEJHsCtVBftUomchil
 #### Client meetings
 https://drive.google.com/drive/folders/1SpDOYh5NAp5xwluWRrK-B3j-_ZcEHIr0
 
-## Getting started
+## Installation
 
-### Installation
+### Published Builds
 
-#### Using Flatpak
+Published *Builds* will be located to the [https://download.mooc.fi](https://download.mooc.fi). Builds are published for the some different operating systems (Windows, MacOS, Linux).
+
+### Using Flatpak
 
         flatpak install flathub fi.mooc.tmc.tmc-cli-rust
 
@@ -42,7 +52,7 @@ After restarting the terminal, this should work:
         tmc --help
 
 
-#### Using the install script (Linux/OS X)
+### Using the install script (Linux/OS X)
 
 ```cd``` into the directory where you want to download tmc-cli-rust and run the following command:
 
@@ -62,7 +72,7 @@ After restarting the terminal, this should work:
     
         curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s i686 mac
 
-#### Using the Windows installer
+### Using the Windows installer
 
 Windows installer can be found [here](https://github.com/rage/tmc-cli-rust/tree/dev/installer).
 Download and run the newest installer found. After installation, the application updates automatically.
@@ -93,10 +103,11 @@ To be able to use it from any directory, you can add it to your environmental va
 
         set PATH=%PATH%;DIRECTORY
 
+## Commands
 
-### Commands
+        tmc [FLAGS] [SUBCOMMAND]
 
-        tmc-cli-rust [FLAGS] [SUBCOMMAND]
+### Flags
 
 FLAG | Description
 :--- | :---
@@ -104,21 +115,34 @@ FLAG | Description
 `-d, --no-update` | Disable auto update temporarily
 `-V, --version` | Prints version information
 
+### Subcommands
 
-## Published Builds
-
-Published *Builds* will be located to the [https://download.mooc.fi](https://download.mooc.fi). Builds are published for the some different operating systems (Windows, MacOS, Linux).
+SUBCOMMAND | Description
+:--- | :---
+`config` | Set/unset TMC-CLI properties and change settings
+`courses` | List the available courses
+`download` | Downloads course exercises
+`exercises` | List the exercises for a specific course
+`help` | List every command
+`info` | Show info about the current directory
+`login` | Login to TMC server
+`logout` | Logout from TMC server
+`organization` | Change organization
+`paste` | Submit exercise to TMC pastebin
+`submit` | Submit exercises to TMC server
+`test` | Run local exercise tests
+`update` | Update exercises
 
 ## Usage manual
 
-Manual for using the program
+Manual for using the program.
 
-## Logging in
+### Logging in
 
-You can log in using `tmc-cli-rust login`. This saves your TMC login information to a configuration file in <linux config path> (or %APPDATA%\tmc-vscode_plugin on Windows) - you will only have to log in once.
+You can log in using `tmc login`. This saves your TMC login information to a configuration file in <linux config path> (or %APPDATA%\tmc-vscode_plugin on Windows) - you will only have to log in once.
 
 ```
-~ $ tmc-cli-rust login
+~ $ tmc login
 Email / username:
 Password:
 All available organizations will be listed.
@@ -127,42 +151,49 @@ Choose organization by writing its slug:
 
 You can change your organization with the command `organization`. All available organizations will be listed.
 
-## Logging out
+### Logging out
 
-you can log out using 'tmc-cli-rust logout'. This will remove your login token from the configuration file.
+you can log out using 'tmc logout'. This will remove your login token from the configuration file.
 
 ```
-~ $ tmc-cli-rust logout
+~ $ tmc logout
 Logged out successfully.
 ```
 
-## Listing courses
+### Listing courses
 
-Once you have logged in, you can list all the available courses on the server with `tmc-cli-rust courses`.
+Once you have logged in, you can list all the available courses on the server with `tmc courses`.
 ```
-~ $ tmc-cli-rust courses
+~ $ tmc courses
 ```
 
-## Downloading course exercises
+### Downloading course exercises
 
-Either
-Navigate to a suitable directory in which you wish to download your exercises. Then, run `tmc-cli-rust download [COURSE_NAME] .`. 
-Or
-Enter suitable filepath as an argument `tmc-cli-rust download [COURSE_NAME] [FILEPATH]`
+*Either*
+
+When you have already selected your organization, simply run `tmc download` and select right course to download.
+
+*Or*
+
+Navigate to a suitable directory in which you wish to download your exercises. Then, run `tmc download [COURSE_NAME] .`. 
+
+*Or*
+
+Enter suitable filepath as an argument `tmc download [COURSE_NAME] [FILEPATH]`
 This will download all available exercises into it.
 
 
 ```
-~ $ tmc-cli-rust download test-course tmc-courses/test-course
+~ $ tmc download test-course tmc-courses/test-course
 [12 / 15] exercises downloaded.
 ```
 
-## Running tests
+### Running tests
 
-After you've completed an exercise and wish to run tests on it, navigate to the exercise directory and run `tmc-cli-rust test`. If you are in the course root directory, you can also give the name of the exercise as argument: `tmc-cli-rust test exercise1`.
+After you've completed an exercise and wish to run tests on it, navigate to the exercise directory and run `tmc test`. If you are in the course root directory, you can also give the name of the exercise as argument: `tmc test exercise1`.
 
 ```
-~/tmc-courses/test-course/exercise1 $ tmc-cli-rust test
+~/tmc-courses/test-course/exercise1 $ tmc test
 Testing: exercise1
 
 Test results: 1/1 tests passed
@@ -170,12 +201,12 @@ All tests passed! Submit to server with 'tmc submit'
 100%[████████████████████████████████████████████████████████████████]
 ```
 
-## Listing exercises
+### Listing exercises
 
-If you want to see your current progress, you can view the status of all course exercises with `tmc-cli-rust exercises [course]`.
+If you want to see your current progress, you can view the status of all course exercises with `tmc exercises [course]`.
 
 ```
-~/tmc-courses/test-course/ $ tmc-cli-rust exercises test-course
+~/tmc-courses/test-course/ $ tmc exercises test-course
 Course name: test-course
 Deadline: none
 Soft deadline: none
@@ -184,11 +215,8 @@ Soft deadline: none
   Not completed: exercise3
 ```
 
-
-
-
-
 ## Contribution
+
 Notes for further development:
 
 We've used [cargo-wix](https://github.com/volks73/cargo-wix) to create the Windows Installer.

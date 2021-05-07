@@ -94,7 +94,6 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 #[cfg(test)]
 mod tests {
     use isolang::Language;
-    use reqwest::Url;
     use std::path::Path;
     use tmc_client::Course;
     use tmc_client::Organization;
@@ -149,9 +148,9 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            projects_dir: &Path,
-            course_slug: &str,
-            exercise_slug: &str,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _paste_message: Option<String>,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
@@ -198,9 +197,9 @@ mod tests {
         fn logout(&mut self) {}
         fn submit(
             &self,
-            projects_dir: &Path,
-            course_slug: &str,
-            exercise_slug: &str,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, LangsError> {
             Ok(NewSubmission {

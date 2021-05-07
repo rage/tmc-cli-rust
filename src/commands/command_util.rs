@@ -84,13 +84,14 @@ impl ClientProduction {
     }
 
     fn authenticate(&mut self, username: String, password: String) -> Result<Token, String> {
-        match self.tmc_client.authenticate(PLUGIN, username, password) {
+        // match self.tmc_client.authenticate(PLUGIN, username, password) {
+        match tmc_langs::login_with_password(&mut self.tmc_client, PLUGIN, username, password) {
             Ok(x) => Ok(x),
             Err(x) => Err(ClientProduction::explain_login_fail(x)),
         }
     }
 
-    fn explain_login_fail(error: ClientError) -> String {
+    fn explain_login_fail(error: LangsError) -> String {
         let res = format!("{:?}", error);
 
         if res.contains("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.") {

@@ -24,7 +24,6 @@ fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
 mod tests {
     use super::*;
     use isolang::Language;
-    use reqwest::Url;
     use std::path::Path;
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
@@ -74,9 +73,9 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            projects_dir: &Path,
-            course_slug: &str,
-            exercise_slug: &str,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _paste_message: Option<String>,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
@@ -123,9 +122,9 @@ mod tests {
         fn logout(&mut self) {}
         fn submit(
             &self,
-            projects_dir: &Path,
-            course_slug: &str,
-            exercise_slug: &str,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, LangsError> {
             Ok(NewSubmission {
