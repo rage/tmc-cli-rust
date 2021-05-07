@@ -226,6 +226,8 @@ Successfully downloaded 37 out of 37 exercises.
 
 ### Running tests
 
+*Either*
+
 After you've completed an exercise and wish to run tests on it, just write command `tmc test`. You can choose course and exercise with interactive menu.
 
 ```
@@ -269,6 +271,8 @@ Soft deadline: none
 
 ### Paste
 
+*Either*
+
 When you want to send your current solution for an exercise to someone else for review, just write command `tmc paste`. You can choose course and exercise with interactive menu. Give your paste message when program asks *Write a paste message, enter sends it*.
 
 ```
@@ -294,6 +298,8 @@ Paste finished, running at https://examplewebpage
 ```
 
 ### Submit
+
+*Either*
 
 You can send your solution to the server with `tmc submit`. You can choose course and exercise with interactive menu.
 
