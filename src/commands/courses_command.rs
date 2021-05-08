@@ -28,6 +28,7 @@ mod tests {
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
     use tmc_client::{Organization, SubmissionFinished};
+    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
     pub struct IoTest<'a> {
@@ -120,6 +121,12 @@ mod tests {
             Ok(vec![])
         }
         fn logout(&mut self) {}
+        fn update_exercises(
+            &mut self,
+            path: &Path,
+        ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+            todo!()
+        }
         fn submit(
             &self,
             _projects_dir: &Path,

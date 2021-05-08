@@ -100,6 +100,7 @@ mod tests {
     use tmc_client::{
         ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
     };
+    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
 
@@ -319,7 +320,12 @@ mod tests {
         ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
             todo!()
         }
-
+        fn update_exercises(
+            &mut self,
+            path: &Path,
+        ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+            todo!()
+        }
         fn download_or_update_exercises(
             &mut self,
             _download_params: &[usize],
