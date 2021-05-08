@@ -123,7 +123,7 @@ mod tests {
         fn logout(&mut self) {}
         fn update_exercises(
             &mut self,
-            path: &Path,
+            _path: &Path,
         ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
             todo!()
         }

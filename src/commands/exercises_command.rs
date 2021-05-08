@@ -322,7 +322,7 @@ mod tests {
         }
         fn update_exercises(
             &mut self,
-            path: &Path,
+            _path: &Path,
         ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
             todo!()
         }
