@@ -14,6 +14,7 @@ use tmc_langs::DownloadResult;
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
 // currentdir determines if course should be downloaded to current directory or central project directory
+// Will run in privileged stage if needed on Windows.
 pub fn download_or_update(
     io: &mut dyn Io,
     client: &mut dyn Client,
@@ -97,7 +98,8 @@ pub fn download_or_update(
     match download_exercises(pathbuf, client, course) {
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
         Err(msg) => {
-            if msg.contains("Failed to create file") {
+            let os = std::env::consts::OS;
+            if os == "windows" && msg.contains("Failed to create file") {
                 io.println(
                     "Starting new cmd with administrator privileges...",
                     PrintColor::Normal,

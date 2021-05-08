@@ -8,6 +8,7 @@ use tmc_client::{
     Organization, SubmissionFinished, TmcClient, Token,
 };
 use tmc_langs::Credentials;
+use tmc_langs::DownloadOrUpdateCourseExercisesResult;
 use tmc_langs::DownloadResult;
 use tmc_langs::LangsError;
 use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
@@ -53,6 +54,10 @@ pub trait Client {
     fn is_test_mode(&mut self) -> bool;
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
+    fn update_exercises(
+        &mut self,
+        path: &Path,
+    ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError>;
     fn paste(
         &self,
         projects_dir: &Path,
@@ -316,6 +321,21 @@ impl Client for ClientProduction {
     fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError> {
         self.tmc_client.wait_for_submission(submission_url)
     }
+    fn update_exercises(
+        &mut self,
+        path: &Path,
+    ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+        if self.test_mode {
+            return Ok(DownloadOrUpdateCourseExercisesResult {
+                downloaded: vec![],
+                skipped: vec![],
+                failed: None,
+            });
+        }
+
+        tmc_langs::update_exercises(&self.tmc_client, path)
+    }
+
     fn submit(
         &self,
         projects_dir: &Path,

@@ -93,6 +93,21 @@ pub fn build_cli() -> App<'static, 'static> {
                 .setting(AppSettings::Hidden)
                 .about("Downloads course from the tempfile. Administator rights needed."),
         )
+        .subcommand(
+            SubCommand::with_name("elevatedupdate")
+                .setting(AppSettings::Hidden)
+                .about("updates course from the tempfile. Administator rights needed."),
+        )
+        .subcommand(
+            SubCommand::with_name("update")
+                .about("Updates course exercises")
+                .arg(
+                    Arg::with_name("currentdir")
+                        .short("d")
+                        .long("currentdir")
+                        .required(false),
+                ),
+        )
         .subcommand(SubCommand::with_name("update").about("Update exercises"))
         .arg(
             Arg::with_name("no-update")
