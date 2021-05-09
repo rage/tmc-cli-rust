@@ -1,6 +1,10 @@
+use clap::{ArgMatches, Shell};
 use termcolor::{BufferWriter, ColorChoice};
 
-use std::io::{stdin, stdout};
+use std::{
+    io,
+    io::{stdin, stdout},
+};
 
 pub mod io_module;
 use io_module::IoProduction;
@@ -11,8 +15,12 @@ pub mod progress_reporting;
 mod updater;
 
 fn main() {
-    let matches = cli::build_cli().get_matches();
-
+    let cli = cli::build_cli();
+    let matches = cli.get_matches();
+    if matches.is_present("generate-completions") {
+        generate_completions(&matches);
+        return;
+    }
     let mut stdout = stdout();
     let mut stdin = stdin();
 
@@ -37,4 +45,19 @@ fn main() {
         _ => println!("No Auto-Updates"),
     }
     commands::handle(&matches, &mut io);
+}
+
+fn generate_completions(matches: &ArgMatches) {
+    let matches = matches.subcommand_matches("generate-completions").unwrap();
+    let shell = if matches.is_present("bash") {
+        Shell::Bash
+    } else if matches.is_present("zsh") {
+        Shell::Zsh
+    } else if matches.is_present("powershell") {
+        Shell::PowerShell
+    } else {
+        return;
+    };
+
+    cli::build_cli().gen_completions_to("tmc", shell, &mut io::stdout());
 }
