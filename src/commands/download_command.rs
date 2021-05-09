@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use super::command_util;
-use super::command_util::{get_projects_dir, Client};
+use super::command_util::{get_organization, get_projects_dir, Client};
 use crate::interactive;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
@@ -14,17 +14,20 @@ use tmc_langs::DownloadResult;
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
 // currentdir determines if course should be downloaded to current directory or central project directory
+// Will run in privileged stage if needed on Windows.
 pub fn download_or_update(
     io: &mut dyn Io,
     client: &mut dyn Client,
     course_name: Option<&str>,
     currentdir: bool,
 ) {
-    // Get a client that has credentials
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
+    if get_organization().is_none() {
+        io.println(
+            "No organization found. Run 'tmc organization' first.",
+            PrintColor::Failed,
+        );
         return;
-    };
+    }
 
     io.println("Fetching courses...", PrintColor::Normal);
     let courses = client.list_courses();
@@ -95,7 +98,8 @@ pub fn download_or_update(
     match download_exercises(pathbuf, client, course) {
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
         Err(msg) => {
-            if msg.contains("Failed to create file") {
+            let os = std::env::consts::OS;
+            if os == "windows" && msg.contains("Failed to create file") {
                 io.println(
                     "Starting new cmd with administrator privileges...",
                     PrintColor::Normal,

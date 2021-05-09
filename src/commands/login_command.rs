@@ -3,11 +3,6 @@ use super::{command_util, download_command, organization_command};
 use crate::io_module::{Io, PrintColor};
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
-    if let Ok(()) = client.load_login() {
-        io.println("You are already logged in.", PrintColor::Failed);
-        return;
-    };
-
     io.print("Email / username: ", PrintColor::Normal);
     let mut username = io.read_line();
     username = username.trim().to_string();
@@ -175,57 +170,6 @@ mod tests {
 
         fn read_password(&mut self) -> String {
             self.read_line()
-        }
-    }
-
-    #[test]
-    fn login_when_already_logged_in_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec!["test_that_buffer_for_test_input_works"];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-        assert!(io.read_line().eq("test_that_buffer_for_test_input_works"));
-
-        let mut mock = MockClient::new();
-        mock.expect_load_login().times(1).returning(|| Ok(()));
-
-        login(&mut io, &mut mock, false);
-
-        assert_eq!(1, io.buffer_length());
-        if io.buffer_length() == 1 {
-            assert!(io
-                .buffer_get(0)
-                .to_string()
-                .eq(&"You are already logged in.".to_string()));
-        }
-    }
-
-    #[test]
-    fn login_when_empty_username_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-
-        let mut mock = MockClient::new();
-        mock.expect_load_login()
-            .times(1)
-            .returning(|| Err("".to_string()));
-
-        login(&mut io, &mut mock, false);
-
-        assert_eq!(2, io.buffer_length());
-        if io.buffer_length() == 2 {
-            assert!(io
-                .buffer_get(1)
-                .to_string()
-                .eq(&"Username cannot be empty!".to_string()));
         }
     }
 

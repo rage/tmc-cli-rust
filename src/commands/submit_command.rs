@@ -1,15 +1,13 @@
 use super::command_util;
-use super::command_util::{ask_exercise_interactive, find_course_config_for_exercise, Client};
+use super::command_util::Client;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use anyhow::{Context, Result};
-use tmc_langs::ClientError;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
 use tmc_langs::NewSubmission;
 use tmc_langs::SubmissionFinished;
-use url::Url;
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.
@@ -17,62 +15,33 @@ use url::Url;
 /// # Errors
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    }
-
+pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
     submit_logic(io, client, path);
 }
 
-fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
+fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
     let locale = into_locale("fin").unwrap();
 
-    let mut exercise_name = "".to_string();
-    let mut course_config = None;
-    let mut exercise_dir = std::path::PathBuf::new();
+    let exercise_path = match command_util::exercise_pathfinder(path) {
+        Ok(ex_path) => ex_path,
+        Err(err) => {
+            io.println(
+                &format!("Error finding exercise: {}", err),
+                PrintColor::Failed,
+            );
+            return;
+        }
+    };
 
-    if let Err(error) = find_course_config_for_exercise(
-        &mut exercise_name,
-        &mut course_config,
-        &mut exercise_dir,
-        path,
-    ) {
-        io.println(&error, PrintColor::Failed);
+    let res = command_util::parse_exercise_dir(exercise_path);
+    if let Err(err) = res {
+        io.println(&err, PrintColor::Failed);
         return;
     }
-
-    if course_config.is_none() {
-        if client.is_test_mode() {
-            io.println("Could not load course config file. Check that exercise path leads to an exercise folder inside a course folder.", PrintColor::Failed);
-            return;
-        }
-        // Did not find course config, use interactive selection if possible
-        match ask_exercise_interactive(&mut exercise_name, &mut exercise_dir, &mut course_config) {
-            Ok(()) => (),
-            Err(msg) => {
-                io.println(&msg, PrintColor::Failed);
-                return;
-            }
-        }
-    }
-
-    let course_config = course_config.unwrap();
-    let exercise_id_result =
-        command_util::get_exercise_id_from_config(&course_config, &exercise_name);
-    let return_url: Url;
-    match exercise_id_result {
-        Ok(exercise_id) => {
-            return_url = Url::parse(&command_util::generate_return_url(exercise_id)).unwrap();
-        }
-        Err(err) => {
-            io.println(&err, PrintColor::Failed);
-            return;
-        }
-    }
+    let (project_config, course_slug, exercise_slug) = res.unwrap();
 
     io.println("\n", PrintColor::Normal);
+
     // start manager for 2 events TmcClient::submit, TmcClient::wait_for_submission
     let mut manager = ProgressBarManager::new(
         progress_reporting::get_default_style(),
@@ -82,29 +51,12 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
     manager.start::<ClientUpdateData>();
 
     // Send submission
-    let new_submission_result = client.submit(return_url, exercise_dir.as_path(), Some(locale));
-    if let Err(err) = new_submission_result {
+    let new_submission_result =
+        client.submit(&project_config, &course_slug, &exercise_slug, Some(locale));
+    if let Err(_err) = new_submission_result {
         manager.force_join();
 
-        match err {
-            ClientError::HttpError {
-                url,
-                status: _,
-                error,
-                obsolete_client: _,
-            } => {
-                io.println(
-                    &format!(
-                        "\nGot error '{}' \n    while submitting exercise to address {}",
-                        error, url
-                    ),
-                    PrintColor::Failed,
-                );
-            }
-            _ => {
-                io.println("Error during submission", PrintColor::Failed);
-            }
-        }
+        io.println("Error during submission: ", PrintColor::Failed);
         return;
     }
 
@@ -114,9 +66,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         new_submission.show_submission_url
     ));
 
-    let wait_status: Result<SubmissionFinished, ClientError> =
-        client.wait_for_submission(&new_submission.submission_url);
-    match wait_status {
+    match client.wait_for_submission(&new_submission.submission_url) {
         Ok(submission_finished) => {
             manager.join();
 
@@ -124,6 +74,7 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: &str) {
         }
         Err(err) => {
             manager.force_join();
+
             io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", &new_submission.show_submission_url), PrintColor::Normal);
             io.println(&format!("Error message: {:#?}", err), PrintColor::Normal);
         }
@@ -200,76 +151,4 @@ fn into_locale(arg: &str) -> Result<Language> {
         .or_else(|| Language::from_639_1(arg))
         .or_else(|| Language::from_639_3(arg))
         .with_context(|| format!("Invalid locale: {}", arg))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use command_util::MockClient;
-    use std::slice::Iter;
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl IoTest<'_> {
-        pub fn buffer_length(&mut self) -> usize {
-            self.list.len()
-        }
-
-        pub fn buffer_get(&mut self, index: usize) -> String {
-            self.list[index].to_string()
-        }
-    }
-
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> String {
-            match self.input.next() {
-                Some(string) => string,
-                None => "",
-            }
-            .to_string()
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) {
-            print!("{}", output);
-            self.list.push(output.to_string());
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) {
-            println!("{}", output);
-            self.list.push(output.to_string());
-        }
-
-        fn read_password(&mut self) -> String {
-            self.read_line()
-        }
-    }
-
-    #[test]
-    fn submit_not_logged_in_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-
-        let mut mock = MockClient::new();
-        mock.expect_load_login()
-            .returning(|| Err("Not logged in.".to_string()));
-
-        let path = "";
-
-        submit(&mut io, &mut mock, path);
-
-        assert_eq!(1, io.buffer_length());
-        if io.buffer_length() == 1 {
-            assert!(io
-                .buffer_get(0)
-                .to_string()
-                .eq(&"Not logged in.".to_string()));
-        }
-    }
 }

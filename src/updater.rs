@@ -16,7 +16,14 @@ use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";
 pub const PLUGIN: &str = "tmc_cli_rust";
-pub const DELAY: u128 = 5 * 60 * 1000;
+pub const DELAY: u128 = 1440 * 60 * 1000;
+
+/// Autoupdater for Windows platform.
+/// Checks every 24hours if there are new versions available and
+/// generates a new timestamp. If a new version is found, the function
+/// stashes the old executable and downloads a new one.
+/// Will run in privileged stage if needed on Windows!
+///
 
 pub fn check_for_update() {
     if is_it_time_yet() {

@@ -1,14 +1,9 @@
-use super::command_util::*;
+use super::command_util::Client;
 use crate::io_module::{Io, PrintColor};
 use tmc_client::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    }
-
     let courses_result = client.list_courses();
 
     match courses_result {
@@ -29,11 +24,11 @@ fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
 mod tests {
     use super::*;
     use isolang::Language;
-    use reqwest::Url;
     use std::path::Path;
     use std::slice::Iter;
     use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
     use tmc_client::{Organization, SubmissionFinished};
+    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
     pub struct IoTest<'a> {
@@ -79,8 +74,9 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _paste_message: Option<String>,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
@@ -125,12 +121,19 @@ mod tests {
             Ok(vec![])
         }
         fn logout(&mut self) {}
+        fn update_exercises(
+            &mut self,
+            _path: &Path,
+        ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+            todo!()
+        }
         fn submit(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _locale: Option<Language>,
-        ) -> Result<NewSubmission, ClientError> {
+        ) -> Result<NewSubmission, LangsError> {
             Ok(NewSubmission {
                 show_submission_url: "".to_string(),
                 paste_url: "".to_string(),

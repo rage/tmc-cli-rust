@@ -5,11 +5,6 @@ use tmc_client::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    };
-
     // Get course by id
     let course_result = match get_course_id_by_name(client, course_name.clone()) {
         Ok(result) => result,
@@ -99,13 +94,13 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 #[cfg(test)]
 mod tests {
     use isolang::Language;
-    use reqwest::Url;
     use std::path::Path;
     use tmc_client::Course;
     use tmc_client::Organization;
     use tmc_client::{
         ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
     };
+    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
 
@@ -154,8 +149,9 @@ mod tests {
     impl Client for ClientTest {
         fn paste(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _paste_message: Option<String>,
             _locale: Option<Language>,
         ) -> Result<NewSubmission, String> {
@@ -202,10 +198,11 @@ mod tests {
         fn logout(&mut self) {}
         fn submit(
             &self,
-            _submission_url: Url,
-            _submission_path: &Path,
+            _projects_dir: &Path,
+            _course_slug: &str,
+            _exercise_slug: &str,
             _locale: Option<Language>,
-        ) -> Result<NewSubmission, ClientError> {
+        ) -> Result<NewSubmission, LangsError> {
             Ok(NewSubmission {
                 show_submission_url: "".to_string(),
                 paste_url: "".to_string(),
@@ -323,7 +320,12 @@ mod tests {
         ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
             todo!()
         }
-
+        fn update_exercises(
+            &mut self,
+            _path: &Path,
+        ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+            todo!()
+        }
         fn download_or_update_exercises(
             &mut self,
             _download_params: &[usize],

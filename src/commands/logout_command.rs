@@ -2,11 +2,6 @@ use super::command_util::Client;
 use crate::io_module::{Io, PrintColor};
 
 pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    };
-
     client.logout();
     io.println("Logged out successfully.", PrintColor::Success);
 }
@@ -53,31 +48,6 @@ mod tests {
 
         fn read_password(&mut self) -> String {
             self.read_line()
-        }
-    }
-
-    #[test]
-    fn logout_when_not_logged_in_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-
-        let mut mock = MockClient::new();
-        mock.expect_load_login()
-            .returning(|| Err("Not logged in message.".to_string()));
-
-        logout(&mut io, &mut mock);
-
-        assert_eq!(1, io.buffer_length());
-        if io.buffer_length() == 1 {
-            assert!(io
-                .buffer_get(0)
-                .to_string()
-                .eq(&"Not logged in message.".to_string()));
         }
     }
 
