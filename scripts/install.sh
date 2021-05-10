@@ -25,7 +25,7 @@ fi
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
 
 fileprefx=""
-if [[ "$os" == "Darwin" ]]; then
+if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
   fileprefx="tmc-cli-rust-${platform}-apple-darwin-v"
 else
   fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
