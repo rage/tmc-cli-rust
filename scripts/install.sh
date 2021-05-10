@@ -6,14 +6,14 @@ echo "~ Installing TMC-CLI ~"
 echo "(If your shell is not bash, you may have to do the installation manually.)"
 echo ""
 
-if (( $# < 2 )); then
-  echo "You need to give architecture (x86_64/i686) and OS (mac, linux) as arguments."
-  exit 1
-fi
+os="$(uname -s)"
+platform="$(uname -m)"
 
-# Get platform-string from first argument, OS from the second
-platform=$1
-os=$2
+if (( $# = 2 )); then
+  # Get platform-string from first argument, OS from the second
+  platform=$1
+  os=$2
+fi
 
 echo "Fetching latest version URL from https://download.mooc.fi"
 if ! PAGE=$(curl -s https://download.mooc.fi); then
@@ -25,7 +25,7 @@ fi
 PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
 
 fileprefx=""
-if [[ "$os" == "mac" ]]; then
+if [[ "$os" == "Darwin" ]]; then
   fileprefx="tmc-cli-rust-${platform}-apple-darwin-v"
 else
   fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
@@ -95,7 +95,7 @@ elif [ "$SHELLNAME" = "csh" ] || [ "$SHELLNAME" = "tcsh" ]; then
   echo "Please add manually variables from $PROFILEFILE to your .cshrc using csh syntax."
 else
   PROFILEFILE=$HOME/.shrc
-  echo "Defaulting to .shrc for environment variables, if this is incorrect, please copy these manually to correct file."
+  echo "Defaulting to .shrc for environment variables. If this is incorrect, please copy these manually to correct file."
 fi
 # Removes old aliases and such
 sed -i '/alias tmc=/d' "$PROFILEFILE"
