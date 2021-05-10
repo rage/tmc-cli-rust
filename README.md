@@ -76,6 +76,10 @@ To use the software from any directory, you can add it to your environmental var
 
         echo "alias tmc='<directory>/<executable name>'" >> "$HOME/.bashrc"
 
+#### For macOS
+
+The instructions for Linux **should** work on macOS as well. This has not been tested yet, though, so your mileage may vary.
+
 #### For Windows: 
 
 After downloading the executable you can start using it from the command line by navigating to the directory it resides at. 
@@ -83,6 +87,12 @@ After downloading the executable you can start using it from the command line by
 To be able to use it from any directory, you can add it to your environmental variables with the following command. (substituting <directory> for the directory where the executable resides at)
 
         set PATH=%PATH%;<directory>
+
+#### Tab-completion from commandline
+
+You can generate shell completion scripts by running `tmc generate-completions --[bash/zsh/powershell] > /path/to/your/completions/directory/filename`. For `bash`, `filename` should be `tmc.bash`. For `zsh`, `_tmc`. This has not yet been tested for Powershell, but the script *should* work if placed in the appropriate directory.
+
+Make sure to have the appropriate software configuration for completions to work. For Zsh and Powershell, completions should be supported by default, but for Bash you may need to install `bash-completion` or similar packages and follow their documentation.
 
 ## Commands
 

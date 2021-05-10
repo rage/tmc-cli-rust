@@ -8,6 +8,7 @@ authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
 edition = "2018"
 description = "Command line interface for TMC, written in Rust."
 license = "Apache-2.0"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -35,3 +36,6 @@ crossterm = "0.19"
 tui = { version = "0.14", default-features = false, features = ['crossterm'] }
 termcolor = "1.1"
 terminal_size = "0.1.16"
+
+[build-dependencies]
+clap = "2.3.3"
