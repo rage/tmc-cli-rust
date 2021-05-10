@@ -1,3 +1,4 @@
+#[cfg(target_os = "windows")]
 use crate::updater;
 use command_util::{get_organization, Client, ClientProduction};
 use courses_command::list_courses;
@@ -138,9 +139,11 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("logout", _) => logout(io, &mut client),
         ("fetchupdate", _) => {
+            #[cfg(target_os = "windows")]
             updater::process_update();
         }
         ("cleartemp", _) => {
+            #[cfg(target_os = "windows")]
             updater::cleartemp().unwrap();
         }
         ("elevateddownload", _) => {
