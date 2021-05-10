@@ -12,7 +12,6 @@ mod cli;
 pub mod commands;
 pub mod interactive;
 pub mod progress_reporting;
-mod updater;
 
 fn main() {
     let cli = cli::build_cli();
@@ -39,7 +38,6 @@ fn main() {
         0 => {
             let os = std::env::consts::OS;
             if os == "windows" {
-                updater::check_for_update();
             }
         }
         _ => println!("No Auto-Updates"),

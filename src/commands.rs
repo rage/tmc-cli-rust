@@ -1,4 +1,3 @@
-use crate::updater;
 use command_util::{get_organization, Client, ClientProduction};
 use courses_command::list_courses;
 use download_command::download_or_update;
@@ -138,10 +137,8 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         ("logout", _) => logout(io, &mut client),
         ("fetchupdate", _) => {
-            updater::process_update();
         }
         ("cleartemp", _) => {
-            updater::cleartemp().unwrap();
         }
         ("elevateddownload", _) => {
             download_command::elevated_download(io, &mut client);
