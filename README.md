@@ -62,31 +62,27 @@ After restarting the terminal, this should work:
 Windows installer can be found [here](https://github.com/rage/tmc-cli-rust/tree/dev/installer).
 Download and run the newest installer found. After installation, the application updates automatically.
 
-### Manual installation
+### Manual installation, additional steps
 
-If using the installers is not an option for you, you can download the [latest release](https://github.com/rage/tmc-cli-rust/releases/latest) manually. 
-
-Windows: tmc-cli-rust.exe
-
-Linux/OS X: tmc-cli-rust
+If using the installers is not an option for you, you can build the source code by yourself, or download the [latest published build](https://github.com/rage/tmc-cli-rust/#published-builds). 
 
 #### For Linux: 
 
-After downloading 'tmc-cli-rust', navigate to the directory it's located in and make it an executable with the command
+After downloading the executable, navigate to the directory it's located in and make it an executable with the command
 
-        chmod u+x ./tmc-cli-rust
+        chmod u+x ./<executable name>
 
-To use the software from any directory, you can add it to your environmental variables with the following command (substituting DIRECTORY for the location where tmc-cli-rust resides at.)
+To use the software from any directory, you can add it to your environmental variables with the following command (substituting <directory> for the location where the executable resides at and <executable name> for the executable name.)
 
-        echo "alias tmc='DIRECTORY/tmc-cli-rust'" >> "$HOME/.bashrc"
+        echo "alias tmc='<directory>/<executable name>'" >> "$HOME/.bashrc"
 
 #### For Windows: 
 
-After downloading tmc-cli-rust.exe you can start using it from the command line by navigating to the directory it resides at. 
+After downloading the executable you can start using it from the command line by navigating to the directory it resides at. 
 
-To be able to use it from any directory, you can add it to your environmental variables with the following command. (substituting DIRECTORY for the directory where tmc-cli-rust.exe resides at)
+To be able to use it from any directory, you can add it to your environmental variables with the following command. (substituting <directory> for the directory where the executable resides at)
 
-        set PATH=%PATH%;DIRECTORY
+        set PATH=%PATH%;<directory>
 
 ## Commands
 
