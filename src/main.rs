@@ -12,6 +12,11 @@ mod cli;
 pub mod commands;
 pub mod interactive;
 pub mod progress_reporting;
+
+// Updater is used only for windows
+// Updates for linux and macos are handled
+// via package managers
+#[cfg(target_os = "windows")]
 mod updater;
 
 fn main() {
@@ -39,6 +44,7 @@ fn main() {
         0 => {
             let os = std::env::consts::OS;
             if os == "windows" {
+                #[cfg(target_os = "windows")]
                 updater::check_for_update();
             }
         }
