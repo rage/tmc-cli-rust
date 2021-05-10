@@ -136,8 +136,10 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             }
         }
         ("logout", _) => logout(io, &mut client),
-        ("fetchupdate", _) => {}
-        ("cleartemp", _) => {}
+        ("fetchupdate", _) => {
+        }
+        ("cleartemp", _) => {
+        }
         ("elevateddownload", _) => {
             download_command::elevated_download(io, &mut client);
         }

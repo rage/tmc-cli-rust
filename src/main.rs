@@ -37,7 +37,8 @@ fn main() {
     match matches.occurrences_of("no-update") {
         0 => {
             let os = std::env::consts::OS;
-            if os == "windows" {}
+            if os == "windows" {
+            }
         }
         _ => println!("No Auto-Updates"),
     }
