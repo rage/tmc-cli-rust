@@ -1,5 +1,8 @@
 use tui::widgets::ListState;
 
+/// Handles the state of the application
+/// Provides functions `next`, `previous` etc.
+/// which can be used to cycle through items interactively
 pub struct StatefulList<T> {
     pub state: ListState,
     pub items: Vec<T>,
