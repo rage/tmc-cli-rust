@@ -9,7 +9,7 @@ echo ""
 os="$(uname -s)"
 platform="$(uname -m)"
 
-if (( $# = 2 )); then
+if (( $# == 2 )); then
   # Get platform-string from first argument, OS from the second
   platform=$1
   os=$2
