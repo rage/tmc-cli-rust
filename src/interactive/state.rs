@@ -113,11 +113,10 @@ impl AppState {
     /// returns the currently selected item wrapped in Some,
     /// or None if no item is selected
     pub fn get_selected(&self) -> Option<String> {
-        if let Some(selected) = self.items.state.selected() {
-            Some(self.items.displayed[selected].clone())
-        } else {
-            None
-        }
+        self.items
+            .state
+            .selected()
+            .map(|selected| self.items.displayed[selected].clone())
     }
 
     fn refresh_filtered(&mut self) {

@@ -51,11 +51,8 @@ pub fn interactive_list(prompt: &str, items: Vec<String>) -> Option<String> {
 
     terminal.clear().unwrap();
     execute!(stdout(), LeaveAlternateScreen).unwrap();
-    if let Some(result) = result {
-        Some(result)
-    } else {
-        None
-    }
+
+    result
 }
 
 fn draw_terminal<B>(terminal: &mut Terminal<B>, app: &mut AppState, prompt: &str)

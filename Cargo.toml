@@ -1,6 +1,6 @@
 [package]
 name = "tmc"
-version = "1.0.1"
+version = "1.0.4"
 authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
            "Robustic <juha.malinen@helsinki.fi>",
            "ShootingStar91 <arttu.kangas@helsinki.fi>",
