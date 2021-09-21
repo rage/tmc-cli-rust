@@ -78,7 +78,7 @@ impl Io for IoProduction<'_> {
                     self.buffer.set_color(&colorspec).unwrap();
 
                     self.buffer.write_all(text_to_output.as_bytes()).expect("");
-                    self.bufferwriter.print(&self.buffer).unwrap();
+                    self.bufferwriter.print(self.buffer).unwrap();
                     self.buffer.clear();
 
                     colorspec.clear();
@@ -86,7 +86,7 @@ impl Io for IoProduction<'_> {
                 }
                 PrintColor::Normal => {
                     self.buffer.write_all(text_to_output.as_bytes()).expect("");
-                    self.bufferwriter.print(&self.buffer).unwrap();
+                    self.bufferwriter.print(self.buffer).unwrap();
                     self.buffer.clear();
                 }
                 PrintColor::Failed => {
@@ -96,7 +96,7 @@ impl Io for IoProduction<'_> {
                     self.buffer.set_color(&colorspec).unwrap();
 
                     self.buffer.write_all(text_to_output.as_bytes()).expect("");
-                    self.bufferwriter.print(&self.buffer).unwrap();
+                    self.bufferwriter.print(self.buffer).unwrap();
                     self.buffer.clear();
 
                     colorspec.clear();

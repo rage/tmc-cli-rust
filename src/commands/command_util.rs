@@ -413,7 +413,7 @@ impl Client for ClientProduction {
             });
         }
 
-        tmc_langs::download_or_update_course_exercises(&self.tmc_client, path, &exercise_ids, true)
+        tmc_langs::download_or_update_course_exercises(&self.tmc_client, path, exercise_ids, true)
     }
 
     fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
