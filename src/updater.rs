@@ -221,7 +221,7 @@ fn update(version: String) -> Result<(), std::io::Error> {
     while downloaded < size {
         let n = {
             let buf = src.fill_buf()?;
-            dest.write_all(&buf)?;
+            dest.write_all(buf)?;
             buf.len()
         };
         if n == 0 {
