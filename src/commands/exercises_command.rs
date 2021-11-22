@@ -1,7 +1,7 @@
 use super::command_util::{get_course_id_by_name, Client};
 use crate::io_module::{Io, PrintColor};
 
-use tmc_client::CourseExercise;
+use tmc_client::response::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
@@ -94,12 +94,13 @@ fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseEx
 #[cfg(test)]
 mod tests {
     use isolang::Language;
+    use reqwest::Url;
     use std::path::Path;
-    use tmc_client::Course;
-    use tmc_client::Organization;
-    use tmc_client::{
-        ClientError, CourseExercise, NewSubmission, SubmissionFinished, SubmissionStatus,
+    use tmc_client::response::{
+        Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        SubmissionFinished, SubmissionStatus,
     };
+    use tmc_client::ClientError;
     use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
@@ -211,7 +212,7 @@ mod tests {
         }
         fn wait_for_submission(
             &self,
-            _submission_url: &str,
+            _submission_url: Url,
         ) -> Result<SubmissionFinished, ClientError> {
             Ok(SubmissionFinished {
                 api_version: 0,
@@ -239,10 +240,7 @@ mod tests {
                 validations: None,
             })
         }
-        fn get_course_exercises(
-            &mut self,
-            _course_id: usize,
-        ) -> Result<Vec<CourseExercise>, String> {
+        fn get_course_exercises(&mut self, _course_id: u32) -> Result<Vec<CourseExercise>, String> {
             /*TODO: ExercisePoint is in private module*/
             //let points = vec![];
             //let awarded_points = vec![/*"1.1".to_string()*/];
@@ -316,8 +314,8 @@ mod tests {
 
         fn get_exercise_details(
             &mut self,
-            _exercise_ids: Vec<usize>,
-        ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
+            _exercise_ids: Vec<u32>,
+        ) -> Result<Vec<ExercisesDetails>, String> {
             todo!()
         }
         fn update_exercises(
@@ -328,7 +326,7 @@ mod tests {
         }
         fn download_or_update_exercises(
             &mut self,
-            _download_params: &[usize],
+            _download_params: &[u32],
             _path: &Path,
         ) -> Result<DownloadResult, LangsError> {
             Ok(DownloadResult::Success {
@@ -339,8 +337,8 @@ mod tests {
 
         fn get_course_details(
             &self,
-            _: usize,
-        ) -> std::result::Result<tmc_client::CourseDetails, tmc_client::ClientError> {
+            _: u32,
+        ) -> std::result::Result<CourseDetails, tmc_client::ClientError> {
             todo!()
         }
         fn get_organization(

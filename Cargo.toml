@@ -22,10 +22,11 @@ serde = "1"
 serde_json = "1"
 log = "0.4"
 dirs = "3"
-tmc-langs-util = { git = "https://github.com/rage/tmc-langs-rust/", rev = "13f3d55" }
-tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust/", rev = "13f3d55" }
-tmc-langs = { git = "https://github.com/rage/tmc-langs-rust/", rev = "13f3d55" }
-tmc-client = { git = "https://github.com/rage/tmc-langs-rust/", rev = "13f3d55" }
+# rev 12f021b = 0.19.0
+tmc-langs-util = { git = "https://github.com/rage/tmc-langs-rust/", rev = "12f021b" }
+tmc-langs-framework = { git = "https://github.com/rage/tmc-langs-rust/", rev = "12f021b" }
+tmc-langs = { git = "https://github.com/rage/tmc-langs-rust/", rev = "12f021b" }
+tmc-client = { git = "https://github.com/rage/tmc-langs-rust/", rev = "12f021b" }
 rpassword = "5.0.1"
 mockall = "0.9.0"
 indicatif = "0.15.0"

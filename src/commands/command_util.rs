@@ -1,12 +1,15 @@
 use isolang::Language;
+use reqwest::Url;
 use std::path::Path;
 use std::path::PathBuf;
 
 use std::env;
-use tmc_client::{
-    ClientError, Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
-    Organization, SubmissionFinished, TmcClient, Token,
+use std::str::FromStr;
+use tmc_client::response::{
+    Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+    SubmissionFinished,
 };
+use tmc_client::{ClientError, TmcClient, Token};
 use tmc_langs::Credentials;
 use tmc_langs::DownloadOrUpdateCourseExercisesResult;
 use tmc_langs::DownloadResult;
@@ -33,7 +36,7 @@ pub trait Client {
     fn list_courses(&mut self) -> Result<Vec<Course>, String>;
     fn get_organizations(&mut self) -> Result<Vec<Organization>, String>;
     fn logout(&mut self);
-    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError>;
+    fn wait_for_submission(&self, submission_url: Url) -> Result<SubmissionFinished, ClientError>;
     fn submit(
         &self,
         projects_dir: &Path,
@@ -41,18 +44,18 @@ pub trait Client {
         exercise_slug: &str,
         locale: Option<Language>,
     ) -> Result<NewSubmission, LangsError>;
-    fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String>;
+    fn get_course_exercises(&mut self, course_id: u32) -> Result<Vec<CourseExercise>, String>;
     fn get_exercise_details(
         &mut self,
-        exercise_ids: Vec<usize>,
+        exercise_ids: Vec<u32>,
     ) -> Result<Vec<ExercisesDetails>, String>;
     fn download_or_update_exercises(
         &mut self,
-        download_params: &[usize],
+        download_params: &[u32],
         path: &Path,
     ) -> Result<DownloadResult, LangsError>;
     fn is_test_mode(&mut self) -> bool;
-    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError>;
+    fn get_course_details(&self, course_id: u32) -> Result<CourseDetails, ClientError>;
     fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError>;
     fn update_exercises(
         &mut self,
@@ -68,11 +71,10 @@ pub trait Client {
     ) -> Result<NewSubmission, String>;
 }
 
-static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
         let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
-            SERVER_ADDRESS.to_string(),
+            Url::from_str("https://tmc.mooc.fi").expect(""),
             PLUGIN,
             "1.0.0",
         )
@@ -165,10 +167,7 @@ impl Client for ClientProduction {
         }
 
         if let Some(credentials) = get_credentials() {
-            match self.tmc_client.set_token(credentials.token()) {
-                Ok(()) => return Ok(()),
-                _ => return Err("Setting login token failed".to_string()),
-            }
+            self.tmc_client.set_token(credentials.token());
         }
         Err("No login found. You need to be logged in to use this command".to_string())
     }
@@ -256,7 +255,7 @@ impl Client for ClientProduction {
                 }
                 Ok(course_list)
             }
-            Err(ClientError::NotLoggedIn) => {
+            Err(ClientError::NotAuthenticated) => {
                 Err("Login token is invalid. Please try logging in again.".to_string())
             }
             _ => Err("Unknown error. Please try again.".to_string()),
@@ -318,8 +317,8 @@ impl Client for ClientProduction {
         credentials.remove().unwrap();
     }
 
-    fn wait_for_submission(&self, submission_url: &str) -> Result<SubmissionFinished, ClientError> {
-        self.tmc_client.wait_for_submission(submission_url)
+    fn wait_for_submission(&self, submission_url: Url) -> Result<SubmissionFinished, ClientError> {
+        self.tmc_client.wait_for_submission_at(submission_url)
     }
     fn update_exercises(
         &mut self,
@@ -359,7 +358,7 @@ impl Client for ClientProduction {
         )
     }
 
-    fn get_course_exercises(&mut self, course_id: usize) -> Result<Vec<CourseExercise>, String> {
+    fn get_course_exercises(&mut self, course_id: u32) -> Result<Vec<CourseExercise>, String> {
         if self.test_mode {
             return Ok(vec![CourseExercise {
                 id: 0,
@@ -376,7 +375,7 @@ impl Client for ClientProduction {
         }
         match self.tmc_client.get_course_exercises(course_id) {
             Ok(exercises) => Ok(exercises),
-            Err(ClientError::NotLoggedIn) => {
+            Err(ClientError::NotAuthenticated) => {
                 Err("Login token is invalid. Please try logging in again.".to_string())
             }
             _ => Err("Unknown error. Please try again.".to_string()),
@@ -385,7 +384,7 @@ impl Client for ClientProduction {
 
     fn get_exercise_details(
         &mut self,
-        exercise_ids: Vec<usize>,
+        exercise_ids: Vec<u32>,
     ) -> Result<Vec<ExercisesDetails>, String> {
         if self.test_mode {
             return Ok(vec![ExercisesDetails {
@@ -403,7 +402,7 @@ impl Client for ClientProduction {
 
     fn download_or_update_exercises(
         &mut self,
-        exercise_ids: &[usize],
+        exercise_ids: &[u32],
         path: &Path,
     ) -> Result<DownloadResult, LangsError> {
         if self.test_mode {
@@ -416,7 +415,7 @@ impl Client for ClientProduction {
         tmc_langs::download_or_update_course_exercises(&self.tmc_client, path, exercise_ids, true)
     }
 
-    fn get_course_details(&self, course_id: usize) -> Result<CourseDetails, ClientError> {
+    fn get_course_details(&self, course_id: u32) -> Result<CourseDetails, ClientError> {
         if self.test_mode {
             let course = Course {
                 id: 0,
@@ -496,11 +495,11 @@ pub fn set_organization(org: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Returns course id as: Ok(Some(usize)) or Ok(None) if not found, Err(msg) if could not get id list
+/// Returns course id as: Ok(Some(u32)) or Ok(None) if not found, Err(msg) if could not get id list
 pub fn get_course_id_by_name(
     client: &mut dyn Client,
     course_name: String,
-) -> Result<Option<usize>, String> {
+) -> Result<Option<u32>, String> {
     match client.list_courses() {
         Ok(courses) => {
             for course in courses {

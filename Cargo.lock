@@ -2210,14 +2210,14 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "chrono",
  "dirs",
  "http",
- "lazy_static",
  "log",
  "oauth2",
+ "once_cell",
  "percent-encoding",
  "regex",
  "reqwest",
@@ -2235,18 +2235,18 @@ dependencies = [
 [[package]]
 name = "tmc-langs"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "base64 0.13.0",
  "dirs",
  "hmac",
  "impl-enum",
  "jwt",
- "lazy_static",
  "log",
  "md5",
  "nix",
  "oauth2",
+ "once_cell",
  "regex",
  "rpassword",
  "schemars",
@@ -2273,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "dirs",
  "log",
@@ -2289,11 +2289,10 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "fd-lock",
  "isolang",
- "lazy_static",
  "log",
  "nom",
  "once_cell",
@@ -2312,13 +2311,13 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "dirs",
  "flate2",
  "j4rs",
- "lazy_static",
  "log",
+ "once_cell",
  "serde",
  "serde_json",
  "tar",
@@ -2332,10 +2331,10 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
- "lazy_static",
  "log",
+ "once_cell",
  "regex",
  "serde",
  "serde-xml-rs",
@@ -2349,7 +2348,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2359,7 +2358,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "impl-enum",
  "log",
@@ -2379,13 +2378,13 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "dunce",
  "hex",
  "hmac",
- "lazy_static",
  "log",
+ "once_cell",
  "rand 0.8.3",
  "serde",
  "serde_json",
@@ -2399,7 +2398,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "log",
  "serde",
@@ -2413,7 +2412,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=13f3d55#13f3d55035a3cf6c8229dea498081c06f4a78dc5"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=12f021b#12f021ba4c823c9831ec6e63652fb7a11c67b69a"
 dependencies = [
  "fd-lock",
  "log",
@@ -2849,18 +2848,18 @@ dependencies = [
 
 [[package]]
 name = "zstd"
-version = "0.7.0+zstd.1.4.9"
+version = "0.8.3+zstd.1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9428752481d8372e15b1bf779ea518a179ad6c771cca2d2c60e4fbff3cc2cd52"
+checksum = "5ea7094c7b4a58fbd738eb0d4a2fc7684a0e6949a31597e074ffe20a07cbc2bf"
 dependencies = [
  "zstd-safe",
 ]
 
 [[package]]
 name = "zstd-safe"
-version = "3.1.0+zstd.1.4.9"
+version = "4.1.0+zstd.1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aa1926623ad7fe406e090555387daf73db555b948134b4d73eac5eb08fb666d"
+checksum = "d30375f78e185ca4c91930f42ea2c0162f9aa29737032501f93b79266d985ae7"
 dependencies = [
  "libc",
  "zstd-sys",
@@ -2868,9 +2867,9 @@ dependencies = [
 
 [[package]]
 name = "zstd-sys"
-version = "1.5.0+zstd.1.4.9"
+version = "1.6.0+zstd.1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e6c094340240369025fc6b731b054ee2a834328fa584310ac96aa4baebdc465"
+checksum = "2141bed8922b427761470e6bbfeff255da94fa20b0bbeab0d9297fcaf71e3aa7"
 dependencies = [
  "cc",
  "libc",

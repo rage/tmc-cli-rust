@@ -1,6 +1,6 @@
 use super::command_util::Client;
 use crate::io_module::{Io, PrintColor};
-use tmc_client::Course;
+use tmc_client::response::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
@@ -24,10 +24,14 @@ fn print_courses(io: &mut dyn Io, course_list: Vec<Course>) {
 mod tests {
     use super::*;
     use isolang::Language;
+    use reqwest::Url;
     use std::path::Path;
     use std::slice::Iter;
-    use tmc_client::{ClientError, CourseExercise, NewSubmission, SubmissionStatus};
-    use tmc_client::{Organization, SubmissionFinished};
+    use tmc_client::response::{
+        CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        SubmissionFinished, SubmissionStatus,
+    };
+    use tmc_client::ClientError;
     use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
@@ -142,7 +146,7 @@ mod tests {
         }
         fn wait_for_submission(
             &self,
-            _submission_url: &str,
+            _submission_url: Url,
         ) -> Result<SubmissionFinished, ClientError> {
             Ok(SubmissionFinished {
                 api_version: 0,
@@ -170,23 +174,20 @@ mod tests {
                 validations: None,
             })
         }
-        fn get_course_exercises(
-            &mut self,
-            _course_id: usize,
-        ) -> Result<Vec<CourseExercise>, String> {
+        fn get_course_exercises(&mut self, _course_id: u32) -> Result<Vec<CourseExercise>, String> {
             Ok(vec![])
         }
 
         fn get_exercise_details(
             &mut self,
-            _exercise_ids: Vec<usize>,
-        ) -> Result<Vec<tmc_client::ExercisesDetails>, String> {
+            _exercise_ids: Vec<u32>,
+        ) -> Result<Vec<ExercisesDetails>, String> {
             todo!()
         }
 
         fn download_or_update_exercises(
             &mut self,
-            _download_params: &[usize],
+            _download_params: &[u32],
             _path: &Path,
         ) -> Result<DownloadResult, LangsError> {
             Ok(DownloadResult::Success {
@@ -195,16 +196,10 @@ mod tests {
             })
         }
 
-        fn get_course_details(
-            &self,
-            _: usize,
-        ) -> std::result::Result<tmc_client::CourseDetails, tmc_client::ClientError> {
+        fn get_course_details(&self, _: u32) -> std::result::Result<CourseDetails, ClientError> {
             todo!()
         }
-        fn get_organization(
-            &self,
-            _: &str,
-        ) -> std::result::Result<Organization, tmc_client::ClientError> {
+        fn get_organization(&self, _: &str) -> std::result::Result<Organization, ClientError> {
             todo!()
         }
     }
