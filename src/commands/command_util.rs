@@ -4,7 +4,6 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use std::env;
-use std::str::FromStr;
 use tmc_client::response::{
     Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
     SubmissionFinished,
@@ -71,10 +70,12 @@ pub trait Client {
     ) -> Result<NewSubmission, String>;
 }
 
+static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
+
 impl ClientProduction {
     pub fn new(test_mode: bool) -> Self {
         let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
-            Url::from_str("https://tmc.mooc.fi").expect(""),
+            Url::parse(SERVER_ADDRESS).expect("Server address should always be correct."),
             PLUGIN,
             "1.0.0",
         )
@@ -168,8 +169,10 @@ impl Client for ClientProduction {
 
         if let Some(credentials) = get_credentials() {
             self.tmc_client.set_token(credentials.token());
+            Ok(())
+        } else {
+            Err("No login found. You need to be logged in to use this command".to_string())
         }
-        Err("No login found. You need to be logged in to use this command".to_string())
     }
 
     fn try_login(&mut self, username: String, password: String) -> Result<String, String> {
