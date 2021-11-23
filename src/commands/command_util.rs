@@ -16,6 +16,7 @@ use tmc_langs::LangsError;
 use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
 
 pub const PLUGIN: &str = "tmc_cli_rust";
+pub const PLUGIN_VERSION: &str = "1.0.5";
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 
@@ -77,7 +78,7 @@ impl ClientProduction {
         let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
             Url::parse(SERVER_ADDRESS).expect("Server address should always be correct."),
             PLUGIN,
-            "1.0.0",
+            PLUGIN_VERSION,
         )
         .unwrap();
 
