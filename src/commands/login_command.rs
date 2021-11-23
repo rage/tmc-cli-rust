@@ -132,7 +132,7 @@ mod tests {
     use super::super::command_util::*;
     use super::*;
     use std::slice::Iter;
-    use tmc_client::Organization;
+    use tmc_client::response::Organization;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,

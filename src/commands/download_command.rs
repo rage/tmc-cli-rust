@@ -7,7 +7,7 @@ use crate::interactive;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
-use tmc_client::Course;
+use tmc_client::response::Course;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::DownloadResult;
 
@@ -149,7 +149,7 @@ pub fn download_exercises(
 ) -> Result<String, String> {
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
-            let exercise_ids: Vec<usize> = exercises
+            let exercise_ids: Vec<u32> = exercises
                 .iter()
                 .filter(|t| !t.disabled && t.unlocked)
                 .map(|t| t.id)

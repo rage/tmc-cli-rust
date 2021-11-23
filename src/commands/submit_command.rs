@@ -4,6 +4,7 @@ use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use anyhow::{Context, Result};
+use reqwest::Url;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
 use tmc_langs::NewSubmission;
@@ -66,7 +67,12 @@ fn submit_logic(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
         new_submission.show_submission_url
     ));
 
-    match client.wait_for_submission(&new_submission.submission_url) {
+    let submission_url = Url::parse(&new_submission.submission_url);
+    if let Err(err) = submission_url {
+        io.println(&err.to_string(), PrintColor::Failed);
+        return;
+    }
+    match client.wait_for_submission(submission_url.unwrap()) {
         Ok(submission_finished) => {
             manager.join();
 
