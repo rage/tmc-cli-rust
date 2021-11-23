@@ -392,6 +392,7 @@ impl Client for ClientProduction {
                 course_name: "test_course".to_string(),
                 exercise_name: "test_exercise".to_string(),
                 checksum: "test_checksum".to_string(),
+                hide_submission_results: false,
             }]);
         }
         match self.tmc_client.get_exercises_details(&exercise_ids) {

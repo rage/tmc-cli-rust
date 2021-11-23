@@ -47,7 +47,6 @@ fn checktemp() {
                 std::io::ErrorKind::PermissionDenied => {
                     println!("Permission Denied! Restarting with administrator privileges...");
                     elevate("cleartemp".to_string());
-                    return;
                 }
                 _ => {
                     println!("{:#?}", e);
