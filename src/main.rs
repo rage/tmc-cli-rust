@@ -1,17 +1,8 @@
-use clap::{ArgMatches, Shell};
-use termcolor::{BufferWriter, ColorChoice};
-
-use std::{
-    io,
-    io::{stdin, stdout},
-};
-
-pub mod io_module;
-use io_module::IoProduction;
 mod cli;
-pub mod commands;
-pub mod interactive;
-pub mod progress_reporting;
+mod commands;
+mod interactive;
+mod io_module;
+mod progress_reporting;
 
 // Updater is used only for windows
 // Updates for linux and macos are handled
@@ -19,15 +10,21 @@ pub mod progress_reporting;
 #[cfg(target_os = "windows")]
 mod updater;
 
+use clap::ArgMatches;
+use clap_complete::Shell;
+use io_module::IoProduction;
+use std::io;
+use termcolor::{BufferWriter, ColorChoice};
+
 fn main() {
     let cli = cli::build_cli();
     let matches = cli.get_matches();
-    if matches.is_present("generate-completions") {
+    if matches.subcommand_name() == Some("generate-completions") {
         generate_completions(&matches);
         return;
     }
-    let mut stdout = stdout();
-    let mut stdin = stdin();
+    let mut stdout = std::io::stdout();
+    let mut stdin = std::io::stdin();
 
     let mut bufferwriter = BufferWriter::stderr(ColorChoice::Always);
     let mut buffer = bufferwriter.buffer();
@@ -65,5 +62,6 @@ fn generate_completions(matches: &ArgMatches) {
         return;
     };
 
-    cli::build_cli().gen_completions_to("tmc", shell, &mut io::stdout());
+    let mut cmd = cli::build_cli();
+    clap_complete::generate(shell, &mut cmd, "tmc", &mut io::stdout());
 }

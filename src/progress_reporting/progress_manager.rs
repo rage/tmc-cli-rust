@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
-use tmc_langs_util::progress_reporter::StatusUpdate;
+use tmc_langs::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
     ProgressStyle::default_bar()
@@ -57,7 +57,7 @@ impl ProgressBarManager {
         let finished_cb = self.is_finished.clone();
         let percentage_cb = self.percentage_progress.clone();
         let message_cb = self.status_message.clone();
-        let callback = move |status: tmc_langs_util::progress_reporter::StatusUpdate<T>| {
+        let callback = move |status: tmc_langs::progress_reporter::StatusUpdate<T>| {
             let mut percentage_guard = percentage_cb.lock().expect("Could not lock mutex");
             *percentage_guard = status.percent_done;
             drop(percentage_guard);
@@ -93,7 +93,7 @@ impl ProgressBarManager {
         self.handle = Some(join_handle);
 
         if !self.is_test_mode {
-            tmc_langs_util::progress_reporter::subscribe(callback);
+            tmc_langs::progress_reporter::subscribe(callback);
         } else {
             self.mock_subscribe(callback);
         }
@@ -168,7 +168,7 @@ impl ProgressBarManager {
         let mut last_message = "".to_string();
         loop {
             let guard = percentage_progress.lock().expect("Could not lock mutex");
-            let progress = (*guard as f64) * max_len as f64;
+            let progress = *guard * max_len as f64;
             drop(guard);
 
             if (progress - last_progress).abs() > 0.01 {
@@ -192,12 +192,12 @@ impl ProgressBarManager {
 
             if message != last_message {
                 // message has changed since last tick
-                pb.set_message(&message);
                 last_message = message.clone();
+                pb.set_message(message);
             }
 
             let mut message_queue_guard = message_queue.lock().expect("Could not lock mutex");
-            let message_option = (*message_queue_guard).pop_front();
+            let message_option = message_queue_guard.pop_front();
             drop(message_queue_guard);
 
             if let Some(popped_message) = message_option {
@@ -212,7 +212,7 @@ impl ProgressBarManager {
         }
         pb.disable_steady_tick();
         let message_guard = status_message.lock().expect("Could not lock mutex");
-        pb.finish_with_message(&*message_guard);
+        pb.finish_with_message(message_guard.clone());
         drop(message_guard);
     }
 }

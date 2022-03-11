@@ -1,20 +1,11 @@
-use clap::Shell;
+use clap_complete::Shell;
 
 include!("src/cli.rs");
 
 fn main() {
-    let outdir = match std::env::var_os("OUT_DIR") {
-        None => {
-            println!("Hellooo");
-            return;
-        }
-        Some(outdir) => outdir,
-    };
-
-    println!("{:?}", outdir);
-
+    let outdir = std::env::var("OUT_DIR").unwrap();
     let mut app = build_cli();
-    app.gen_completions("tmc", Shell::Bash, &outdir);
-    app.gen_completions("tmc", Shell::PowerShell, &outdir);
-    app.gen_completions("tmc", Shell::Zsh, &outdir);
+    clap_complete::generate_to(Shell::Bash, &mut app, "tmc", &outdir).unwrap();
+    clap_complete::generate_to(Shell::PowerShell, &mut app, "tmc", &outdir).unwrap();
+    clap_complete::generate_to(Shell::Zsh, &mut app, "tmc", &outdir).unwrap();
 }

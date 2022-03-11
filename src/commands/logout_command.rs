@@ -51,6 +51,7 @@ mod tests {
         }
     }
 
+    /*
     #[test]
     fn logout_when_logged_in_test() {
         let mut v: Vec<String> = Vec::new();
@@ -74,5 +75,5 @@ mod tests {
                 .to_string()
                 .eq(&"Logged out successfully.".to_string()));
         }
-    }
+    } */
 }

@@ -26,8 +26,8 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     let mut client = ClientProduction::new(matches.is_present("testmode"));
 
     // Authorize the client and raise error if not logged in when required
-    match matches.subcommand().0 {
-        "login" => {
+    match matches.subcommand() {
+        Some(("login", _)) => {
             if client.load_login().is_ok() {
                 io.println(
                     "Already logged in. Please logout first with 'tmc logout'",
@@ -36,7 +36,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
                 return;
             }
         }
-        "test" => (),
+        Some(("test", _)) => (),
         _ => {
             if client.load_login().is_err() {
                 io.println(
@@ -49,8 +49,8 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     };
 
     // Check that organization is set
-    match matches.subcommand().0 {
-        "download" | "courses" => {
+    match matches.subcommand() {
+        Some(("download" | "courses", _)) => {
             if get_organization().is_none() {
                 io.println(
                     "No organization found. Run 'tmc organization' first.",
@@ -63,96 +63,65 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     };
 
     match matches.subcommand() {
-        ("login", args) => {
-            if let Some(args) = args {
-                let interactive_mode;
-                if args.is_present("non-interactive") {
-                    interactive_mode = false;
-                } else {
-                    interactive_mode = true;
-                }
-                login(io, &mut client, interactive_mode)
-            }
-        }
-        ("download", args) => {
-            if let Some(a) = args {
-                download_or_update(
-                    io,
-                    &mut client,
-                    a.value_of("course"),
-                    a.is_present("currentdir"),
-                );
+        Some(("login", args)) => {
+            let interactive_mode;
+            if args.is_present("non-interactive") {
+                interactive_mode = false;
             } else {
-                io.println("Error: Arguments not found", PrintColor::Failed);
+                interactive_mode = true;
             }
+            login(io, &mut client, interactive_mode)
         }
-        ("update", args) => {
-            if let Some(a) = args {
-                update(io, &mut client, a.is_present("currentdir"));
+        Some(("download", args)) => download_or_update(
+            io,
+            &mut client,
+            args.value_of("course"),
+            args.is_present("currentdir"),
+        ),
+        Some(("update", args)) => {
+            update(io, &mut client, args.is_present("currentdir"));
+        }
+        Some(("organization", args)) => {
+            let interactive_mode;
+            if args.is_present("non-interactive") {
+                interactive_mode = false;
             } else {
-                io.println("Error: Arguments not found", PrintColor::Failed);
+                interactive_mode = true;
             }
+            organization(io, &mut client, interactive_mode)
         }
-        ("organization", args) => {
-            if let Some(args) = args {
-                let interactive_mode;
-                if args.is_present("non-interactive") {
-                    interactive_mode = false;
-                } else {
-                    interactive_mode = true;
-                }
-                organization(io, &mut client, interactive_mode)
-            }
+        Some(("courses", _)) => list_courses(io, &mut client),
+        Some(("submit", args)) => {
+            submit_command::submit(io, &mut client, args.value_of("exercise"));
         }
-        ("courses", _) => list_courses(io, &mut client),
-        ("submit", args) => {
-            if let Some(a) = args {
-                submit_command::submit(io, &mut client, a.value_of("exercise"));
+        Some(("exercises", args)) => {
+            if let Some(c) = args.value_of("course") {
+                list_exercises(io, &mut client, String::from(c));
             } else {
-                submit_command::submit(io, &mut client, None);
+                io.println("argument for course not found", PrintColor::Normal);
             }
         }
-        ("exercises", args) => {
-            if let Some(a) = args {
-                if let Some(c) = a.value_of("course") {
-                    list_exercises(io, &mut client, String::from(c));
-                } else {
-                    io.println("argument for course not found", PrintColor::Normal);
-                }
-            } else {
-                io.println("argument not found for course", PrintColor::Normal);
-            }
+        Some(("test", args)) => {
+            test_command::test(io, args.value_of("exercise"));
         }
-        ("test", args) => {
-            if let Some(a) = args {
-                test_command::test(io, a.value_of("exercise"));
-            } else {
-                test_command::test(io, None);
-            }
+        Some(("paste", args)) => {
+            paste_command::paste(io, &mut client, args.value_of("exercise"));
         }
-        ("paste", args) => {
-            if let Some(a) = args {
-                paste_command::paste(io, &mut client, a.value_of("exercise"));
-            } else {
-                paste_command::paste(io, &mut client, None);
-            }
-        }
-        ("logout", _) => logout(io, &mut client),
-        ("fetchupdate", _) => {
+        Some(("logout", _)) => logout(io, &mut client),
+        Some(("fetchupdate", _)) => {
             #[cfg(target_os = "windows")]
             updater::process_update();
         }
-        ("cleartemp", _) => {
+        Some(("cleartemp", _)) => {
             #[cfg(target_os = "windows")]
             updater::cleartemp().unwrap();
         }
-        ("elevateddownload", _) => {
+        Some(("elevateddownload", _)) => {
             download_command::elevated_download(io, &mut client);
         }
-        ("elevatedupdate", _) => {
+        Some(("elevatedupdate", _)) => {
             update_command::elevated_update(io, &mut client);
         }
-        (_, Some(_)) => (),
-        (_, None) => (), // No subcommand was given
+        _ => (), // Unknown subcommand or no subcommand was given
     }
 }
