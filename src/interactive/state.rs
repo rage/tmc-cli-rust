@@ -55,14 +55,6 @@ impl<T: Clone> StatefulList<T> {
         };
         self.state.select(Some(i));
     }
-
-    pub fn get_current(&self) -> Option<usize> {
-        self.state.selected()
-    }
-
-    pub fn unselect(&mut self) {
-        self.state.select(None);
-    }
 }
 
 /// Struct to control the state of the interactive prompt
@@ -165,7 +157,7 @@ mod tests {
 
         let mut app = AppState::new(items.clone());
 
-        assert_eq!(items[0], items[app.items.get_current().unwrap()]);
+        //assert_eq!(items[0], items[app.items.get_current().unwrap()]);
         assert_eq!(items[0], app.get_selected().unwrap());
         app.items.next();
         assert_eq!(items[1], app.get_selected().unwrap());

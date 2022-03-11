@@ -49,17 +49,14 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     };
 
     // Check that organization is set
-    match matches.subcommand() {
-        Some(("download" | "courses", _)) => {
-            if get_organization().is_none() {
-                io.println(
-                    "No organization found. Run 'tmc organization' first.",
-                    PrintColor::Failed,
-                );
-                return;
-            }
+    if let Some(("download" | "courses", _)) = matches.subcommand() {
+        if get_organization().is_none() {
+            io.println(
+                "No organization found. Run 'tmc organization' first.",
+                PrintColor::Failed,
+            );
+            return;
         }
-        _ => (),
     };
 
     match matches.subcommand() {

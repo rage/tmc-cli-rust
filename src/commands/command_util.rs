@@ -591,7 +591,7 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     if courses.is_empty() {
         return Err(format!(
             "No courses found from current or project directory. Project directory set to {}",
-            get_projects_dir().to_str().unwrap().to_string()
+            get_projects_dir().to_str().unwrap()
         ));
     }
 
@@ -611,7 +611,7 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     if exercise_list.is_empty() {
         return Err(format!(
             "No exercises found from chosen course folder. Project directory set to {}",
-            get_projects_dir().to_str().unwrap().to_string()
+            get_projects_dir().to_str().unwrap()
         ));
     }
 
