@@ -2053,7 +2053,7 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "chrono",
  "dirs 4.0.0",
@@ -2078,7 +2078,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "base64",
  "dirs 4.0.0",
@@ -2116,7 +2116,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "dirs 4.0.0",
  "log",
@@ -2132,7 +2132,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "fd-lock",
  "isolang",
@@ -2154,7 +2154,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "dirs 4.0.0",
  "flate2",
@@ -2174,7 +2174,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "log",
  "once_cell",
@@ -2191,7 +2191,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2201,7 +2201,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "impl-enum",
  "log",
@@ -2221,7 +2221,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "dunce",
  "hex",
@@ -2243,7 +2243,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "log",
  "serde",
@@ -2257,7 +2257,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=9e287163ed#9e287163ed8de11f83a33d6202f137c4de49af99"
+source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
 dependencies = [
  "fd-lock",
  "log",
