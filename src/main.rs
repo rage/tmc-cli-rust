@@ -3,7 +3,6 @@ mod commands;
 mod interactive;
 mod io;
 mod progress_reporting;
-
 // Updater is used only for windows
 // Updates for linux and macos are handled
 // via package managers

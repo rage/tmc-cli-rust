@@ -1,6 +1,5 @@
 use super::util::{get_course_id_by_name, Client};
 use crate::io::{Io, PrintColor};
-
 use tmc_langs::CourseExercise;
 
 /// Lists exercises for a given course

@@ -1,12 +1,11 @@
-use std::path::PathBuf;
-use std::process::Command;
-
 use super::util;
 use super::util::{get_organization, get_projects_dir, Client};
 use crate::interactive;
 use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
+use std::path::PathBuf;
+use std::process::Command;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Course;
 use tmc_langs::DownloadResult;

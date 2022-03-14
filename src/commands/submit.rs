@@ -9,6 +9,7 @@ use tmc_langs::ClientUpdateData;
 use tmc_langs::Language;
 use tmc_langs::NewSubmission;
 use tmc_langs::SubmissionFinished;
+
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.

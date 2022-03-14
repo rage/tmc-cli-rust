@@ -1,13 +1,3 @@
-#[cfg(target_os = "windows")]
-use crate::updater;
-use courses::list_courses;
-use download::download_or_update;
-use exercises::list_exercises;
-use login::login;
-use logout::logout;
-use organization::organization;
-use update::update;
-use util::{get_organization, Client, ClientProduction};
 mod courses;
 mod download;
 mod exercises;
@@ -18,9 +8,12 @@ mod paste;
 mod submit;
 mod test;
 mod update;
-pub mod util;
+mod util;
 
 use crate::io::{Io, PrintColor};
+#[cfg(target_os = "windows")]
+use crate::updater;
+use util::{Client, ClientProduction};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     let mut client = ClientProduction::new(matches.is_present("testmode"));
@@ -50,7 +43,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
 
     // Check that organization is set
     if let Some(("download" | "courses", _)) = matches.subcommand() {
-        if get_organization().is_none() {
+        if util::get_organization().is_none() {
             io.println(
                 "No organization found. Run 'tmc organization' first.",
                 PrintColor::Failed,
@@ -62,28 +55,28 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
     match matches.subcommand() {
         Some(("login", args)) => {
             let interactive_mode = !args.is_present("non-interactive");
-            login(io, &mut client, interactive_mode)
+            login::login(io, &mut client, interactive_mode)
         }
-        Some(("download", args)) => download_or_update(
+        Some(("download", args)) => download::download_or_update(
             io,
             &mut client,
             args.value_of("course"),
             args.is_present("currentdir"),
         ),
         Some(("update", args)) => {
-            update(io, &mut client, args.is_present("currentdir"));
+            update::update(io, &mut client, args.is_present("currentdir"));
         }
         Some(("organization", args)) => {
             let interactive_mode = !args.is_present("non-interactive");
-            organization(io, &mut client, interactive_mode)
+            organization::organization(io, &mut client, interactive_mode)
         }
-        Some(("courses", _)) => list_courses(io, &mut client),
+        Some(("courses", _)) => courses::list_courses(io, &mut client),
         Some(("submit", args)) => {
             submit::submit(io, &mut client, args.value_of("exercise"));
         }
         Some(("exercises", args)) => {
             if let Some(c) = args.value_of("course") {
-                list_exercises(io, &mut client, String::from(c));
+                exercises::list_exercises(io, &mut client, String::from(c));
             } else {
                 io.println("argument for course not found", PrintColor::Normal);
             }
@@ -94,7 +87,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         Some(("paste", args)) => {
             paste::paste(io, &mut client, args.value_of("exercise"));
         }
-        Some(("logout", _)) => logout(io, &mut client),
+        Some(("logout", _)) => logout::logout(io, &mut client),
         Some(("fetchupdate", _)) => {
             #[cfg(target_os = "windows")]
             updater::process_update();
