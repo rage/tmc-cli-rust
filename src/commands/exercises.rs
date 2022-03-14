@@ -1,5 +1,5 @@
-use super::command_util::{get_course_id_by_name, Client};
-use crate::io_module::{Io, PrintColor};
+use super::util::{get_course_id_by_name, Client};
+use crate::io::{Io, PrintColor};
 
 use tmc_langs::CourseExercise;
 

@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 use std::process::Command;
 
-use super::command_util;
-use super::command_util::{get_organization, get_projects_dir, Client};
+use super::util;
+use super::util::{get_organization, get_projects_dir, Client};
 use crate::interactive;
-use crate::io_module::{Io, PrintColor};
+use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use tmc_langs::ClientUpdateData;
@@ -73,7 +73,7 @@ pub fn download_or_update(
     };
 
     // Get course by name
-    let course_result = match command_util::get_course_by_name(client, name_select) {
+    let course_result = match util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -240,7 +240,7 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     let name_select = String::from(vec[1]);
 
     // Get course by name
-    let course_result = match command_util::get_course_by_name(client, name_select) {
+    let course_result = match util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);

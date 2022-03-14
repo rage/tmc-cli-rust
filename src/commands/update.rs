@@ -1,5 +1,5 @@
-use super::command_util::{get_projects_dir, Client};
-use crate::io_module::{Io, PrintColor};
+use super::util::{get_projects_dir, Client};
+use crate::io::{Io, PrintColor};
 use std::path::PathBuf;
 use std::process::Command;
 

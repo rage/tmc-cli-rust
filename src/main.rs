@@ -1,7 +1,7 @@
 mod cli;
 mod commands;
 mod interactive;
-mod io_module;
+mod io;
 mod progress_reporting;
 
 // Updater is used only for windows
@@ -12,8 +12,7 @@ mod updater;
 
 use clap::ArgMatches;
 use clap_complete::Shell;
-use io_module::IoProduction;
-use std::io;
+use io::IoProduction;
 use termcolor::{BufferWriter, ColorChoice};
 
 fn main() {
@@ -63,5 +62,5 @@ fn generate_completions(matches: &ArgMatches) {
     };
 
     let mut cmd = cli::build_cli();
-    clap_complete::generate(shell, &mut cmd, "tmc", &mut io::stdout());
+    clap_complete::generate(shell, &mut cmd, "tmc", &mut std::io::stdout());
 }

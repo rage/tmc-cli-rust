@@ -1,5 +1,5 @@
-use super::command_util::Client;
-use crate::io_module::{Io, PrintColor};
+use super::util::Client;
+use crate::io::{Io, PrintColor};
 
 pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
     client.logout();
@@ -8,7 +8,7 @@ pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
 
 #[cfg(test)]
 mod tests {
-    use super::super::command_util::*;
+    use super::super::util::*;
     use super::*;
     use std::slice::Iter;
 

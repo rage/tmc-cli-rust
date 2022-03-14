@@ -1,6 +1,6 @@
-use super::command_util::Client;
-use super::{command_util, download_command, organization_command};
-use crate::io_module::{Io, PrintColor};
+use super::util::Client;
+use super::{download, organization, util};
+use crate::io::{Io, PrintColor};
 
 pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
     io.print("Email / username: ", PrintColor::Normal);
@@ -28,9 +28,9 @@ pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
             io.println(&message, PrintColor::Success);
 
             let res = if interactive_mode {
-                organization_command::set_organization(io, client)
+                organization::set_organization(io, client)
             } else {
-                organization_command::set_organization_old(io, client)
+                organization::set_organization_old(io, client)
             };
             if let Err(_err) = res {
                 io.println("Could not set organization", PrintColor::Failed);
@@ -82,7 +82,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let no_download = "Don't download anything".to_string();
     courses_displayed.insert(0, no_download.clone());
 
-    let name_select = match download_command::get_course_name(courses_displayed) {
+    let name_select = match download::get_course_name(courses_displayed) {
         Ok(course) => {
             if course == no_download {
                 io.println("No course downloaded.", PrintColor::Normal);
@@ -103,7 +103,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     };
 
     // Get course by name
-    let course_result = match command_util::get_course_by_name(client, name_select) {
+    let course_result = match util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -117,9 +117,9 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     }
     let course = course_result.unwrap();
 
-    let pathbuf = command_util::get_projects_dir();
+    let pathbuf = util::get_projects_dir();
 
-    match download_command::download_exercises(pathbuf, client, course) {
+    match download::download_exercises(pathbuf, client, course) {
         Ok(msg) => io.println(&msg, PrintColor::Success),
         Err(msg) => io.println(&msg, PrintColor::Failed),
     }
@@ -127,7 +127,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
 
 #[cfg(test)]
 mod tests {
-    use super::super::command_util::*;
+    use super::super::util::*;
     use super::*;
     use std::slice::Iter;
     use tmc_langs::Organization;
