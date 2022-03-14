@@ -88,13 +88,12 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
                 io.println("No course downloaded.", PrintColor::Normal);
                 return;
             }
-            courses
+            &courses
                 .iter()
                 .find(|c| c.course.title == course)
                 .unwrap()
                 .course
                 .name
-                .clone()
         }
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -117,9 +116,9 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     }
     let course = course_result.unwrap();
 
-    let pathbuf = util::get_projects_dir();
+    let path = util::get_projects_dir();
 
-    match download::download_exercises(pathbuf, client, course) {
+    match download::download_exercises(&path, client, &course) {
         Ok(msg) => io.println(&msg, PrintColor::Success),
         Err(msg) => io.println(&msg, PrintColor::Failed),
     }

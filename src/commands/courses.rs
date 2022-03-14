@@ -4,9 +4,7 @@ use tmc_langs::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
-    let courses_result = client.list_courses();
-
-    match courses_result {
+    match client.list_courses() {
         Ok(course_list) => print_courses(io, course_list),
         Err(error) => io.println(&error, PrintColor::Failed),
     }

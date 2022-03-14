@@ -1,6 +1,6 @@
 use super::util::{get_projects_dir, Client};
 use crate::io::{Io, PrintColor};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Updates exercises from project dir or current directory.
@@ -27,9 +27,9 @@ pub fn update(io: &mut dyn Io, client: &mut dyn Client, currentdir: bool) {
     } else {
         get_projects_dir()
     };
-    let tmp_path = pathbuf.clone();
+    let tmp_path = &pathbuf;
     let tmp_path = tmp_path.to_str().unwrap();
-    match call_update(pathbuf, client) {
+    match call_update(&pathbuf, client) {
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
         Err(msg) => {
             let os = std::env::consts::OS;
@@ -60,12 +60,12 @@ pub fn update(io: &mut dyn Io, client: &mut dyn Client, currentdir: bool) {
         }
     }
 }
-fn call_update(pathbuf: PathBuf, client: &mut dyn Client) -> Result<String, String> {
-    let result = client.update_exercises(pathbuf.as_path());
+fn call_update(path: &Path, client: &mut dyn Client) -> Result<String, String> {
+    let result = client.update_exercises(path);
     match result {
         Ok(_) => Ok(format!(
             "Exercises updated succesfully to {}\\",
-            pathbuf.to_str().unwrap()
+            path.to_str().unwrap()
         )),
         Err(err) => Err(format!("Error: {}", err)),
     }
@@ -81,7 +81,7 @@ pub fn elevated_update(io: &mut dyn Io, client: &mut dyn Client) {
     std::fs::remove_file(temp_file_path).unwrap();
     let path = PathBuf::from(params);
     io.println("", PrintColor::Normal);
-    match call_update(path, client) {
+    match call_update(&path, client) {
         Ok(msg) => io.println(&msg, PrintColor::Success),
         Err(msg) => io.println(&msg, PrintColor::Failed),
     }

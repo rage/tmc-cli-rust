@@ -11,8 +11,6 @@ mod update;
 mod util;
 
 use crate::io::{Io, PrintColor};
-#[cfg(target_os = "windows")]
-use crate::updater;
 use util::{Client, ClientProduction};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
@@ -76,7 +74,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         }
         Some(("exercises", args)) => {
             if let Some(c) = args.value_of("course") {
-                exercises::list_exercises(io, &mut client, String::from(c));
+                exercises::list_exercises(io, &mut client, c);
             } else {
                 io.println("argument for course not found", PrintColor::Normal);
             }
@@ -90,11 +88,11 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
         Some(("logout", _)) => logout::logout(io, &mut client),
         Some(("fetchupdate", _)) => {
             #[cfg(target_os = "windows")]
-            updater::process_update();
+            crate::updater::process_update();
         }
         Some(("cleartemp", _)) => {
             #[cfg(target_os = "windows")]
-            updater::cleartemp().unwrap();
+            crate::updater::cleartemp().unwrap();
         }
         Some(("elevateddownload", _)) => {
             download::elevated_download(io, &mut client);

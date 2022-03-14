@@ -3,9 +3,9 @@ use crate::io::{Io, PrintColor};
 use tmc_langs::CourseExercise;
 
 /// Lists exercises for a given course
-pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
+pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: &str) {
     // Get course by id
-    let course_result = match get_course_id_by_name(client, course_name.clone()) {
+    let course_result = match get_course_id_by_name(client, course_name) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -29,7 +29,7 @@ pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: Str
 }
 
 /// Prints information about given exercises
-fn print_exercises(io: &mut dyn Io, course_name: String, exercises: Vec<CourseExercise>) {
+fn print_exercises(io: &mut dyn Io, course_name: &str, exercises: Vec<CourseExercise>) {
     io.println("", PrintColor::Normal);
     io.println(&format!("Course name: {}", course_name), PrintColor::Normal);
 
@@ -381,7 +381,7 @@ mod tests {
                 unlocked: true,
             }];
 
-            print_exercises(&mut io, "course_name".to_string(), exercises);
+            print_exercises(&mut io, "course_name", exercises);
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";
             assert!(
@@ -425,7 +425,7 @@ mod tests {
                 input: &mut input,
             };
             let mut client = ClientTest {};
-            list_exercises(&mut io, &mut client, "course_name".to_string());
+            list_exercises(&mut io, &mut client, "course_name");
 
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";
