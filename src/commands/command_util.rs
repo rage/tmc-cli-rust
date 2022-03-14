@@ -172,8 +172,6 @@ impl Client for ClientProduction {
     }
 
     fn try_login(&mut self, username: String, password: String) -> Result<String, String> {
-        let token;
-
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
                 let mut config = TmcConfig::load(PLUGIN, &get_path()).unwrap();
@@ -193,11 +191,8 @@ impl Client for ClientProduction {
             }
             return Err(WRONG_LOGIN.to_string());
         }
-        match self.authenticate(username, password) {
-            Ok(x) => token = x,
-            Err(x) => return Err(x),
-        }
 
+        let token = self.authenticate(username, password)?;
         if Credentials::save(PLUGIN, token).is_ok() {
             return Ok(SUCCESSFUL_LOGIN.to_string());
         };

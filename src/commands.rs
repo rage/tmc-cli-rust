@@ -61,12 +61,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
 
     match matches.subcommand() {
         Some(("login", args)) => {
-            let interactive_mode;
-            if args.is_present("non-interactive") {
-                interactive_mode = false;
-            } else {
-                interactive_mode = true;
-            }
+            let interactive_mode = !args.is_present("non-interactive");
             login(io, &mut client, interactive_mode)
         }
         Some(("download", args)) => download_or_update(
@@ -79,12 +74,7 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) {
             update(io, &mut client, args.is_present("currentdir"));
         }
         Some(("organization", args)) => {
-            let interactive_mode;
-            if args.is_present("non-interactive") {
-                interactive_mode = false;
-            } else {
-                interactive_mode = true;
-            }
+            let interactive_mode = !args.is_present("non-interactive");
             organization(io, &mut client, interactive_mode)
         }
         Some(("courses", _)) => list_courses(io, &mut client),
