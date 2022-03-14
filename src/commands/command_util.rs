@@ -453,7 +453,7 @@ impl Client for ClientProduction {
 
 pub fn get_credentials() -> Option<Credentials> {
     // Load login credentials if they exist in the file
-    dbg!(Credentials::load(PLUGIN)).unwrap_or(None)
+    Credentials::load(PLUGIN).unwrap_or(None)
 }
 
 // Returns slug of organization as String (if successful)
