@@ -1,6 +1,6 @@
 use super::command_util::Client;
 use crate::io_module::{Io, PrintColor};
-use tmc_client::response::Course;
+use tmc_langs::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) {
@@ -27,14 +27,14 @@ mod tests {
     use reqwest::Url;
     use std::path::Path;
     use std::slice::Iter;
-    use tmc_client::response::{
-        CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-        SubmissionFinished, SubmissionStatus,
-    };
-    use tmc_client::ClientError;
+    use tmc_langs::ClientError;
     use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
+    use tmc_langs::{
+        CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        SubmissionFinished, SubmissionStatus,
+    };
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,

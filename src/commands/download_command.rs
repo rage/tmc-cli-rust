@@ -7,8 +7,8 @@ use crate::interactive;
 use crate::io_module::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
-use tmc_client::response::Course;
 use tmc_langs::ClientUpdateData;
+use tmc_langs::Course;
 use tmc_langs::DownloadResult;
 
 // Downloads course exercises

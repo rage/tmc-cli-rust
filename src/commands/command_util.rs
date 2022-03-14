@@ -1,19 +1,19 @@
+use crate::interactive::interactive_list;
 use isolang::Language;
 use reqwest::Url;
+use std::env;
 use std::path::Path;
 use std::path::PathBuf;
-
-use std::env;
-use tmc_client::response::{
-    Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-    SubmissionFinished,
-};
-use tmc_client::{ClientError, TmcClient, Token};
 use tmc_langs::Credentials;
 use tmc_langs::DownloadOrUpdateCourseExercisesResult;
 use tmc_langs::DownloadResult;
 use tmc_langs::LangsError;
+use tmc_langs::{ClientError, TmcClient, Token};
 use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
+use tmc_langs::{
+    Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+    SubmissionFinished,
+};
 
 pub const PLUGIN: &str = "tmc_cli_rust";
 pub const PLUGIN_VERSION: &str = "1.0.5";
@@ -25,11 +25,6 @@ pub struct ClientProduction {
     pub test_mode: bool,
 }
 
-use mockall::predicate::*;
-use mockall::*;
-
-use crate::interactive::interactive_list;
-#[automock]
 pub trait Client {
     fn load_login(&mut self) -> Result<(), String>;
     fn try_login(&mut self, username: String, password: String) -> Result<String, String>;
@@ -177,8 +172,6 @@ impl Client for ClientProduction {
     }
 
     fn try_login(&mut self, username: String, password: String) -> Result<String, String> {
-        let token;
-
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
                 let mut config = TmcConfig::load(PLUGIN, &get_path()).unwrap();
@@ -198,11 +191,8 @@ impl Client for ClientProduction {
             }
             return Err(WRONG_LOGIN.to_string());
         }
-        match self.authenticate(username, password) {
-            Ok(x) => token = x,
-            Err(x) => return Err(x),
-        }
 
+        let token = self.authenticate(username, password)?;
         if Credentials::save(PLUGIN, token).is_ok() {
             return Ok(SUCCESSFUL_LOGIN.to_string());
         };
@@ -442,10 +432,7 @@ impl Client for ClientProduction {
             self.tmc_client.get_course_details(course_id)
         }
     }
-    fn get_organization(
-        &self,
-        organization_slug: &str,
-    ) -> std::result::Result<Organization, tmc_client::ClientError> {
+    fn get_organization(&self, organization_slug: &str) -> Result<Organization, ClientError> {
         if self.test_mode {
             return Ok(Organization {
                 name: "String".to_string(),
@@ -599,7 +586,7 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     if courses.is_empty() {
         return Err(format!(
             "No courses found from current or project directory. Project directory set to {}",
-            get_projects_dir().to_str().unwrap().to_string()
+            get_projects_dir().to_str().unwrap()
         ));
     }
 
@@ -619,7 +606,7 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     if exercise_list.is_empty() {
         return Err(format!(
             "No exercises found from chosen course folder. Project directory set to {}",
-            get_projects_dir().to_str().unwrap().to_string()
+            get_projects_dir().to_str().unwrap()
         ));
     }
 

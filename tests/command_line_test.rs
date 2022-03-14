@@ -1,6 +1,5 @@
-use assert_cmd::prelude::*;
+use assert_cmd::Command;
 use predicates::prelude::*;
-use std::process::Command;
 
 const PKG_NAME: Option<&'static str> = option_env!("CARGO_PKG_NAME");
 
@@ -122,8 +121,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("login")
         .arg("-n")
-        .with_stdin()
-        .buffer("testusername\ntestpassword\nimag\n")
+        .write_stdin("testusername\ntestpassword\nimag\n")
         .assert()
         .success()
         .stdout(predicate::str::contains(
@@ -137,8 +135,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("organization")
         .arg("-n")
-        .with_stdin()
-        .buffer("test\n")
+        .write_stdin("test\n")
         .assert()
         .success()
         .stdout(predicate::str::contains(
@@ -196,8 +193,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("login")
-        .with_stdin()
-        .buffer("totallywrongname\ncantrememberpasswordeither\nimag\n")
+        .write_stdin("totallywrongname\ncantrememberpasswordeither\nimag\n")
         .assert()
         .success()
         .stdout(predicate::str::contains("Wrong username or password"));

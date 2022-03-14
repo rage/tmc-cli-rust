@@ -132,7 +132,7 @@ fn print_wait_for_submission_results(io: &mut dyn Io, submission_finished: Submi
                 } else {
                     io.println(&format!("Failed: {}", case.name), PrintColor::Failed);
                     if let Some(message) = case.message {
-                        let formatted = message.replace("\n", "\n        ");
+                        let formatted = message.replace('\n', "\n        ");
                         io.println(&format!("        {}", formatted), PrintColor::Normal);
                     }
                     io.println("", PrintColor::Normal);

@@ -146,8 +146,8 @@ mod tests {
     mod tests {
         use super::*;
         use std::collections::HashMap;
-        use tmc_langs_framework::RunStatus;
-        use tmc_langs_framework::TestResult;
+        use tmc_langs::RunStatus;
+        use tmc_langs::TestResult;
 
         #[test]
         fn generate_progress_string_empty_test() {

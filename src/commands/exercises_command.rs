@@ -1,7 +1,7 @@
 use super::command_util::{get_course_id_by_name, Client};
 use crate::io_module::{Io, PrintColor};
 
-use tmc_client::response::CourseExercise;
+use tmc_langs::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: String) {
@@ -96,14 +96,14 @@ mod tests {
     use isolang::Language;
     use reqwest::Url;
     use std::path::Path;
-    use tmc_client::response::{
-        Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-        SubmissionFinished, SubmissionStatus,
-    };
-    use tmc_client::ClientError;
+    use tmc_langs::ClientError;
     use tmc_langs::DownloadOrUpdateCourseExercisesResult;
     use tmc_langs::DownloadResult;
     use tmc_langs::LangsError;
+    use tmc_langs::{
+        Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        SubmissionFinished, SubmissionStatus,
+    };
 
     use super::*;
     use std::slice::Iter;
@@ -335,16 +335,10 @@ mod tests {
             })
         }
 
-        fn get_course_details(
-            &self,
-            _: u32,
-        ) -> std::result::Result<CourseDetails, tmc_client::ClientError> {
+        fn get_course_details(&self, _: u32) -> Result<CourseDetails, ClientError> {
             todo!()
         }
-        fn get_organization(
-            &self,
-            _: &str,
-        ) -> std::result::Result<Organization, tmc_client::ClientError> {
+        fn get_organization(&self, _: &str) -> Result<Organization, ClientError> {
             todo!()
         }
     }
