@@ -1,3 +1,5 @@
+#![deny(clippy::unwrap_used, clippy::panic)]
+
 mod cli;
 mod commands;
 mod interactive;
@@ -11,14 +13,14 @@ mod updater;
 
 use clap::ArgMatches;
 use clap_complete::Shell;
-use io::IoProduction;
+use io::{Io, IoProduction, PrintColor};
 use termcolor::{BufferWriter, ColorChoice};
 
 fn main() {
     let cli = cli::build_cli();
     let matches = cli.get_matches();
-    if matches.subcommand_name() == Some("generate-completions") {
-        generate_completions(&matches);
+    if let Some(matches) = matches.subcommand_matches("generate-completions") {
+        generate_completions(matches);
         return;
     }
     let mut stdout = std::io::stdout();
@@ -45,11 +47,19 @@ fn main() {
         }
         _ => println!("No Auto-Updates"),
     }
-    commands::handle(&matches, &mut io);
+    if let Err(err) = commands::handle(&matches, &mut io) {
+        let error_string = err
+            .chain()
+            .map(|e| e.to_string())
+            .collect::<Vec<_>>()
+            .join("\n  caused by: ");
+        if let Err(err) = io.println(&error_string, PrintColor::Failed) {
+            println!("Failed to print error: {err}");
+        }
+    }
 }
 
 fn generate_completions(matches: &ArgMatches) {
-    let matches = matches.subcommand_matches("generate-completions").unwrap();
     let shell = if matches.is_present("bash") {
         Shell::Bash
     } else if matches.is_present("zsh") {

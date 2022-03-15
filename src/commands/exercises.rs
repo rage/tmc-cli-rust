@@ -1,37 +1,32 @@
-use super::util::{get_course_id_by_name, Client};
+use super::util::{self, Client};
 use crate::io::{Io, PrintColor};
 use tmc_langs::CourseExercise;
 
 /// Lists exercises for a given course
-pub fn list_exercises(io: &mut dyn Io, client: &mut dyn Client, course_name: &str) {
-    // Get course by id
-    let course_result = match get_course_id_by_name(client, course_name) {
-        Ok(result) => result,
-        Err(msg) => {
-            io.println(&msg, PrintColor::Failed);
-            return;
-        }
+pub fn list_exercises(
+    io: &mut dyn Io,
+    client: &mut dyn Client,
+    course_name: &str,
+) -> anyhow::Result<()> {
+    let course = match util::get_course_by_name(client, course_name)? {
+        Some(course) => course,
+        None => anyhow::bail!("Could not find a course with name '{}'", course_name),
     };
+    let course_id = course.id;
 
-    if course_result.is_none() {
-        io.println(
-            &format!("Could not find a course with name '{}'", course_name),
-            PrintColor::Failed,
-        );
-        return;
-    }
-    let course_id = course_result.unwrap();
-
-    match client.get_course_exercises(course_id) {
-        Ok(exercises) => print_exercises(io, course_name, exercises),
-        Err(error) => io.println(&error, PrintColor::Failed),
-    }
+    let exercises = client.get_course_exercises(course_id)?;
+    print_exercises(io, course_name, exercises)?;
+    Ok(())
 }
 
 /// Prints information about given exercises
-fn print_exercises(io: &mut dyn Io, course_name: &str, exercises: Vec<CourseExercise>) {
-    io.println("", PrintColor::Normal);
-    io.println(&format!("Course name: {}", course_name), PrintColor::Normal);
+fn print_exercises(
+    io: &mut dyn Io,
+    course_name: &str,
+    exercises: Vec<CourseExercise>,
+) -> anyhow::Result<()> {
+    io.println("", PrintColor::Normal)?;
+    io.println(&format!("Course name: {}", course_name), PrintColor::Normal)?;
 
     let none = "none".to_string();
     let mut prev_deadline = "".to_string();
@@ -45,22 +40,22 @@ fn print_exercises(io: &mut dyn Io, course_name: &str, exercises: Vec<CourseExer
         // Print deadline if it exists
         if let Some(dl) = exercise.deadline {
             if prev_deadline != dl {
-                io.println(&format!("Deadline: {}", &dl), PrintColor::Normal);
+                io.println(&format!("Deadline: {}", &dl), PrintColor::Normal)?;
                 prev_deadline = dl.clone();
             }
         } else if prev_deadline != none {
-            io.println(&format!("Deadline: {}", &none), PrintColor::Normal);
+            io.println(&format!("Deadline: {}", &none), PrintColor::Normal)?;
             prev_deadline = none.clone();
         }
 
         // TODO: Do we need soft deadline?
         if let Some(dl) = exercise.soft_deadline {
             if prev_soft_deadline != dl {
-                io.println(&format!("Soft deadline: {}", &dl), PrintColor::Normal);
+                io.println(&format!("Soft deadline: {}", &dl), PrintColor::Normal)?;
                 prev_soft_deadline = dl.clone();
             }
         } else if prev_soft_deadline != none {
-            io.println(&format!("Soft deadline: {}", &none), PrintColor::Normal);
+            io.println(&format!("Soft deadline: {}", &none), PrintColor::Normal)?;
             prev_soft_deadline = none.clone();
         }
 
@@ -86,8 +81,9 @@ fn print_exercises(io: &mut dyn Io, course_name: &str, exercises: Vec<CourseExer
         io.println(
             &format!("  {}: {}", completion_status, &exercise.name),
             PrintColor::Normal,
-        );
+        )?;
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -116,25 +112,27 @@ mod tests {
 
     #[cfg(test)]
     impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> String {
-            match self.input.next() {
+        fn read_line(&mut self) -> anyhow::Result<String> {
+            let res = match self.input.next() {
                 Some(string) => string,
                 None => "",
-            }
-            .to_string()
+            };
+            Ok(res.to_string())
         }
 
-        fn print(&mut self, output: &str, _font_color: PrintColor) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             print!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn println(&mut self, output: &str, _font_color: PrintColor) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             println!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn read_password(&mut self) -> String {
+        fn read_password(&mut self) -> anyhow::Result<String> {
             self.read_line()
         }
     }
@@ -160,13 +158,13 @@ mod tests {
         fn is_test_mode(&mut self) -> bool {
             false
         }
-        fn load_login(&mut self) -> Result<(), String> {
+        fn load_login(&mut self) -> anyhow::Result<()> {
             Ok(())
         }
-        fn try_login(&mut self, _username: String, _password: String) -> Result<String, String> {
+        fn try_login(&mut self, _username: String, _password: String) -> anyhow::Result<String> {
             Ok("ok".to_string())
         }
-        fn list_courses(&mut self) -> Result<Vec<Course>, String> {
+        fn list_courses(&mut self) -> anyhow::Result<Vec<Course>> {
             Ok(vec![
                 Course {
                     id: 0,
@@ -192,10 +190,12 @@ mod tests {
                 },
             ])
         }
-        fn get_organizations(&mut self) -> Result<Vec<Organization>, String> {
+        fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>> {
             Ok(vec![])
         }
-        fn logout(&mut self) {}
+        fn logout(&mut self) -> anyhow::Result<()> {
+            Ok(())
+        }
         fn submit(
             &self,
             _projects_dir: &Path,
@@ -239,7 +239,7 @@ mod tests {
                 validations: None,
             })
         }
-        fn get_course_exercises(&mut self, _course_id: u32) -> Result<Vec<CourseExercise>, String> {
+        fn get_course_exercises(&mut self, _course_id: u32) -> anyhow::Result<Vec<CourseExercise>> {
             /*TODO: ExercisePoint is in private module*/
             //let points = vec![];
             //let awarded_points = vec![/*"1.1".to_string()*/];
@@ -314,7 +314,7 @@ mod tests {
         fn get_exercise_details(
             &mut self,
             _exercise_ids: Vec<u32>,
-        ) -> Result<Vec<ExercisesDetails>, String> {
+        ) -> Result<Vec<ExercisesDetails>, ClientError> {
             todo!()
         }
         fn update_exercises(
@@ -381,7 +381,7 @@ mod tests {
                 unlocked: true,
             }];
 
-            print_exercises(&mut io, "course_name", exercises);
+            print_exercises(&mut io, "course_name", exercises).unwrap();
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";
             assert!(
@@ -425,7 +425,7 @@ mod tests {
                 input: &mut input,
             };
             let mut client = ClientTest {};
-            list_exercises(&mut io, &mut client, "course_name");
+            list_exercises(&mut io, &mut client, "course_name").unwrap();
 
             assert!(io.list[0].eq(""), "first line should be empty");
             let course_string = "Course name: course_name";

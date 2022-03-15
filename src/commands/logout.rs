@@ -1,9 +1,10 @@
 use super::util::Client;
 use crate::io::{Io, PrintColor};
 
-pub fn logout(io: &mut dyn Io, client: &mut dyn Client) {
-    client.logout();
-    io.println("Logged out successfully.", PrintColor::Success);
+pub fn logout(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
+    client.logout()?;
+    io.println("Logged out successfully.", PrintColor::Success)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -28,25 +29,27 @@ mod tests {
     }
 
     impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> String {
-            match self.input.next() {
+        fn read_line(&mut self) -> anyhow::Result<String> {
+            let res = match self.input.next() {
                 Some(string) => string,
                 None => "",
-            }
-            .to_string()
+            };
+            Ok(res.to_string())
         }
 
-        fn print(&mut self, output: &str, _font_color: PrintColor) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             print!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn println(&mut self, output: &str, _font_color: PrintColor) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             println!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn read_password(&mut self) -> String {
+        fn read_password(&mut self) -> anyhow::Result<String> {
             self.read_line()
         }
     }

@@ -4,6 +4,7 @@ use crate::interactive;
 use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
+use anyhow::Context;
 use std::path::Path;
 use std::process::Command;
 use tmc_langs::ClientUpdateData;
@@ -19,27 +20,16 @@ pub fn download_or_update(
     client: &mut dyn Client,
     course_name: Option<&str>,
     currentdir: bool,
-) {
-    if get_organization().is_none() {
-        io.println(
-            "No organization found. Run 'tmc organization' first.",
-            PrintColor::Failed,
-        );
-        return;
-    }
+) -> anyhow::Result<()> {
+    get_organization().context("No organization found. Run 'tmc organization' first.")?;
 
-    io.println("Fetching courses...", PrintColor::Normal);
-    let courses = client.list_courses();
-    if courses.is_err() {
-        io.println("Could not list courses.", PrintColor::Failed);
-        return;
-    }
+    io.println("Fetching courses...", PrintColor::Normal)?;
+    let courses = client.list_courses().context("Could not list courses.")?;
 
     let mut courses = courses
-        .unwrap()
         .iter()
-        .map(|course| client.get_course_details(course.id).unwrap())
-        .collect::<Vec<_>>();
+        .map(|course| client.get_course_details(course.id))
+        .collect::<Result<Vec<_>, _>>()?;
 
     courses.sort_by(|a, b| {
         a.course
@@ -51,62 +41,53 @@ pub fn download_or_update(
     let name_select = if let Some(course) = course_name {
         course
     } else {
-        match get_course_name(
+        let course = get_course_name(
             courses
                 .iter()
                 .map(|course| course.course.title.clone())
                 .collect(),
-        ) {
-            Ok(course) => {
-                &courses
-                    .iter()
-                    .find(|c| c.course.title == course)
-                    .unwrap()
-                    .course
-                    .name
-            }
-            Err(msg) => {
-                io.println(&msg, PrintColor::Failed);
-                return;
-            }
-        }
+        )?;
+        &courses
+            .iter()
+            .find(|c| c.course.title == course)
+            .context("No course with the selected name was found")?
+            .course
+            .name
     };
 
     // Get course by name
-    let course_result = match util::get_course_by_name(client, name_select) {
-        Ok(result) => result,
-        Err(msg) => {
-            io.println(&msg, PrintColor::Failed);
-            return;
-        }
+    let course = match util::get_course_by_name(client, name_select)? {
+        Some(course) => course,
+        None => anyhow::bail!("Could not find course with that name"),
     };
-
-    if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Failed);
-        return;
-    }
-    let course = course_result.unwrap();
     let pathbuf = if currentdir {
-        std::env::current_dir().unwrap()
+        std::env::current_dir()?
     } else {
-        get_projects_dir()
+        get_projects_dir()?
     };
 
-    let tmp_course = &course.name;
-    let tmp_path = &pathbuf;
-    let tmp_path = tmp_path.to_str().unwrap();
     match download_exercises(&pathbuf, client, &course) {
-        Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
-        Err(msg) => {
+        Ok(msg) => {
+            io.println(&format!("\n{}", msg), PrintColor::Success)?;
+            Ok(())
+        }
+        Err(err) => {
             let os = std::env::consts::OS;
-            if os == "windows" && msg.contains("Failed to create file") {
+            if os == "windows"
+                && err
+                    .chain()
+                    .any(|e| e.to_string().contains("Failed to create file"))
+            {
                 io.println(
                     "Starting new cmd with administrator privileges...",
                     PrintColor::Normal,
-                );
-                let temp_file_path = get_projects_dir();
+                )?;
+                let temp_file_path = get_projects_dir()?;
                 let temp_file_path = temp_file_path.join("temp.txt");
-                std::fs::write(temp_file_path, format!("{};{}", tmp_path, tmp_course)).unwrap();
+                std::fs::write(
+                    temp_file_path,
+                    format!("{};{}", &pathbuf.display(), &course.name),
+                )?;
                 Command::new("cmd")
                     .args(&[
                         "/C",
@@ -119,26 +100,27 @@ pub fn download_or_update(
                         "RunAs",
                     ])
                     .spawn()
-                    .expect("launch failure");
+                    .context("launch failure")?;
+                Ok(())
             } else {
-                io.println(&msg, PrintColor::Failed)
+                anyhow::bail!(err);
             }
         }
     }
 }
 
-pub fn get_course_name(courses: Vec<String>) -> Result<String, String> {
-    let result = interactive::interactive_list("Select your course:", courses);
+pub fn get_course_name(courses: Vec<String>) -> anyhow::Result<String> {
+    let result = interactive::interactive_list("Select your course:", courses)?;
 
     match result {
         Some(course) => {
             if course.is_empty() {
-                Err("Could not find a course by the given title".to_string())
+                anyhow::bail!("Could not find a course by the given title");
             } else {
                 Ok(course)
             }
         }
-        None => Err("Course selection was interrupted".to_string()),
+        None => anyhow::bail!("Course selection was interrupted"),
     }
 }
 
@@ -146,7 +128,7 @@ pub fn download_exercises(
     path: &Path,
     client: &mut dyn Client,
     course: &Course,
-) -> Result<String, String> {
+) -> anyhow::Result<String> {
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
             let exercise_ids: Vec<u32> = exercises
@@ -156,7 +138,7 @@ pub fn download_exercises(
                 .collect();
 
             if exercise_ids.is_empty() {
-                return Err(format!(
+                anyhow::bail!(format!(
                     "No valid exercises found for course '{}'",
                     course.title
                 ));
@@ -204,68 +186,61 @@ pub fn download_exercises(
                             if !downloaded.is_empty() {
                                 res.push_str(&format!(
                                     "\n\nSuccessful downloads saved to {}\\",
-                                    path.to_str().unwrap()
+                                    path.display()
                                 ));
                             }
 
-                            return Err(res);
+                            anyhow::bail!(res);
                         }
                     }
                 }
                 Err(err) => {
                     manager.force_join();
-                    return Err(format!("Error: {}", err));
+                    anyhow::bail!(err);
                 }
             }
         }
-        Err(error) => return Err(format!("Error: {}", error)),
+        Err(err) => anyhow::bail!(err),
     }
 
     Ok(format!(
         "Exercises downloaded successfully to {}\\",
-        path.to_str().unwrap()
+        path.display()
     ))
 }
-pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
+pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
     use std::io::prelude::*;
-    let temp_file_path = get_projects_dir();
+    let temp_file_path = get_projects_dir()?;
     let temp_file_path = temp_file_path.join("temp.txt");
-    let mut file = std::fs::File::open(temp_file_path.clone()).unwrap();
+    let mut file = std::fs::File::open(temp_file_path.clone())?;
     let mut params = String::new();
-    file.read_to_string(&mut params).unwrap();
-    std::fs::remove_file(temp_file_path).unwrap();
+    file.read_to_string(&mut params)?;
+    std::fs::remove_file(temp_file_path)?;
     let split = params.split(';');
     let vec = split.collect::<Vec<&str>>();
     let path = Path::new(vec[0]);
     let name_select = &vec[1];
 
     // Get course by name
-    let course_result = match util::get_course_by_name(client, name_select) {
-        Ok(result) => result,
-        Err(msg) => {
-            io.println(&msg, PrintColor::Failed);
-            return;
-        }
+    let course = match util::get_course_by_name(client, name_select)? {
+        Some(course) => course,
+        None => anyhow::bail!("Could not find course with that name"),
     };
-
-    if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Failed);
-        return;
-    }
-    let course = course_result.unwrap();
-    io.println("", PrintColor::Normal);
-    match download_exercises(path, client, &course) {
-        Ok(msg) => io.println(&msg, PrintColor::Success),
-        Err(msg) => io.println(&msg, PrintColor::Failed),
-    }
-    pause();
+    io.println("", PrintColor::Normal)?;
+    let msg = download_exercises(path, client, &course)?;
+    io.println(&msg, PrintColor::Success)?;
+    pause()?;
+    Ok(())
 }
-fn pause() {
+
+fn pause() -> anyhow::Result<()> {
     use std::io;
     use std::io::prelude::*;
-    let mut stdin = io::stdin();
+    let stdin = io::stdin();
     let mut stdout = io::stdout();
-    write!(stdout, "Press any enter to continue...").unwrap();
-    stdout.flush().unwrap();
-    let _ = stdin.read(&mut [0u8]).unwrap();
+    write!(stdout, "Press any enter to continue...")?;
+    stdout.flush()?;
+    let mut s = String::new();
+    stdin.read_line(&mut s)?;
+    Ok(())
 }
