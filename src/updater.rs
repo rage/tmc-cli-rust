@@ -21,10 +21,9 @@ pub const DELAY: u128 = 1440 * 60 * 1000;
 /// generates a new timestamp. If a new version is found, the function
 /// stashes the old executable and downloads a new one.
 /// Will run in privileged stage if needed on Windows!
-///
 
-pub fn check_for_update() -> anyhow::Result<()> {
-    if is_it_time_yet()? {
+pub fn check_for_update(force: bool) -> anyhow::Result<()> {
+    if force || is_it_time_yet()? {
         generate_time_stamp()?;
         checktemp()?;
         let new_ver = get_latest_version()?;
