@@ -1,4 +1,4 @@
-use crate::commands::command_util::get_path;
+use crate::commands::util::get_path;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Url};
 use std::cmp::min;
