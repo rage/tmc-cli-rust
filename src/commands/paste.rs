@@ -1,6 +1,6 @@
-use super::command_util;
-use super::command_util::Client;
-use crate::io_module::{Io, PrintColor};
+use super::util;
+use super::util::Client;
+use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
 use isolang::Language;
@@ -14,7 +14,7 @@ use tmc_langs::ClientUpdateData;
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
 pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
-    let exercise_path = match command_util::exercise_pathfinder(path) {
+    let exercise_path = match util::exercise_pathfinder(path) {
         Ok(ex_path) => ex_path,
         Err(err) => {
             io.println(
@@ -25,7 +25,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
         }
     };
 
-    let res = command_util::parse_exercise_dir(exercise_path);
+    let res = util::parse_exercise_dir(exercise_path);
     if let Err(err) = res {
         io.println(&err, PrintColor::Failed);
         return;

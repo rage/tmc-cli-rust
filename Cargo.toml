@@ -7,9 +7,8 @@ authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
            "Nooblue <joni.sikio@helsinki.fi>"]
 edition = "2021"
 rust-version = "1.58.1"
-description = "Command line interface for TMC, written in Rust."
+description = "Client for downloading, testing and submitting exercises through the Test My Code system."
 license = "Apache-2.0"
-build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.56"

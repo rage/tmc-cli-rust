@@ -1,12 +1,11 @@
-use std::path::PathBuf;
-use std::process::Command;
-
-use super::command_util;
-use super::command_util::{get_organization, get_projects_dir, Client};
+use super::util;
+use super::util::{get_organization, get_projects_dir, Client};
 use crate::interactive;
-use crate::io_module::{Io, PrintColor};
+use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
+use std::path::Path;
+use std::process::Command;
 use tmc_langs::ClientUpdateData;
 use tmc_langs::Course;
 use tmc_langs::DownloadResult;
@@ -50,7 +49,7 @@ pub fn download_or_update(
     });
 
     let name_select = if let Some(course) = course_name {
-        course.to_string()
+        course
     } else {
         match get_course_name(
             courses
@@ -58,13 +57,14 @@ pub fn download_or_update(
                 .map(|course| course.course.title.clone())
                 .collect(),
         ) {
-            Ok(course) => courses
-                .iter()
-                .find(|c| c.course.title == course)
-                .unwrap()
-                .course
-                .name
-                .clone(),
+            Ok(course) => {
+                &courses
+                    .iter()
+                    .find(|c| c.course.title == course)
+                    .unwrap()
+                    .course
+                    .name
+            }
             Err(msg) => {
                 io.println(&msg, PrintColor::Failed);
                 return;
@@ -73,7 +73,7 @@ pub fn download_or_update(
     };
 
     // Get course by name
-    let course_result = match command_util::get_course_by_name(client, name_select) {
+    let course_result = match util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -92,10 +92,10 @@ pub fn download_or_update(
         get_projects_dir()
     };
 
-    let tmp_course = course.name.clone();
-    let tmp_path = pathbuf.clone();
+    let tmp_course = &course.name;
+    let tmp_path = &pathbuf;
     let tmp_path = tmp_path.to_str().unwrap();
-    match download_exercises(pathbuf, client, course) {
+    match download_exercises(&pathbuf, client, &course) {
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success),
         Err(msg) => {
             let os = std::env::consts::OS;
@@ -143,9 +143,9 @@ pub fn get_course_name(courses: Vec<String>) -> Result<String, String> {
 }
 
 pub fn download_exercises(
-    pathbuf: PathBuf,
+    path: &Path,
     client: &mut dyn Client,
-    course: Course,
+    course: &Course,
 ) -> Result<String, String> {
     match client.get_course_exercises(course.id) {
         Ok(exercises) => {
@@ -170,7 +170,7 @@ pub fn download_exercises(
             );
             manager.start::<ClientUpdateData>();
 
-            let result = client.download_or_update_exercises(&exercise_ids, pathbuf.as_path());
+            let result = client.download_or_update_exercises(&exercise_ids, path);
 
             match result {
                 Ok(download_result) => {
@@ -204,7 +204,7 @@ pub fn download_exercises(
                             if !downloaded.is_empty() {
                                 res.push_str(&format!(
                                     "\n\nSuccessful downloads saved to {}\\",
-                                    pathbuf.to_str().unwrap()
+                                    path.to_str().unwrap()
                                 ));
                             }
 
@@ -223,7 +223,7 @@ pub fn download_exercises(
 
     Ok(format!(
         "Exercises downloaded successfully to {}\\",
-        pathbuf.to_str().unwrap()
+        path.to_str().unwrap()
     ))
 }
 pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
@@ -236,11 +236,11 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     std::fs::remove_file(temp_file_path).unwrap();
     let split = params.split(';');
     let vec = split.collect::<Vec<&str>>();
-    let path = PathBuf::from(vec[0]);
-    let name_select = String::from(vec[1]);
+    let path = Path::new(vec[0]);
+    let name_select = &vec[1];
 
     // Get course by name
-    let course_result = match command_util::get_course_by_name(client, name_select) {
+    let course_result = match util::get_course_by_name(client, name_select) {
         Ok(result) => result,
         Err(msg) => {
             io.println(&msg, PrintColor::Failed);
@@ -254,7 +254,7 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) {
     }
     let course = course_result.unwrap();
     io.println("", PrintColor::Normal);
-    match download_exercises(path, client, course) {
+    match download_exercises(path, client, &course) {
         Ok(msg) => io.println(&msg, PrintColor::Success),
         Err(msg) => io.println(&msg, PrintColor::Failed),
     }

@@ -490,7 +490,7 @@ pub fn set_organization(org: &str) -> Result<(), String> {
 /// Returns course id as: Ok(Some(u32)) or Ok(None) if not found, Err(msg) if could not get id list
 pub fn get_course_id_by_name(
     client: &mut dyn Client,
-    course_name: String,
+    course_name: &str,
 ) -> Result<Option<u32>, String> {
     match client.list_courses() {
         Ok(courses) => {
@@ -508,7 +508,7 @@ pub fn get_course_id_by_name(
 /// Returns course as: Ok(Some(Course)) or Ok(None) if not found, Err(msg) if could not get courses list
 pub fn get_course_by_name(
     client: &mut dyn Client,
-    course_name: String,
+    course_name: &str,
 ) -> Result<Option<Course>, String> {
     match client.list_courses() {
         Ok(courses) => {

@@ -8,7 +8,7 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
     cmd.arg("--help").arg("--no-update");
     cmd.assert().success().stdout(predicate::str::contains(
-        "Test My Code client written in Rust",
+        "Client for downloading, testing and submitting exercises through the Test My Code system.",
     ));
 
     Ok(())

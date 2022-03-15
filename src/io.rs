@@ -1,5 +1,4 @@
 use std::io::{BufRead, BufReader, Read, Write};
-
 use termcolor::{Buffer, BufferWriter, Color, ColorSpec, WriteColor};
 
 /// Example use:

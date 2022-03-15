@@ -1,12 +1,12 @@
-use crate::commands::command_util;
-use crate::io_module::{Io, PrintColor};
+use crate::commands::util;
+use crate::io::{Io, PrintColor};
 use std::path::Path;
 use tmc_langs::RunResult;
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
 pub fn test(io: &mut dyn Io, path: Option<&str>) {
-    let exercise_path = match command_util::exercise_pathfinder(path) {
+    let exercise_path = match util::exercise_pathfinder(path) {
         Ok(ex_path) => ex_path,
         Err(err) => {
             io.println(
@@ -96,7 +96,7 @@ fn print_result_test(
     }
     if print_progress {
         io.println(
-            &command_util::get_progress_string(tests_passed, tests_total, 64),
+            &util::get_progress_string(tests_passed, tests_total, 64),
             PrintColor::Normal,
         );
     }
@@ -151,7 +151,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_empty_test() {
-            let progress_string = command_util::get_progress_string(0, 100, 64);
+            let progress_string = util::get_progress_string(0, 100, 64);
             let expected_string = String::from(
                 "   0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
@@ -161,7 +161,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_empty_2_test() {
-            let progress_string = command_util::get_progress_string(0, 1, 64);
+            let progress_string = util::get_progress_string(0, 1, 64);
             let expected_string = String::from(
                 "   0%[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
@@ -171,7 +171,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_full_test() {
-            let progress_string = command_util::get_progress_string(100, 100, 64);
+            let progress_string = util::get_progress_string(100, 100, 64);
             let expected_string = String::from(
                 " 100%[████████████████████████████████████████████████████████████████]",
             );
@@ -181,7 +181,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_full_2_test() {
-            let progress_string = command_util::get_progress_string(1, 1, 64);
+            let progress_string = util::get_progress_string(1, 1, 64);
             let expected_string = String::from(
                 " 100%[████████████████████████████████████████████████████████████████]",
             );
@@ -191,7 +191,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_50_50_test() {
-            let progress_string = command_util::get_progress_string(1, 2, 64);
+            let progress_string = util::get_progress_string(1, 2, 64);
             let expected_string = String::from(
                 "  50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
@@ -200,7 +200,7 @@ mod tests {
         }
         #[test]
         fn generate_progress_string_50_50_2_test() {
-            let progress_string = command_util::get_progress_string(50, 100, 64);
+            let progress_string = util::get_progress_string(50, 100, 64);
             let expected_string = String::from(
                 "  50%[████████████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
@@ -210,7 +210,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_30_70_test() {
-            let progress_string = command_util::get_progress_string(3, 10, 64);
+            let progress_string = util::get_progress_string(3, 10, 64);
             let expected_string = String::from(
                 "  30%[███████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]",
             );
@@ -220,7 +220,7 @@ mod tests {
 
         #[test]
         fn generate_progress_string_79_21_test() {
-            let progress_string = command_util::get_progress_string(79, 100, 64);
+            let progress_string = util::get_progress_string(79, 100, 64);
             let expected_string = String::from(
                 "  79%[██████████████████████████████████████████████████░░░░░░░░░░░░░░]",
             );

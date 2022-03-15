@@ -1,7 +1,7 @@
-use super::command_util;
-use super::command_util::Client;
+use super::util;
+use super::util::Client;
 use crate::interactive::{self, interactive_list};
-use crate::io_module::{Io, PrintColor};
+use crate::io::{Io, PrintColor};
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
@@ -31,7 +31,7 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<
     slug = slug.trim().to_string();
 
     if let Some(org) = orgs.into_iter().find(|org| org.slug == slug) {
-        command_util::set_organization(&slug).unwrap();
+        util::set_organization(&slug).unwrap();
         return Ok(org.name);
     }
 
@@ -71,7 +71,7 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<Stri
     let org_name = org_name.unwrap();
 
     if let Some(org) = orgs.iter().find(|org| org.name == org_name) {
-        command_util::set_organization(&org.slug).unwrap();
+        util::set_organization(&org.slug).unwrap();
         return Ok(org.name.to_owned());
     }
 
