@@ -127,7 +127,7 @@ mod tests {
             &mut self,
             _path: &Path,
         ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
-            todo!()
+            unimplemented!()
         }
         fn submit(
             &self,
@@ -180,7 +180,7 @@ mod tests {
             &mut self,
             _exercise_ids: Vec<u32>,
         ) -> Result<Vec<ExercisesDetails>, ClientError> {
-            todo!()
+            unimplemented!()
         }
 
         fn download_or_update_exercises(
@@ -195,10 +195,10 @@ mod tests {
         }
 
         fn get_course_details(&self, _: u32) -> std::result::Result<CourseDetails, ClientError> {
-            todo!()
+            unimplemented!()
         }
         fn get_organization(&self, _: &str) -> std::result::Result<Organization, ClientError> {
-            todo!()
+            unimplemented!()
         }
     }
 

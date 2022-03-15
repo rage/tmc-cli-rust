@@ -1,11 +1,11 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 
-const PKG_NAME: Option<&'static str> = option_env!("CARGO_PKG_NAME");
+const PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
 
 #[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--help").arg("--no-update");
     cmd.assert().success().stdout(predicate::str::contains(
         "Client for downloading, testing and submitting exercises through the Test My Code system.",
@@ -16,7 +16,7 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--wrong_argument").arg("--no-update");
     cmd.assert()
         .failure()
@@ -56,12 +56,12 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     */
 
     // logout
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert();
 
     // download -c test-tmc-test-course -f folder_for_download
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("download")
@@ -72,7 +72,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     ));
 
     // courses
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("courses")
@@ -83,7 +83,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // submit
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("submit")
@@ -94,7 +94,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // paste
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("paste")
@@ -105,7 +105,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // exercises
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("exercises")
@@ -116,7 +116,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // login -n
     // testusername testpassword imag
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("login")
@@ -130,7 +130,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // organization -n
     // test
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("organization")
@@ -143,14 +143,14 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // courses
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode").arg("--no-update").arg("courses");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("test-tmc-test-course"));
 
     // exercises test-tmc-test-course
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("exercises")
@@ -160,7 +160,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stdout(predicate::str::contains("Imaginary test exercise"));
 
     // download -c test-tmc-test-course -f folder_for_download
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("download")
@@ -171,7 +171,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stdout(predicate::str::contains("Download was successful!"));
 
     // test folder/nonexistant_ex
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("test")
@@ -181,7 +181,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stdout(predicate::str::contains("Failed to load projects config"));
 
     // logout
-    let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert()
         .success()
@@ -189,7 +189,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // login
     // totallywrongname cantrememberpasswordeither imag
-    cmd = Command::cargo_bin(PKG_NAME.unwrap())?;
+    cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode")
         .arg("--no-update")
         .arg("login")

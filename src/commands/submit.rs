@@ -16,7 +16,7 @@ use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
 pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
-    let locale = into_locale("fin").expect("fin is a valid locale");
+    let locale = into_locale("fin").expect("The locale should always be valid.");
 
     // todo: use context
     let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;

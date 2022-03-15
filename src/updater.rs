@@ -1,7 +1,10 @@
 use crate::commands::util::get_path;
 use anyhow::Context;
 use indicatif::{ProgressBar, ProgressStyle};
-use reqwest::{header, Url};
+use reqwest::{
+    header::{self, HeaderValue},
+    Url,
+};
 use std::{
     cmp::min,
     env, fs, io,
@@ -14,10 +17,10 @@ use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";
 pub const PLUGIN: &str = "tmc_cli_rust";
-pub const DELAY: u128 = 1440 * 60 * 1000;
+pub const DELAY_MILLIS_24H: u128 = 1440 * 60 * 1000;
 
 /// Autoupdater for Windows platform.
-/// Checks every 24hours if there are new versions available and
+/// Checks every 24 hours if there are new versions available and
 /// generates a new timestamp. If a new version is found, the function
 /// stashes the old executable and downloads a new one.
 /// Will run in privileged stage if needed on Windows!
@@ -45,7 +48,7 @@ fn checktemp() -> anyhow::Result<()> {
             match e.kind() {
                 std::io::ErrorKind::PermissionDenied => {
                     println!("Permission Denied! Restarting with administrator privileges...");
-                    elevate("cleartemp".to_string());
+                    elevate("cleartemp".to_string())?;
                 }
                 _ => {
                     println!("{:#?}", e);
@@ -73,7 +76,7 @@ pub fn process_update() -> anyhow::Result<()> {
         Err(e) => match e.downcast_ref::<std::io::Error>().map(|e| e.kind()) {
             Some(std::io::ErrorKind::PermissionDenied) => {
                 println!("Permission Denied! Restarting with administrator privileges...");
-                elevate("fetchupdate".to_string());
+                elevate("fetchupdate".to_string())?;
                 return Ok(());
             }
             _ => {
@@ -85,7 +88,7 @@ pub fn process_update() -> anyhow::Result<()> {
     println!("Update completed succesfully!");
     Ok(())
 }
-fn elevate(command: String) {
+fn elevate(command: String) -> anyhow::Result<()> {
     Command::new("powershell")
         .args(&[
             "-Command",
@@ -96,7 +99,8 @@ fn elevate(command: String) {
             "RunAs",
         ])
         .spawn()
-        .expect("launch failure");
+        .context("launch failure")?;
+    Ok(())
 }
 fn is_it_time_yet() -> anyhow::Result<bool> {
     let config = TmcConfig::load(PLUGIN, get_path()?.as_path())?;
@@ -116,9 +120,9 @@ fn is_it_time_yet() -> anyhow::Result<bool> {
     let now = SystemTime::now();
     let now = now
         .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
+        .context("Time went backwards")?
         .as_millis();
-    let update = now - last_check as u128 > DELAY;
+    let update = now - last_check as u128 > DELAY_MILLIS_24H;
     Ok(update)
 }
 
@@ -127,7 +131,7 @@ fn generate_time_stamp() -> anyhow::Result<()> {
     let now = SystemTime::now();
     let since_the_epoch = now
         .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
+        .context("Time went backwards")?
         .as_millis();
 
     if let Err(_err) = config.insert(
@@ -145,10 +149,7 @@ fn generate_time_stamp() -> anyhow::Result<()> {
 fn get_latest_version() -> anyhow::Result<String> {
     let url = GITHUB_URL;
     let mut headers = header::HeaderMap::new();
-    headers.insert(
-        header::USER_AGENT,
-        "tmc-cli-rust".parse().expect("github invalid user-agent"),
-    );
+    headers.insert(header::USER_AGENT, HeaderValue::from_static("tmc-cli-rust"));
     let resp = reqwest::blocking::Client::new()
         .get(url)
         .headers(headers)
@@ -248,7 +249,7 @@ fn generate_download_url(version: String) -> anyhow::Result<Url> {
     let arch = env::consts::ARCH;
     let target = match arch {
         "x86_64" => "x86_64-pc-windows-msvc",
-        "i686" => "i686-pc-windows-msvc-",
+        "i686" => "i686-pc-windows-msvc",
         unexpected => anyhow::bail!("Unexpected arch {unexpected}"),
     };
     let download_url =

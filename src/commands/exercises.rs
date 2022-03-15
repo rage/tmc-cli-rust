@@ -310,13 +310,13 @@ mod tests {
             &mut self,
             _exercise_ids: Vec<u32>,
         ) -> Result<Vec<ExercisesDetails>, ClientError> {
-            todo!()
+            unimplemented!()
         }
         fn update_exercises(
             &mut self,
             _path: &Path,
         ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
-            todo!()
+            unimplemented!()
         }
         fn download_or_update_exercises(
             &mut self,
@@ -330,10 +330,10 @@ mod tests {
         }
 
         fn get_course_details(&self, _: u32) -> Result<CourseDetails, ClientError> {
-            todo!()
+            unimplemented!()
         }
         fn get_organization(&self, _: &str) -> Result<Organization, ClientError> {
-            todo!()
+            unimplemented!()
         }
     }
 
