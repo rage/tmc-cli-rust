@@ -1,8 +1,9 @@
-use super::util;
-use super::util::Client;
-use crate::io::{Io, PrintColor};
-use crate::progress_reporting;
-use crate::progress_reporting::ProgressBarManager;
+use super::{util, util::Client};
+use crate::{
+    io::{Io, PrintColor},
+    progress_reporting,
+    progress_reporting::ProgressBarManager,
+};
 use anyhow::Context;
 use isolang::Language;
 use tmc_langs::ClientUpdateData;

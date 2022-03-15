@@ -2,18 +2,14 @@ use crate::interactive::interactive_list;
 use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
-use std::env;
-use std::path::Path;
-use std::path::PathBuf;
-use tmc_langs::Credentials;
-use tmc_langs::DownloadOrUpdateCourseExercisesResult;
-use tmc_langs::DownloadResult;
-use tmc_langs::LangsError;
-use tmc_langs::{ClientError, TmcClient, Token};
-use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 use tmc_langs::{
-    Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-    SubmissionFinished,
+    ClientError, ConfigValue, Course, CourseDetails, CourseExercise, Credentials,
+    DownloadOrUpdateCourseExercisesResult, DownloadResult, ExercisesDetails, LangsError,
+    NewSubmission, Organization, ProjectsConfig, SubmissionFinished, TmcClient, TmcConfig, Token,
 };
 
 pub const PLUGIN: &str = "tmc_cli_rust";

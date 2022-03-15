@@ -1,11 +1,11 @@
 use core::sync::atomic::AtomicUsize;
-use indicatif::ProgressBar;
-use indicatif::ProgressStyle;
-use std::cmp::min;
-use std::collections::VecDeque;
-use std::sync::atomic::Ordering;
-use std::sync::{Arc, Mutex};
-use std::thread::JoinHandle;
+use indicatif::{ProgressBar, ProgressStyle};
+use std::{
+    cmp::min,
+    collections::VecDeque,
+    sync::{atomic::Ordering, Arc, Mutex},
+    thread::JoinHandle,
+};
 use tmc_langs::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {

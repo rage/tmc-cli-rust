@@ -2,14 +2,14 @@ use crate::commands::util::get_path;
 use anyhow::Context;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{header, Url};
-use std::cmp::min;
-use std::env;
-use std::fs;
-use std::io;
-use std::io::Write;
-use std::path::Path;
-use std::process::Command;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    cmp::min,
+    env, fs, io,
+    io::Write,
+    path::Path,
+    process::Command,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";

@@ -1,8 +1,6 @@
-use anyhow::Context;
-
-use super::util::Client;
-use super::{download, organization, util};
+use super::{download, organization, util, util::Client};
 use crate::io::{Io, PrintColor};
+use anyhow::Context;
 
 pub fn login(
     io: &mut dyn Io,
@@ -98,8 +96,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
 
 #[cfg(test)]
 mod tests {
-    use super::super::util::*;
-    use super::*;
+    use super::{super::util::*, *};
     use std::slice::Iter;
     use tmc_langs::Organization;
 

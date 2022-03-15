@@ -1,13 +1,12 @@
-use super::util;
-use super::util::Client;
-use crate::io::{Io, PrintColor};
-use crate::progress_reporting;
-use crate::progress_reporting::ProgressBarManager;
+use super::{util, util::Client};
+use crate::{
+    io::{Io, PrintColor},
+    progress_reporting,
+    progress_reporting::ProgressBarManager,
+};
 use anyhow::{Context, Result};
 use reqwest::Url;
-use tmc_langs::ClientUpdateData;
-use tmc_langs::Language;
-use tmc_langs::SubmissionFinished;
+use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
 
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or

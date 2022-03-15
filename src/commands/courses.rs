@@ -23,14 +23,10 @@ mod tests {
     use super::*;
     use isolang::Language;
     use reqwest::Url;
-    use std::path::Path;
-    use std::slice::Iter;
-    use tmc_langs::ClientError;
-    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
-    use tmc_langs::DownloadResult;
-    use tmc_langs::LangsError;
+    use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        ClientError, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
+        DownloadResult, ExercisesDetails, LangsError, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
     pub struct IoTest<'a> {

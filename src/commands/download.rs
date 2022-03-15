@@ -1,15 +1,16 @@
-use super::util;
-use super::util::{get_organization, get_projects_dir, Client};
-use crate::interactive;
-use crate::io::{Io, PrintColor};
-use crate::progress_reporting;
-use crate::progress_reporting::ProgressBarManager;
+use super::{
+    util,
+    util::{get_organization, get_projects_dir, Client},
+};
+use crate::{
+    interactive,
+    io::{Io, PrintColor},
+    progress_reporting,
+    progress_reporting::ProgressBarManager,
+};
 use anyhow::Context;
-use std::path::Path;
-use std::process::Command;
-use tmc_langs::ClientUpdateData;
-use tmc_langs::Course;
-use tmc_langs::DownloadResult;
+use std::{path::Path, process::Command};
+use tmc_langs::{ClientUpdateData, Course, DownloadResult};
 
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
@@ -234,8 +235,7 @@ pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Re
 }
 
 fn pause() -> anyhow::Result<()> {
-    use std::io;
-    use std::io::prelude::*;
+    use std::{io, io::prelude::*};
     let stdin = io::stdin();
     let mut stdout = io::stdout();
     write!(stdout, "Press any enter to continue...")?;

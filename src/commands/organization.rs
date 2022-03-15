@@ -1,7 +1,8 @@
-use super::util;
-use super::util::Client;
-use crate::interactive::{self, interactive_list};
-use crate::io::{Io, PrintColor};
+use super::{util, util::Client};
+use crate::{
+    interactive::{self, interactive_list},
+    io::{Io, PrintColor},
+};
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {

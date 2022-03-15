@@ -1,9 +1,10 @@
-use anyhow::Context;
-
 use super::util::{get_projects_dir, Client};
 use crate::io::{Io, PrintColor};
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use anyhow::Context;
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 /// Updates exercises from project dir or current directory.
 /// Update is ran only if local exercise checksums differ from
@@ -88,8 +89,7 @@ pub fn elevated_update(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Resu
     Ok(())
 }
 fn pause() -> anyhow::Result<()> {
-    use std::io;
-    use std::io::prelude::*;
+    use std::{io, io::prelude::*};
     let mut stdin = io::stdin();
     let mut stdout = io::stdout();
     write!(stdout, "Press any enter to continue...")?;
