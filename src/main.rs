@@ -54,7 +54,7 @@ fn run(io: &mut IoProduction, matches: &ArgMatches) -> anyhow::Result<()> {
             let os = std::env::consts::OS;
             if os == "windows" {
                 #[cfg(target_os = "windows")]
-                updater::check_for_update()?;
+                updater::check_for_update(matches.is_present("force-update"))?;
             }
         }
         _ => println!("No Auto-Updates"),

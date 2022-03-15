@@ -100,6 +100,12 @@ pub fn build_cli() -> Command<'static> {
                 .help("Disable auto update temporarily"),
         )
         .arg(
+            Arg::new("force-update")
+                .short('u')
+                .long("force-update")
+                .help("Force auto update to run"),
+        )
+        .arg(
             Arg::new("testmode")
                 .long("testmode")
                 .help("Only for internal testing, disables server connection"),
