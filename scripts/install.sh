@@ -22,7 +22,7 @@ if ! PAGE=$(curl -s https://download.mooc.fi); then
 fi
 
 # Adding spaces so ${PAGE[@]} will work.
-PAGE=$(echo $PAGE | sed -r 's:</Contents><Contents>:</Contents> <Contents>:g')
+PAGE=$(echo $PAGE | sed -E 's:</Contents><Contents>:</Contents> <Contents>:g')
 
 fileprefx=""
 if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
