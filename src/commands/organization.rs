@@ -4,43 +4,43 @@ use crate::interactive::{self, interactive_list};
 use crate::io::{Io, PrintColor};
 
 // Asks for organization from user and saves it into file
-pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
+pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
     // List all organizations
-    let mut orgs = client.get_organizations().unwrap();
+    let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
     let mut last_pinned = true;
 
-    io.println("Available Organizations:", PrintColor::Normal);
-    io.println("", PrintColor::Normal);
+    io.println("Available Organizations:", PrintColor::Normal)?;
+    io.println("", PrintColor::Normal)?;
 
     for org in &orgs {
         if org.pinned != last_pinned {
-            io.println("----------", PrintColor::Normal);
+            io.println("----------", PrintColor::Normal)?;
         }
-        io.print(&org.name, PrintColor::Normal);
-        io.print(" Slug: ", PrintColor::Normal);
-        io.println(&org.slug, PrintColor::Normal);
+        io.print(&org.name, PrintColor::Normal)?;
+        io.print(" Slug: ", PrintColor::Normal)?;
+        io.println(&org.slug, PrintColor::Normal)?;
         last_pinned = org.pinned;
     }
 
     io.print(
         "\nChoose organization by writing its slug: ",
         PrintColor::Normal,
-    );
-    let mut slug = io.read_line();
+    )?;
+    let mut slug = io.read_line()?;
     slug = slug.trim().to_string();
 
     if let Some(org) = orgs.into_iter().find(|org| org.slug == slug) {
-        util::set_organization(&slug).unwrap();
+        util::set_organization(&slug)?;
         return Ok(org.name);
     }
 
-    Err(format!("No such organization for the given slug: {}", slug))
+    anyhow::bail!("No such organization for the given slug: {}", slug);
 }
 
-pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<String, String> {
-    io.println("Fetching organizations...", PrintColor::Normal);
-    let mut orgs = client.get_organizations().unwrap();
+pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
+    io.println("Fetching organizations...", PrintColor::Normal)?;
+    let mut orgs = client.get_organizations()?;
     let mut pinned = orgs
         .iter()
         .filter(|org| org.pinned)
@@ -53,49 +53,53 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> Result<Stri
     pinned.push(others.clone());
 
     let prompt = String::from("Select your organization: ");
-    let mut org_name = interactive::interactive_list(&prompt, pinned);
-
-    org_name = match org_name {
-        None => return Err("No organization chosen".to_string()),
+    let mut org_name = match interactive::interactive_list(&prompt, pinned)? {
         Some(result) if result.eq(&others) => {
             let all = orgs.iter().map(|org| org.name.clone()).collect();
-            interactive_list(&prompt, all)
+            interactive_list(&prompt, all)?
         }
-        option => option,
+        _ => todo!(),
     };
 
-    if org_name.is_none() {
-        return Err("No organization chosen".to_string());
-    }
+    org_name = match org_name {
+        Some(result) if result.eq(&others) => {
+            let all = orgs.iter().map(|org| org.name.clone()).collect();
+            interactive_list(&prompt, all)?
+        }
+        opt @ Some(_) => opt,
+        None => anyhow::bail!("No organization chosen"),
+    };
 
-    let org_name = org_name.unwrap();
+    let org_name = match org_name {
+        Some(on) => on,
+        None => anyhow::bail!("No organization chosen"),
+    };
 
     if let Some(org) = orgs.iter().find(|org| org.name == org_name) {
-        util::set_organization(&org.slug).unwrap();
+        util::set_organization(&org.slug)?;
         return Ok(org.name.to_owned());
     }
 
-    Err("Something strange happened".to_string())
+    anyhow::bail!("Something strange happened");
 }
 
 // Check if logged in, then ask for organization
-pub fn organization(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
-    if let Err(error) = client.load_login() {
-        io.println(&error, PrintColor::Failed);
-        return;
-    };
+pub fn organization(
+    io: &mut dyn Io,
+    client: &mut dyn Client,
+    interactive_mode: bool,
+) -> anyhow::Result<()> {
+    client.load_login()?;
 
-    let res = if interactive_mode {
-        set_organization(io, client)
+    let org = if interactive_mode {
+        set_organization(io, client)?
     } else {
-        set_organization_old(io, client)
+        set_organization_old(io, client)?
     };
 
-    match res {
-        Ok(org) => io.println(
-            &format!("Selected {} as organization.", org),
-            PrintColor::Success,
-        ),
-        Err(msg) => io.println(&msg, PrintColor::Failed),
-    }
+    io.println(
+        &format!("Selected {} as organization.", org),
+        PrintColor::Success,
+    )?;
+    Ok(())
 }

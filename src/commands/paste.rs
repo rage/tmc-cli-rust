@@ -3,6 +3,7 @@ use super::util::Client;
 use crate::io::{Io, PrintColor};
 use crate::progress_reporting;
 use crate::progress_reporting::ProgressBarManager;
+use anyhow::Context;
 use isolang::Language;
 use tmc_langs::ClientUpdateData;
 
@@ -13,28 +14,15 @@ use tmc_langs::ClientUpdateData;
 /// # Errors
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
-    let exercise_path = match util::exercise_pathfinder(path) {
-        Ok(ex_path) => ex_path,
-        Err(err) => {
-            io.println(
-                &format!("Error finding exercise: {}", err),
-                PrintColor::Failed,
-            );
-            return;
-        }
-    };
+pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
+    // todo: use context
+    let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
 
-    let res = util::parse_exercise_dir(exercise_path);
-    if let Err(err) = res {
-        io.println(&err, PrintColor::Failed);
-        return;
-    }
-    let (project_config, course_slug, exercise_slug) = res.unwrap();
+    let (project_config, course_slug, exercise_slug) = util::parse_exercise_dir(exercise_path)?;
 
-    io.println("Write a paste message, enter sends it:", PrintColor::Normal);
-    let paste_msg = io.read_line();
-    io.println("", PrintColor::Normal);
+    io.println("Write a paste message, enter sends it:", PrintColor::Normal)?;
+    let paste_msg = io.read_line()?;
+    io.println("", PrintColor::Normal)?;
 
     // start manager for 1 events TmcClient::paste
     let mut manager = ProgressBarManager::new(
@@ -59,7 +47,8 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) {
         }
         Err(err) => {
             manager.force_join();
-            io.println(&format!("Error: {} ", err), PrintColor::Failed);
+            io.println(&format!("Error: {} ", err), PrintColor::Failed)?;
         }
     }
+    Ok(())
 }

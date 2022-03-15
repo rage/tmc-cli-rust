@@ -1,4 +1,5 @@
 use crate::interactive::interactive_list;
+use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
 use std::env;
@@ -26,11 +27,11 @@ pub struct ClientProduction {
 }
 
 pub trait Client {
-    fn load_login(&mut self) -> Result<(), String>;
-    fn try_login(&mut self, username: String, password: String) -> Result<String, String>;
-    fn list_courses(&mut self) -> Result<Vec<Course>, String>;
-    fn get_organizations(&mut self) -> Result<Vec<Organization>, String>;
-    fn logout(&mut self);
+    fn load_login(&mut self) -> anyhow::Result<()>;
+    fn try_login(&mut self, username: String, password: String) -> anyhow::Result<String>;
+    fn list_courses(&mut self) -> anyhow::Result<Vec<Course>>;
+    fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>>;
+    fn logout(&mut self) -> anyhow::Result<()>;
     fn wait_for_submission(&self, submission_url: Url) -> Result<SubmissionFinished, ClientError>;
     fn submit(
         &self,
@@ -39,11 +40,11 @@ pub trait Client {
         exercise_slug: &str,
         locale: Option<Language>,
     ) -> Result<NewSubmission, LangsError>;
-    fn get_course_exercises(&mut self, course_id: u32) -> Result<Vec<CourseExercise>, String>;
+    fn get_course_exercises(&mut self, course_id: u32) -> anyhow::Result<Vec<CourseExercise>>;
     fn get_exercise_details(
         &mut self,
         exercise_ids: Vec<u32>,
-    ) -> Result<Vec<ExercisesDetails>, String>;
+    ) -> Result<Vec<ExercisesDetails>, ClientError>;
     fn download_or_update_exercises(
         &mut self,
         download_params: &[u32],
@@ -69,29 +70,28 @@ pub trait Client {
 static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
 
 impl ClientProduction {
-    pub fn new(test_mode: bool) -> Self {
+    pub fn new(test_mode: bool) -> anyhow::Result<Self> {
         let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
             Url::parse(SERVER_ADDRESS).expect("Server address should always be correct."),
             PLUGIN,
             PLUGIN_VERSION,
-        )
-        .unwrap();
+        )?;
 
-        ClientProduction {
+        Ok(ClientProduction {
             tmc_client,
             test_mode,
-        }
+        })
     }
     #[allow(dead_code)]
     pub fn is_test_mode(&mut self) -> bool {
         self.test_mode
     }
 
-    fn authenticate(&mut self, username: String, password: String) -> Result<Token, String> {
+    fn authenticate(&mut self, username: String, password: String) -> anyhow::Result<Token> {
         // match self.tmc_client.authenticate(PLUGIN, username, password) {
         match tmc_langs::login_with_password(&mut self.tmc_client, PLUGIN, username, password) {
             Ok(x) => Ok(x),
-            Err(x) => Err(ClientProduction::explain_login_fail(x)),
+            Err(x) => anyhow::bail!(ClientProduction::explain_login_fail(x)),
         }
     }
 
@@ -146,20 +146,20 @@ impl Client for ClientProduction {
         self.test_mode
     }
 
-    fn load_login(&mut self) -> Result<(), String> {
+    fn load_login(&mut self) -> anyhow::Result<()> {
         if self.test_mode {
             // Test login exists if config-file has key-value pair test_login = "test_logged_in"
-            let config = TmcConfig::load(PLUGIN, &get_path()).unwrap();
+            let config = TmcConfig::load(PLUGIN, &get_path()?)?;
             let test_login_exists = match config.get("test_login") {
                 ConfigValue::Value(Some(value)) => {
-                    toml::Value::as_str(&value).unwrap() == "test_logged_in"
+                    toml::Value::as_str(&value).context("invalid value")? == "test_logged_in"
                 }
                 _ => false,
             };
             if test_login_exists {
                 return Ok(());
             } else {
-                return Err("No login found".to_string());
+                anyhow::bail!("No login found".to_string());
             }
         }
 
@@ -167,29 +167,29 @@ impl Client for ClientProduction {
             self.tmc_client.set_token(credentials.token());
             Ok(())
         } else {
-            Err("No login found. You need to be logged in to use this command".to_string())
+            anyhow::bail!("No login found. You need to be logged in to use this command");
         }
     }
 
-    fn try_login(&mut self, username: String, password: String) -> Result<String, String> {
+    fn try_login(&mut self, username: String, password: String) -> anyhow::Result<String> {
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
-                let mut config = TmcConfig::load(PLUGIN, &get_path()).unwrap();
+                let mut config = TmcConfig::load(PLUGIN, &get_path()?)?;
 
                 if let Err(_err) = config.insert(
                     "test_login".to_string(),
                     toml::Value::String("test_logged_in".to_string()),
                 ) {
-                    return Err("Test login value could not be changed in config file".to_string());
+                    anyhow::bail!("Test login value could not be changed in config file");
                 }
 
-                if let Err(_err) = config.save(&get_path()) {
-                    return Err("Problem saving login".to_string());
+                if let Err(_err) = config.save(&get_path()?) {
+                    anyhow::bail!("Problem saving login");
                 }
 
                 return Ok(SUCCESSFUL_LOGIN.to_string());
             }
-            return Err(WRONG_LOGIN.to_string());
+            anyhow::bail!(WRONG_LOGIN);
         }
 
         let token = self.authenticate(username, password)?;
@@ -197,10 +197,10 @@ impl Client for ClientProduction {
             return Ok(SUCCESSFUL_LOGIN.to_string());
         };
 
-        Err("Error! Saving credentials failed".to_string())
+        anyhow::bail!("Error! Saving credentials failed")
     }
 
-    fn list_courses(&mut self) -> Result<Vec<Course>, String> {
+    fn list_courses(&mut self) -> anyhow::Result<Vec<Course>> {
         if self.test_mode {
             return Ok(vec![
                 Course {
@@ -230,7 +230,7 @@ impl Client for ClientProduction {
             ]);
         }
 
-        match self.tmc_client.list_courses(&get_organization().unwrap()) {
+        match self.tmc_client.list_courses(&get_organization()?) {
             Ok(courses) => {
                 let mut course_list: Vec<Course> = Vec::new();
                 for course in courses {
@@ -250,13 +250,13 @@ impl Client for ClientProduction {
                 Ok(course_list)
             }
             Err(ClientError::NotAuthenticated) => {
-                Err("Login token is invalid. Please try logging in again.".to_string())
+                anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
-            _ => Err("Unknown error. Please try again.".to_string()),
+            _ => anyhow::bail!("Unknown error. Please try again."),
         }
     }
 
-    fn get_organizations(&mut self) -> Result<Vec<Organization>, String> {
+    fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>> {
         if self.test_mode {
             return Ok(vec![
                 Organization {
@@ -286,29 +286,27 @@ impl Client for ClientProduction {
                 }
                 Ok(org_list)
             }
-            _ => Err("Could not get organizations from server".to_string()),
+            _ => anyhow::bail!("Could not get organizations from server"),
         }
     }
 
-    fn logout(&mut self) {
+    fn logout(&mut self) -> anyhow::Result<()> {
         if self.test_mode {
             // Remove test login from config file
-            let mut config = match TmcConfig::load(PLUGIN, &get_path()) {
-                Ok(config) => config,
-                _ => panic!("Could not load the config"),
-            };
-            if let Err(_err) = config.remove("test_login") {
-                panic!("Could not remove test login from config in test mode");
-            }
-            if let Err(_err) = config.save(&get_path()) {
-                panic!("Could not save config after removing test login in test mode");
-            }
-            return;
+            let mut config =
+                TmcConfig::load(PLUGIN, &get_path()?).context("Could not load the config")?;
+            config
+                .remove("test_login")
+                .context("Could not remove test login from config in test mode")?;
+            config
+                .save(&get_path()?)
+                .context("Could not save config after removing test login in test mode")?;
+            return Ok(());
         }
 
-        let credentials = get_credentials().unwrap();
-
-        credentials.remove().unwrap();
+        let credentials = get_credentials().context("Failed to get credentials")?;
+        credentials.remove()?;
+        Ok(())
     }
 
     fn wait_for_submission(&self, submission_url: Url) -> Result<SubmissionFinished, ClientError> {
@@ -352,7 +350,7 @@ impl Client for ClientProduction {
         )
     }
 
-    fn get_course_exercises(&mut self, course_id: u32) -> Result<Vec<CourseExercise>, String> {
+    fn get_course_exercises(&mut self, course_id: u32) -> anyhow::Result<Vec<CourseExercise>> {
         if self.test_mode {
             return Ok(vec![CourseExercise {
                 id: 0,
@@ -370,16 +368,16 @@ impl Client for ClientProduction {
         match self.tmc_client.get_course_exercises(course_id) {
             Ok(exercises) => Ok(exercises),
             Err(ClientError::NotAuthenticated) => {
-                Err("Login token is invalid. Please try logging in again.".to_string())
+                anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
-            _ => Err("Unknown error. Please try again.".to_string()),
+            _ => anyhow::bail!("Unknown error. Please try again."),
         }
     }
 
     fn get_exercise_details(
         &mut self,
         exercise_ids: Vec<u32>,
-    ) -> Result<Vec<ExercisesDetails>, String> {
+    ) -> Result<Vec<ExercisesDetails>, ClientError> {
         if self.test_mode {
             return Ok(vec![ExercisesDetails {
                 id: 0,
@@ -389,10 +387,7 @@ impl Client for ClientProduction {
                 hide_submission_results: false,
             }]);
         }
-        match self.tmc_client.get_exercises_details(&exercise_ids) {
-            Ok(exercise_details) => Ok(exercise_details),
-            Err(_) => Err("Unknown error. Please try again.".to_string()),
-        }
+        self.tmc_client.get_exercises_details(&exercise_ids)
     }
 
     fn download_or_update_exercises(
@@ -453,74 +448,43 @@ pub fn get_credentials() -> Option<Credentials> {
 
 // Returns slug of organization as String (if successful)
 #[allow(dead_code)]
-pub fn get_organization() -> Option<String> {
-    match TmcConfig::load(PLUGIN, &get_path()) {
-        Ok(config) => {
-            // convert the toml::Value to String (if possible)
-            match config.get("organization") {
-                ConfigValue::Value(Some(value)) => {
-                    Some(toml::Value::as_str(&value).unwrap().to_string())
-                }
-                _ => None,
-            }
-        }
-        _ => None,
+pub fn get_organization() -> anyhow::Result<String> {
+    let config = TmcConfig::load(PLUGIN, &get_path()?)?;
+    // convert the toml::Value to String (if possible)
+    match config.get("organization") {
+        ConfigValue::Value(Some(value)) => Ok(toml::Value::as_str(&value)
+            .context("invalid value")?
+            .to_string()),
+        _ => anyhow::bail!("missing value"),
     }
 }
 
-pub fn set_organization(org: &str) -> Result<(), String> {
-    let mut config = match TmcConfig::load(PLUGIN, &get_path()) {
+pub fn set_organization(org: &str) -> anyhow::Result<()> {
+    let mut config = match TmcConfig::load(PLUGIN, &get_path()?) {
         Ok(config) => config,
-        _ => return Err("Config could not be loaded".to_string()),
+        _ => anyhow::bail!("Config could not be loaded"),
     };
 
-    if let Err(_err) = config.insert(
-        "organization".to_string(),
-        toml::Value::String(org.to_string()),
-    ) {
-        return Err("Organization could not be changed".to_string());
-    }
+    config
+        .insert(
+            "organization".to_string(),
+            toml::Value::String(org.to_string()),
+        )
+        .context("Organization could not be changed")?;
 
-    if let Err(_err) = config.save(&get_path()) {
-        return Err("Problem saving configurations".to_string());
-    }
+    config
+        .save(&get_path()?)
+        .context("Problem saving configurations")?;
     Ok(())
-}
-
-/// Returns course id as: Ok(Some(u32)) or Ok(None) if not found, Err(msg) if could not get id list
-pub fn get_course_id_by_name(
-    client: &mut dyn Client,
-    course_name: &str,
-) -> Result<Option<u32>, String> {
-    match client.list_courses() {
-        Ok(courses) => {
-            for course in courses {
-                if course.name == course_name {
-                    return Ok(Some(course.id));
-                }
-            }
-            Ok(None)
-        }
-        Err(msg) => Err(msg),
-    }
 }
 
 /// Returns course as: Ok(Some(Course)) or Ok(None) if not found, Err(msg) if could not get courses list
 pub fn get_course_by_name(
     client: &mut dyn Client,
     course_name: &str,
-) -> Result<Option<Course>, String> {
-    match client.list_courses() {
-        Ok(courses) => {
-            for course in courses {
-                if course.name == course_name {
-                    return Ok(Some(course));
-                }
-            }
-            Ok(None)
-        }
-        Err(msg) => Err(msg),
-    }
+) -> anyhow::Result<Option<Course>> {
+    let courses = client.list_courses()?;
+    Ok(courses.into_iter().find(|c| c.name == course_name))
 }
 
 /// Finds an exercise
@@ -531,14 +495,14 @@ pub fn get_course_by_name(
 ///
 /// # Errors
 /// Returns an error if the last chance, interactive menu, fails.
-pub fn exercise_pathfinder(path: Option<&str>) -> Result<PathBuf, String> {
+pub fn exercise_pathfinder(path: Option<&str>) -> anyhow::Result<PathBuf> {
     // check if parameter was given
     if let Some(ex_path) = path {
         let buf = PathBuf::from(ex_path);
-        if is_exercise_dir(buf.clone()).is_ok() {
+        if is_exercise_dir(buf.clone())? {
             return Ok(buf);
         } else {
-            return Err("Invalid exercise path given".to_string());
+            anyhow::bail!("Invalid exercise path given");
         }
     }
 
@@ -561,22 +525,22 @@ pub fn exercise_pathfinder(path: Option<&str>) -> Result<PathBuf, String> {
     }
 }
 
-pub fn get_path() -> PathBuf {
-    TmcConfig::get_location(PLUGIN).unwrap()
+pub fn get_path() -> anyhow::Result<PathBuf> {
+    TmcConfig::get_location(PLUGIN).map_err(Into::into)
 }
 
-pub fn get_projects_dir() -> PathBuf {
-    tmc_langs::get_projects_dir(PLUGIN).unwrap()
+pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
+    tmc_langs::get_projects_dir(PLUGIN).map_err(Into::into)
 }
 
 /// Choose course and then exercise interactively, return exercise path
 /// or Err(String) if either menu is interrupted or no items found
-pub fn choose_exercise() -> Result<PathBuf, String> {
+pub fn choose_exercise() -> anyhow::Result<PathBuf> {
     let mut courses: Vec<String> = Vec::new();
 
-    let projects_config = match ProjectsConfig::load(&get_projects_dir()) {
+    let projects_config = match ProjectsConfig::load(&get_projects_dir()?) {
         Ok(projects_config) => projects_config,
-        Err(_err) => return Err(String::from("Could not load info about projects")),
+        Err(_err) => anyhow::bail!("Could not load info about projects"),
     };
 
     for course in &projects_config.courses {
@@ -584,15 +548,17 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     }
 
     if courses.is_empty() {
-        return Err(format!(
+        anyhow::bail!(
             "No courses found from current or project directory. Project directory set to {}",
-            get_projects_dir().to_str().unwrap()
-        ));
+            get_projects_dir()?
+                .to_str()
+                .context("invalid projects dir")?
+        );
     }
 
-    let chosen_course = match interactive_list("First select course: ", courses) {
+    let chosen_course = match interactive_list("First select course: ", courses)? {
         Some(selection) => selection,
-        None => return Err("Course selection interrupted.".to_string()),
+        None => anyhow::bail!("Course selection interrupted."),
     };
 
     let course_config = projects_config.courses.get(&chosen_course).unwrap();
@@ -604,18 +570,20 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
     }
 
     if exercise_list.is_empty() {
-        return Err(format!(
+        anyhow::bail!(
             "No exercises found from chosen course folder. Project directory set to {}",
-            get_projects_dir().to_str().unwrap()
-        ));
+            get_projects_dir()?
+                .to_str()
+                .context("invalid projects dir")?
+        );
     }
 
-    let chosen_exercise = match interactive_list("Select exercise: ", exercise_list) {
+    let chosen_exercise = match interactive_list("Select exercise: ", exercise_list)? {
         Some(selection) => selection,
-        None => return Err("Exercise selection interrupted.".to_string()),
+        None => anyhow::bail!("Exercise selection interrupted."),
     };
 
-    let mut path = get_projects_dir();
+    let mut path = get_projects_dir()?;
     path.push(chosen_course);
     path.push(chosen_exercise);
 
@@ -626,20 +594,20 @@ pub fn choose_exercise() -> Result<PathBuf, String> {
 ///
 /// # Errors
 /// Returns an error if there was problems reading file_names
-pub fn parse_exercise_dir(mut exercise_dir: PathBuf) -> Result<(PathBuf, String, String), String> {
+pub fn parse_exercise_dir(mut exercise_dir: PathBuf) -> anyhow::Result<(PathBuf, String, String)> {
     let exercise_slug = exercise_dir
         .file_name()
-        .ok_or("could not get exercise name")?
+        .context("could not get exercise name")?
         .to_str()
-        .ok_or("could not get exercise name")?
+        .context("could not get exercise name")?
         .to_string();
 
     exercise_dir.pop();
     let course_slug = exercise_dir
         .file_name()
-        .ok_or("could not get exercise name")?
+        .context("could not get exercise name")?
         .to_str()
-        .ok_or("could not get exercise name")?
+        .context("could not get exercise name")?
         .to_string();
 
     exercise_dir.pop();
@@ -652,10 +620,14 @@ pub fn parse_exercise_dir(mut exercise_dir: PathBuf) -> Result<(PathBuf, String,
 /// # Errors
 /// Returns an error if it failed to load ProjectsConfig
 /// Or failed to read paths
-pub fn is_exercise_dir(dir: PathBuf) -> Result<bool, String> {
+pub fn is_exercise_dir(dir: PathBuf) -> anyhow::Result<bool> {
     let (projects_dir, course_slug, _exercise_slug) = parse_exercise_dir(dir)?;
-    let config = ProjectsConfig::load(projects_dir.as_path())
-        .map_err(|_e| "error loading projects config")?;
+    let config = ProjectsConfig::load(projects_dir.as_path()).with_context(|| {
+        format!(
+            "Failed to load projects config from directory '{}'",
+            projects_dir.display(),
+        )
+    })?;
 
     Ok(config.courses.contains_key(&course_slug))
 }

@@ -178,7 +178,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("folder/nonexistant_ex");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Invalid exercise path given"));
+        .stdout(predicate::str::contains("Failed to load projects config"));
 
     // logout
     let mut cmd = Command::cargo_bin(PKG_NAME.unwrap())?;

@@ -1,72 +1,63 @@
+use anyhow::Context;
+
 use super::util::Client;
 use super::{download, organization, util};
 use crate::io::{Io, PrintColor};
 
-pub fn login(io: &mut dyn Io, client: &mut dyn Client, interactive_mode: bool) {
-    io.print("Email / username: ", PrintColor::Normal);
-    let mut username = io.read_line();
+pub fn login(
+    io: &mut dyn Io,
+    client: &mut dyn Client,
+    interactive_mode: bool,
+) -> anyhow::Result<()> {
+    io.print("Email / username: ", PrintColor::Normal)?;
+    let mut username = io.read_line()?;
     username = username.trim().to_string();
 
     if username.is_empty() {
-        io.println("Username cannot be empty!", PrintColor::Failed);
-        return;
+        anyhow::bail!("Username cannot be empty!");
     }
 
-    io.print("Password: ", PrintColor::Normal);
+    io.print("Password: ", PrintColor::Normal)?;
 
     // Read password without rpassword if ran in --testmode, because rpassword
     // is not able to read mock stdin input in binary tests
     let mut password = if client.is_test_mode() {
-        io.read_line()
+        io.read_line()?
     } else {
-        io.read_password()
+        io.read_password()?
     };
     password = password.trim().to_string();
 
-    match client.try_login(username, password) {
-        Ok(message) => {
-            io.println(&message, PrintColor::Success);
+    let message = client.try_login(username, password)?;
+    io.println(&message, PrintColor::Success)?;
 
-            let res = if interactive_mode {
-                organization::set_organization(io, client)
-            } else {
-                organization::set_organization_old(io, client)
-            };
-            if let Err(_err) = res {
-                io.println("Could not set organization", PrintColor::Failed);
-                return;
-            }
-        }
-        Err(message) => {
-            io.println(&message, PrintColor::Failed);
-            return;
-        }
-    }
+    let res = if interactive_mode {
+        organization::set_organization(io, client)
+    } else {
+        organization::set_organization_old(io, client)
+    };
+    res.context("Could not set organization")?;
 
     if client.is_test_mode() {
-        return;
+        return Ok(());
     }
 
     if interactive_mode {
-        download_after_login(client, io);
+        download_after_login(client, io)?;
     } else {
-        io.println("Logged in and selected organization", PrintColor::Success);
+        io.println("Logged in and selected organization", PrintColor::Success)?;
     }
+    Ok(())
 }
 
-pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
-    io.println("Fetching courses...", PrintColor::Normal);
-    let courses = client.list_courses();
-    if courses.is_err() {
-        io.println("Could not list courses.", PrintColor::Failed);
-        return;
-    }
+pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow::Result<()> {
+    io.println("Fetching courses...", PrintColor::Normal)?;
+    let courses = client.list_courses()?;
 
     let mut courses = courses
-        .unwrap()
         .iter()
-        .map(|course| client.get_course_details(course.id).unwrap())
-        .collect::<Vec<_>>();
+        .map(|course| client.get_course_details(course.id))
+        .collect::<Result<Vec<_>, _>>()?;
 
     courses.sort_by(|a, b| {
         a.course
@@ -82,46 +73,27 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) {
     let no_download = "Don't download anything".to_string();
     courses_displayed.insert(0, no_download.clone());
 
-    let name_select = match download::get_course_name(courses_displayed) {
-        Ok(course) => {
-            if course == no_download {
-                io.println("No course downloaded.", PrintColor::Normal);
-                return;
-            }
-            &courses
-                .iter()
-                .find(|c| c.course.title == course)
-                .unwrap()
-                .course
-                .name
-        }
-        Err(msg) => {
-            io.println(&msg, PrintColor::Failed);
-            return;
-        }
-    };
+    let course = download::get_course_name(courses_displayed)?;
+    if course == no_download {
+        anyhow::bail!("No course downloaded.");
+    }
+    let name_select = &courses
+        .iter()
+        .find(|c| c.course.title == course)
+        .context("No course matching the selected name was found")?
+        .course
+        .name;
 
     // Get course by name
-    let course_result = match util::get_course_by_name(client, name_select) {
-        Ok(result) => result,
-        Err(msg) => {
-            io.println(&msg, PrintColor::Failed);
-            return;
-        }
+    let course = match util::get_course_by_name(client, name_select)? {
+        Some(course) => course,
+        None => anyhow::bail!("Could not find course with that name"),
     };
+    let path = util::get_projects_dir()?;
 
-    if course_result.is_none() {
-        io.println("Could not find course with that name", PrintColor::Failed);
-        return;
-    }
-    let course = course_result.unwrap();
-
-    let path = util::get_projects_dir();
-
-    match download::download_exercises(&path, client, &course) {
-        Ok(msg) => io.println(&msg, PrintColor::Success),
-        Err(msg) => io.println(&msg, PrintColor::Failed),
-    }
+    let msg = download::download_exercises(&path, client, &course)?;
+    io.println(&msg, PrintColor::Success)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -147,25 +119,27 @@ mod tests {
     }
 
     impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> String {
-            match self.input.next() {
+        fn read_line(&mut self) -> anyhow::Result<String> {
+            let res = match self.input.next() {
                 Some(string) => string,
                 None => "",
-            }
-            .to_string()
+            };
+            Ok(res.to_string())
         }
 
-        fn print(&mut self, output: &str, _font_color: PrintColor) {
+        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             print!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn println(&mut self, output: &str, _font_color: PrintColor) {
+        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
             println!("{}", output);
             self.list.push(output.to_string());
+            Ok(())
         }
 
-        fn read_password(&mut self) -> String {
+        fn read_password(&mut self) -> anyhow::Result<String> {
             self.read_line()
         }
     }
