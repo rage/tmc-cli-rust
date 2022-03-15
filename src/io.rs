@@ -66,8 +66,8 @@ impl Io for IoProduction<'_> {
     fn print(&mut self, text_to_output: &str, font_color: PrintColor) -> anyhow::Result<()> {
         match self.test_mode {
             true => {
-                self.output.write_all(text_to_output.as_bytes()).expect("");
-                self.output.flush().expect("Something went wrong");
+                self.output.write_all(text_to_output.as_bytes())?;
+                self.output.flush()?;
             }
             false => match font_color {
                 PrintColor::Success => {
@@ -76,7 +76,7 @@ impl Io for IoProduction<'_> {
                     colorspec.set_bold(true);
                     self.buffer.set_color(&colorspec)?;
 
-                    self.buffer.write_all(text_to_output.as_bytes()).expect("");
+                    self.buffer.write_all(text_to_output.as_bytes())?;
                     self.bufferwriter.print(self.buffer)?;
                     self.buffer.clear();
 
@@ -84,7 +84,7 @@ impl Io for IoProduction<'_> {
                     self.buffer.set_color(&colorspec)?;
                 }
                 PrintColor::Normal => {
-                    self.buffer.write_all(text_to_output.as_bytes()).expect("");
+                    self.buffer.write_all(text_to_output.as_bytes())?;
                     self.bufferwriter.print(self.buffer)?;
                     self.buffer.clear();
                 }

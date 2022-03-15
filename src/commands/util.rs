@@ -2,18 +2,14 @@ use crate::interactive::interactive_list;
 use anyhow::Context;
 use isolang::Language;
 use reqwest::Url;
-use std::env;
-use std::path::Path;
-use std::path::PathBuf;
-use tmc_langs::Credentials;
-use tmc_langs::DownloadOrUpdateCourseExercisesResult;
-use tmc_langs::DownloadResult;
-use tmc_langs::LangsError;
-use tmc_langs::{ClientError, TmcClient, Token};
-use tmc_langs::{ConfigValue, ProjectsConfig, TmcConfig};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 use tmc_langs::{
-    Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-    SubmissionFinished,
+    ClientError, ConfigValue, Course, CourseDetails, CourseExercise, Credentials,
+    DownloadOrUpdateCourseExercisesResult, DownloadResult, ExercisesDetails, LangsError,
+    NewSubmission, Organization, ProjectsConfig, SubmissionFinished, TmcClient, TmcConfig, Token,
 };
 
 pub const PLUGIN: &str = "tmc_cli_rust";
@@ -67,12 +63,10 @@ pub trait Client {
     ) -> Result<NewSubmission, String>;
 }
 
-static SERVER_ADDRESS: &str = "https://tmc.mooc.fi";
-
 impl ClientProduction {
     pub fn new(test_mode: bool) -> anyhow::Result<Self> {
         let (tmc_client, _credentials) = tmc_langs::init_tmc_client_with_credentials(
-            Url::parse(SERVER_ADDRESS).expect("Server address should always be correct."),
+            Url::parse("https://tmc.mooc.fi").expect("Server address should always be correct."),
             PLUGIN,
             PLUGIN_VERSION,
         )?;
@@ -561,7 +555,10 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         None => anyhow::bail!("Course selection interrupted."),
     };
 
-    let course_config = projects_config.courses.get(&chosen_course).unwrap();
+    let course_config = projects_config
+        .courses
+        .get(&chosen_course)
+        .context("Failed to find selected course")?;
 
     let mut exercise_list: Vec<String> = Vec::new();
 

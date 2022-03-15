@@ -9,8 +9,7 @@ pub fn logout(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::util::*;
-    use super::*;
+    use super::{super::util::*, *};
     use std::slice::Iter;
 
     pub struct IoTest<'a> {

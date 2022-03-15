@@ -23,14 +23,10 @@ mod tests {
     use super::*;
     use isolang::Language;
     use reqwest::Url;
-    use std::path::Path;
-    use std::slice::Iter;
-    use tmc_langs::ClientError;
-    use tmc_langs::DownloadOrUpdateCourseExercisesResult;
-    use tmc_langs::DownloadResult;
-    use tmc_langs::LangsError;
+    use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
+        ClientError, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
+        DownloadResult, ExercisesDetails, LangsError, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
     pub struct IoTest<'a> {
@@ -131,7 +127,7 @@ mod tests {
             &mut self,
             _path: &Path,
         ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
-            todo!()
+            unimplemented!()
         }
         fn submit(
             &self,
@@ -184,7 +180,7 @@ mod tests {
             &mut self,
             _exercise_ids: Vec<u32>,
         ) -> Result<Vec<ExercisesDetails>, ClientError> {
-            todo!()
+            unimplemented!()
         }
 
         fn download_or_update_exercises(
@@ -199,10 +195,10 @@ mod tests {
         }
 
         fn get_course_details(&self, _: u32) -> std::result::Result<CourseDetails, ClientError> {
-            todo!()
+            unimplemented!()
         }
         fn get_organization(&self, _: &str) -> std::result::Result<Organization, ClientError> {
-            todo!()
+            unimplemented!()
         }
     }
 

@@ -1,7 +1,8 @@
-use super::util;
-use super::util::Client;
-use crate::interactive::{self, interactive_list};
-use crate::io::{Io, PrintColor};
+use super::{util, util::Client};
+use crate::{
+    interactive::{self, interactive_list},
+    io::{Io, PrintColor},
+};
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
@@ -54,11 +55,15 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Res
 
     let prompt = String::from("Select your organization: ");
     let mut org_name = match interactive::interactive_list(&prompt, pinned)? {
-        Some(result) if result.eq(&others) => {
-            let all = orgs.iter().map(|org| org.name.clone()).collect();
-            interactive_list(&prompt, all)?
+        Some(result) => {
+            if result.eq(&others) {
+                let all = orgs.iter().map(|org| org.name.clone()).collect();
+                interactive_list(&prompt, all)?
+            } else {
+                Some(result)
+            }
         }
-        _ => todo!(),
+        None => anyhow::bail!("No organization chosen"),
     };
 
     org_name = match org_name {

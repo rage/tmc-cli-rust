@@ -1,11 +1,11 @@
 use core::sync::atomic::AtomicUsize;
-use indicatif::ProgressBar;
-use indicatif::ProgressStyle;
-use std::cmp::min;
-use std::collections::VecDeque;
-use std::sync::atomic::Ordering;
-use std::sync::{Arc, Mutex};
-use std::thread::JoinHandle;
+use indicatif::{ProgressBar, ProgressStyle};
+use std::{
+    cmp::min,
+    collections::VecDeque,
+    sync::{atomic::Ordering, Arc, Mutex},
+    thread::JoinHandle,
+};
 use tmc_langs::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
@@ -58,11 +58,15 @@ impl ProgressBarManager {
         let percentage_cb = self.percentage_progress.clone();
         let message_cb = self.status_message.clone();
         let callback = move |status: tmc_langs::progress_reporter::StatusUpdate<T>| {
-            let mut percentage_guard = percentage_cb.lock().expect("Could not lock mutex");
+            let mut percentage_guard = percentage_cb
+                .lock()
+                .expect("We should never panic with the lock");
             *percentage_guard = status.percent_done;
             drop(percentage_guard);
 
-            let mut message_guard = message_cb.lock().expect("Could not lock mutex");
+            let mut message_guard = message_cb
+                .lock()
+                .expect("We should never panic with the lock");
             *message_guard = status.message.to_string();
             drop(message_guard);
 
@@ -102,7 +106,10 @@ impl ProgressBarManager {
     /// Renders a static message under progression status text
     /// Used for displaying text to user while progress bar is running
     pub fn println(&mut self, message: String) {
-        let mut message_guard = self.message_queue.lock().expect("Could not lock mutex");
+        let mut message_guard = self
+            .message_queue
+            .lock()
+            .expect("We should never panic with the lock");
         //*message_guard = message;
         (*message_guard).push_back(message);
         drop(message_guard);
@@ -167,7 +174,9 @@ impl ProgressBarManager {
 
         let mut last_message = "".to_string();
         loop {
-            let guard = percentage_progress.lock().expect("Could not lock mutex");
+            let guard = percentage_progress
+                .lock()
+                .expect("We should never panic with the lock");
             let progress = *guard * max_len as f64;
             drop(guard);
 
@@ -177,7 +186,9 @@ impl ProgressBarManager {
                 last_progress = progress;
             }
 
-            let message_guard = status_message.lock().expect("Could not lock mutex");
+            let message_guard = status_message
+                .lock()
+                .expect("We should never panic with the lock");
             let mut message = (*message_guard).clone();
             drop(message_guard);
 
@@ -196,7 +207,9 @@ impl ProgressBarManager {
                 pb.set_message(message);
             }
 
-            let mut message_queue_guard = message_queue.lock().expect("Could not lock mutex");
+            let mut message_queue_guard = message_queue
+                .lock()
+                .expect("We should never panic with the lock");
             let message_option = message_queue_guard.pop_front();
             drop(message_queue_guard);
 
@@ -211,7 +224,9 @@ impl ProgressBarManager {
             std::thread::sleep(std::time::Duration::from_millis(1000 / 15));
         }
         pb.disable_steady_tick();
-        let message_guard = status_message.lock().expect("Could not lock mutex");
+        let message_guard = status_message
+            .lock()
+            .expect("We should never panic with the lock");
         pb.finish_with_message(message_guard.clone());
         drop(message_guard);
     }

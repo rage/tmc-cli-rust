@@ -10,8 +10,7 @@ use tui::{
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
     text::{Span, Spans},
-    widgets::Wrap,
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Terminal,
 };
 

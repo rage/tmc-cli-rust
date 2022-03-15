@@ -1,5 +1,4 @@
 pub mod prompt;
 pub mod state;
 
-pub use self::prompt::*;
-pub use self::state::*;
+pub use self::{prompt::*, state::*};

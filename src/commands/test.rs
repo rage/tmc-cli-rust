@@ -1,5 +1,7 @@
-use crate::commands::util;
-use crate::io::{Io, PrintColor};
+use crate::{
+    commands::util,
+    io::{Io, PrintColor},
+};
 use anyhow::Context;
 use std::path::Path;
 use tmc_langs::RunResult;
@@ -129,8 +131,7 @@ mod tests {
     mod tests {
         use super::*;
         use std::collections::HashMap;
-        use tmc_langs::RunStatus;
-        use tmc_langs::TestResult;
+        use tmc_langs::{RunStatus, TestResult};
 
         #[test]
         fn generate_progress_string_empty_test() {

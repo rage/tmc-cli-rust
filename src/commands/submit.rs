@@ -1,13 +1,12 @@
-use super::util;
-use super::util::Client;
-use crate::io::{Io, PrintColor};
-use crate::progress_reporting;
-use crate::progress_reporting::ProgressBarManager;
+use super::{util, util::Client};
+use crate::{
+    io::{Io, PrintColor},
+    progress_reporting,
+    progress_reporting::ProgressBarManager,
+};
 use anyhow::{Context, Result};
 use reqwest::Url;
-use tmc_langs::ClientUpdateData;
-use tmc_langs::Language;
-use tmc_langs::SubmissionFinished;
+use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
 
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
@@ -17,7 +16,7 @@ use tmc_langs::SubmissionFinished;
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
 pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
-    let locale = into_locale("fin").expect("fin is a valid locale");
+    let locale = into_locale("fin").expect("The locale should always be valid.");
 
     // todo: use context
     let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
