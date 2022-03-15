@@ -36,18 +36,7 @@ fn main() {
         &mut stdin,
         matches.is_present("testmode"),
     );
-
-    match matches.occurrences_of("no-update") {
-        0 => {
-            let os = std::env::consts::OS;
-            if os == "windows" {
-                #[cfg(target_os = "windows")]
-                updater::check_for_update();
-            }
-        }
-        _ => println!("No Auto-Updates"),
-    }
-    if let Err(err) = commands::handle(&matches, &mut io) {
+    if let Err(err) = run(&mut io, &matches) {
         let error_string = err
             .chain()
             .map(|e| e.to_string())
@@ -57,6 +46,20 @@ fn main() {
             println!("Failed to print error: {err}");
         }
     }
+}
+
+fn run(io: &mut IoProduction, matches: &ArgMatches) -> anyhow::Result<()> {
+    match matches.occurrences_of("no-update") {
+        0 => {
+            let os = std::env::consts::OS;
+            if os == "windows" {
+                #[cfg(target_os = "windows")]
+                updater::check_for_update()?;
+            }
+        }
+        _ => println!("No Auto-Updates"),
+    }
+    commands::handle(matches, io)
 }
 
 fn generate_completions(matches: &ArgMatches) {

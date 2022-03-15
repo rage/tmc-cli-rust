@@ -8,7 +8,7 @@ mod paste;
 mod submit;
 mod test;
 mod update;
-mod util;
+pub mod util;
 
 use crate::io::{Io, PrintColor};
 use anyhow::Context;
@@ -75,11 +75,11 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) -> anyhow::Result<()>
         Some(("logout", _)) => logout::logout(io, &mut client)?,
         Some(("fetchupdate", _)) => {
             #[cfg(target_os = "windows")]
-            crate::updater::process_update();
+            crate::updater::process_update()?;
         }
         Some(("cleartemp", _)) => {
             #[cfg(target_os = "windows")]
-            crate::updater::cleartemp().unwrap();
+            crate::updater::cleartemp()?;
         }
         Some(("elevateddownload", _)) => {
             download::elevated_download(io, &mut client)?;
