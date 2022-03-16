@@ -92,8 +92,8 @@ mod tests {
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        ClientError, Language, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
-        DownloadResult, ExercisesDetails, LangsError, NewSubmission, Organization,
+        ClientError, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
+        DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
     pub struct IoTest<'a> {
