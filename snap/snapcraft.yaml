@@ -1,9 +1,14 @@
 name: tmc-cli-rust
-version: 0.3.5
-summary: Test my code CLI
-description: .
+title: TestMyCode CLI
+base: core20
+version: 1.1.0
+issues: https://github.com/rage/tmc-cli-rust/issues
+source-code: https://github.com/rage/tmc-cli-rust.git
+website: https://tmc.mooc.fi/
+summary: Client for TestMyCode.
+description: Client for downloading, testing and submitting exercises through the TestMyCode system.
 confinement: strict
-base: core18
+license: Apache-2.0
 
 plugs:
   home-folder-permissions:
@@ -18,7 +23,7 @@ parts:
     plugin: nil
     source: . 
     override-pull: | 
-      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v0.3.5 > tmc
+      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v1.1.0 > tmc
       chmod +x tmc
       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
       cp tmc $SNAPCRAFT_PART_INSTALL/bin/

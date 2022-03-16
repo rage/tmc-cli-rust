@@ -7,7 +7,7 @@ authors = ["HoolaBoola <jaime.heikkiladias@helsinki.fi>",
            "Nooblue <joni.sikio@helsinki.fi>"]
 edition = "2021"
 rust-version = "1.58.1"
-description = "Client for downloading, testing and submitting exercises through the Test My Code system."
+description = "Client for downloading, testing and submitting exercises through the TestMyCode system."
 license = "Apache-2.0"
 
 [dependencies]
