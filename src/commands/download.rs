@@ -186,7 +186,7 @@ pub fn download_exercises(
 
                             if !downloaded.is_empty() {
                                 res.push_str(&format!(
-                                    "\n\nSuccessful downloads saved to {}\\",
+                                    "\n\nSuccessful downloads saved to {}",
                                     path.display()
                                 ));
                             }
@@ -205,7 +205,7 @@ pub fn download_exercises(
     }
 
     Ok(format!(
-        "Exercises downloaded successfully to {}\\",
+        "Exercises downloaded successfully to {}",
         path.display()
     ))
 }

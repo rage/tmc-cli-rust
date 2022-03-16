@@ -1,16 +1,10 @@
 use super::util::Client;
 use crate::io::{Io, PrintColor};
-use tmc_langs::Course;
 
 /// Lists available courses from clients organization
 pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
-    let course_list = client.list_courses()?;
-    print_courses(io, &course_list)?;
-    Ok(())
-}
-
-/// Prints course names
-fn print_courses(io: &mut dyn Io, course_list: &[Course]) -> anyhow::Result<()> {
+    let mut course_list = client.list_courses()?;
+    course_list.sort_unstable_by(|l, r| l.name.cmp(&r.name));
     io.println("", PrintColor::Normal)?;
     for course in course_list {
         io.println(&course.name, PrintColor::Normal)?;
@@ -24,7 +18,7 @@ mod tests {
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        ClientError, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
+        ClientError, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
         DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
@@ -206,52 +200,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn list_courses_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
-
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
-
-            let courses = [
-                Course {
-                    id: 0,
-                    name: "name".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
-                },
-                Course {
-                    id: 10,
-                    name: "course of sorts".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
-                },
-            ];
-            print_courses(&mut io, &courses).unwrap();
-
-            assert!(io.list[0].eq(""));
-            assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);
-            assert!(
-                io.list[2].eq("course of sorts"),
-                "Expected 'course of sorts', got {}",
-                io.list[2]
-            );
-        }
-
-        #[test]
         fn list_courses_with_client_test() {
             let mut v: Vec<String> = Vec::new();
             let input = vec![];
@@ -266,10 +214,14 @@ mod tests {
             list_courses(&mut io, &mut client).unwrap();
 
             assert!(io.list[0].eq(""), "first line should be empty");
-            assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);
             assert!(
-                io.list[2].eq("mooc-tutustumiskurssi"),
-                "Expected 'mooc-tutustumiskurssi', got '{}'",
+                io.list[1].eq("mooc-tutustumiskurssi"),
+                "Expected 'mooc-tutustumiskurssi', got {}",
+                io.list[1]
+            );
+            assert!(
+                io.list[2].eq("name"),
+                "Expected 'name', got '{}'",
                 io.list[2]
             );
         }

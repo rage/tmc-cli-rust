@@ -92,7 +92,6 @@ pub fn build_cli() -> Command<'static> {
                         .required(false),
                 ),
         )
-        .subcommand(Command::new("update-exercises").about("Update exercises"))
         .arg(
             Arg::new("no-update")
                 .short('d')
