@@ -15,14 +15,14 @@ jobs:
       run: |
         rustup component add rustfmt
         rustup component add clippy
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
     - name: Run fmt
       run: cargo fmt -- --check
     - name: Run clippy
       run: cargo clippy -- -D warnings
+    - name: Build
+      run: cargo build --tests --verbose
+    - name: Run tests
+      run: cargo test --verbose
 
   deploy:
     needs: test

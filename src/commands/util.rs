@@ -12,7 +12,7 @@ use tmc_langs::{
 };
 
 pub const PLUGIN: &str = "tmc_cli_rust";
-pub const PLUGIN_VERSION: &str = "1.0.5";
+pub const PLUGIN_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 
