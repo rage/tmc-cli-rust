@@ -42,23 +42,23 @@ After restarting the terminal, this should work:
 
 64 bit Linux:
 
-        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s x86_64 linux
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash -s x86_64 linux
         
 32 bit Linux:
     
-        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s i686 linux
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash -s i686 linux
 
 64 bit MacOS:
 
-        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s x86_64 mac
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash -s x86_64 mac
         
 32 bit MacOS:
     
-        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/dev/scripts/install.sh | bash -s i686 mac
+        curl -0 https://raw.githubusercontent.com/rage/tmc-cli-rust/main/scripts/install.sh | bash -s i686 mac
 
 ### Using the Windows installer
 
-Windows installer can be found [here](https://github.com/rage/tmc-cli-rust/tree/dev/installer).
+Windows installer can be found [here](https://github.com/rage/tmc-cli-rust/tree/main/installer).
 Download and run the newest installer found. After installation, the application updates automatically.
 
 ### Manual installation, additional steps
