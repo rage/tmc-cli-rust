@@ -89,11 +89,10 @@ fn print_exercises(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use isolang::Language;
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        ClientError, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
+        ClientError, Language, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
         DownloadResult, ExercisesDetails, LangsError, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };

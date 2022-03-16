@@ -92,23 +92,26 @@ pub fn build_cli() -> Command<'static> {
                         .required(false),
                 ),
         )
-        .subcommand(Command::new("update").about("Update exercises"))
+        .subcommand(Command::new("update-exercises").about("Update exercises"))
         .arg(
             Arg::new("no-update")
                 .short('d')
                 .long("no-update")
-                .help("Disable auto update temporarily"),
+                .help("Disable auto update temporarily")
+                .hide(!cfg!(windows)), // hide on non-windows platforms
         )
         .arg(
             Arg::new("force-update")
                 .short('u')
                 .long("force-update")
-                .help("Force auto update to run"),
+                .help("Force auto update to run")
+                .hide(!cfg!(windows)), // hide on non-windows platforms
         )
         .arg(
             Arg::new("testmode")
                 .long("testmode")
-                .help("Only for internal testing, disables server connection"),
+                .help("Only for internal testing, disables server connection")
+                .hide(true),
         )
         .subcommand(
             Command::new("generate-completions")

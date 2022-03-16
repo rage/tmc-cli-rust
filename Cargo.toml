@@ -12,15 +12,10 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1.0.56"
-assert_cmd = "2.0.4"
 clap = "3.1.6"
 clap_complete = "3.1.1"
 crossterm = "0.23.0"
-dirs = "4.0.0"
 indicatif = "0.16.2"
-isolang = "2.1.0"
-log = "0.4.14"
-predicates = "2.1.1"
 reqwest = { version = "0.11.9", default-features = false, features = ["blocking", "json", "rustls-tls", "multipart"] }
 rpassword = "6.0.0"
 serde = "1.0.136"
@@ -31,6 +26,10 @@ tmc-langs = { git = "https://github.com/rage/tmc-langs-rust/", rev = "8f41c8e535
 toml = "0.5.8"
 tui = { version = "0.17.0", default-features = false, features = ['crossterm'] }
 url = "2.2.2"
+
+[dev-dependencies]
+assert_cmd = "2.0.4"
+predicates = "2.1.1"
 
 [build-dependencies]
 clap = "3.1.6"
