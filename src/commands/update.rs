@@ -65,10 +65,11 @@ pub fn update(io: &mut dyn Io, client: &mut dyn Client, currentdir: bool) -> any
     }
     Ok(())
 }
+
 fn call_update(path: &Path, client: &mut dyn Client) -> anyhow::Result<String> {
     client.update_exercises(path)?;
     Ok(format!(
-        "Exercises updated succesfully to {}\\",
+        "Exercises updated succesfully to {}",
         path.to_str().context("invalid path")?
     ))
 }
@@ -88,6 +89,7 @@ pub fn elevated_update(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Resu
     pause()?;
     Ok(())
 }
+
 fn pause() -> anyhow::Result<()> {
     use std::{io, io::prelude::*};
     let mut stdin = io::stdin();

@@ -14,7 +14,8 @@ pub fn list_exercises(
     };
     let course_id = course.id;
 
-    let exercises = client.get_course_exercises(course_id)?;
+    let mut exercises = client.get_course_exercises(course_id)?;
+    exercises.sort_unstable_by(|l, r| l.name.cmp(&r.name));
     print_exercises(io, course_name, exercises)?;
     Ok(())
 }

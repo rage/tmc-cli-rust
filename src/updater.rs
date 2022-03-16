@@ -88,6 +88,7 @@ pub fn process_update() -> anyhow::Result<()> {
     println!("Update completed succesfully!");
     Ok(())
 }
+
 fn elevate(command: String) -> anyhow::Result<()> {
     Command::new("powershell")
         .args(&[
@@ -102,6 +103,7 @@ fn elevate(command: String) -> anyhow::Result<()> {
         .context("launch failure")?;
     Ok(())
 }
+
 fn is_it_time_yet() -> anyhow::Result<bool> {
     let config = TmcConfig::load(PLUGIN, get_path()?.as_path())?;
 

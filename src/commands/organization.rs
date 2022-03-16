@@ -8,7 +8,7 @@ use crate::{
 pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
     // List all organizations
     let mut orgs = client.get_organizations()?;
-    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
+    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(b.name.cmp(&a.name)));
     let mut last_pinned = true;
 
     io.println("Available Organizations:", PrintColor::Normal)?;
@@ -42,13 +42,12 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow:
 pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
     io.println("Fetching organizations...", PrintColor::Normal)?;
     let mut orgs = client.get_organizations()?;
+    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(a.name.cmp(&b.name)));
     let mut pinned = orgs
         .iter()
         .filter(|org| org.pinned)
         .map(|org| org.name.clone())
         .collect::<Vec<_>>();
-
-    orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned));
 
     let others = String::from("View all organizations");
     pinned.push(others.clone());
