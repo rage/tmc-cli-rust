@@ -214,10 +214,14 @@ mod tests {
             list_courses(&mut io, &mut client).unwrap();
 
             assert!(io.list[0].eq(""), "first line should be empty");
-            assert!(io.list[1].eq("name"), "Expected 'name', got {}", io.list[1]);
             assert!(
-                io.list[2].eq("mooc-tutustumiskurssi"),
-                "Expected 'mooc-tutustumiskurssi', got '{}'",
+                io.list[1].eq("mooc-tutustumiskurssi"),
+                "Expected 'mooc-tutustumiskurssi', got {}",
+                io.list[1]
+            );
+            assert!(
+                io.list[2].eq("name"),
+                "Expected 'name', got '{}'",
                 io.list[2]
             );
         }
