@@ -21,12 +21,11 @@ fn print_courses(io: &mut dyn Io, course_list: &[Course]) -> anyhow::Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use isolang::Language;
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
         ClientError, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
-        DownloadResult, ExercisesDetails, LangsError, NewSubmission, Organization,
+        DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
     pub struct IoTest<'a> {

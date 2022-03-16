@@ -1,6 +1,5 @@
 use crate::interactive::interactive_list;
 use anyhow::Context;
-use isolang::Language;
 use reqwest::Url;
 use std::{
     env,
@@ -8,7 +7,7 @@ use std::{
 };
 use tmc_langs::{
     ClientError, ConfigValue, Course, CourseDetails, CourseExercise, Credentials,
-    DownloadOrUpdateCourseExercisesResult, DownloadResult, ExercisesDetails, LangsError,
+    DownloadOrUpdateCourseExercisesResult, DownloadResult, ExercisesDetails, LangsError, Language,
     NewSubmission, Organization, ProjectsConfig, SubmissionFinished, TmcClient, TmcConfig, Token,
 };
 
