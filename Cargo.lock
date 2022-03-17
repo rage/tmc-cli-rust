@@ -2021,7 +2021,7 @@ dependencies = [
 [[package]]
 name = "tmc-client"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "chrono",
  "dirs 4.0.0",
@@ -2045,8 +2045,8 @@ dependencies = [
 
 [[package]]
 name = "tmc-langs"
-version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+version = "0.24.0"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "base64",
  "dirs 4.0.0",
@@ -2084,7 +2084,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-csharp"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "dirs 4.0.0",
  "log",
@@ -2100,7 +2100,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-framework"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "fd-lock",
  "isolang",
@@ -2122,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-java"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "dirs 4.0.0",
  "flate2",
@@ -2142,7 +2142,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-make"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "log",
  "once_cell",
@@ -2159,7 +2159,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-notests"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "log",
  "tmc-langs-framework",
@@ -2169,7 +2169,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-plugins"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "impl-enum",
  "log",
@@ -2189,7 +2189,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-python3"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "dunce",
  "hex",
@@ -2211,7 +2211,7 @@ dependencies = [
 [[package]]
 name = "tmc-langs-r"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "log",
  "serde",
@@ -2225,15 +2225,19 @@ dependencies = [
 [[package]]
 name = "tmc-langs-util"
 version = "0.1.0"
-source = "git+https://github.com/rage/tmc-langs-rust/?rev=8f41c8e535#8f41c8e53540dddf3503a603b4653f04ec0b95fa"
+source = "git+https://github.com/rage/tmc-langs-rust/?tag=0.24.0#d141c80d760253931840ea8f02a337203b918c98"
 dependencies = [
  "fd-lock",
  "log",
  "nom",
  "once_cell",
  "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_yaml",
  "tempfile",
  "thiserror",
+ "toml",
  "type-map",
  "walkdir",
  "winapi",
