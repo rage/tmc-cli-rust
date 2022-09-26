@@ -5,12 +5,14 @@ use std::{
     collections::VecDeque,
     sync::{atomic::Ordering, Arc, Mutex},
     thread::JoinHandle,
+    time::Duration,
 };
 use tmc_langs::progress_reporter::StatusUpdate;
 
 pub fn get_default_style() -> ProgressStyle {
     ProgressStyle::default_bar()
         .template("{wide_msg}\n {percent}%[{bar:25.white}] [{elapsed_precise}]")
+        .expect("known to be valid")
         .progress_chars("██░")
 }
 
@@ -149,7 +151,7 @@ impl ProgressBarManager {
                 time: 0,
                 data: None,
             };
-            let _r = progress_report(status_update);
+            progress_report(status_update);
             finishes_current += 1;
 
             std::thread::sleep(std::time::Duration::from_millis(50));
@@ -168,7 +170,7 @@ impl ProgressBarManager {
     ) {
         let pb = ProgressBar::new(max_len as u64);
         pb.set_style(style);
-        pb.enable_steady_tick(1000);
+        pb.enable_steady_tick(Duration::from_millis(1000));
 
         let mut last_progress = 1.0_f64;
 
