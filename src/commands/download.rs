@@ -20,9 +20,10 @@ pub fn download_or_update(
     io: &mut dyn Io,
     client: &mut dyn Client,
     course_name: Option<&str>,
-    currentdir: bool,
+    current_dir: bool,
 ) -> anyhow::Result<()> {
-    get_organization().context("No organization found. Run 'tmc organization' first.")?;
+    let _org =
+        get_organization().context("No organization found. Run 'tmc organization' first.")?;
 
     io.println("Fetching courses...", PrintColor::Normal)?;
     let courses = client.list_courses().context("Could not list courses.")?;
@@ -39,8 +40,8 @@ pub fn download_or_update(
             .cmp(&b.course.title.to_lowercase())
     });
 
-    let name_select = if let Some(course) = course_name {
-        course
+    let name_select = if let Some(course_name) = course_name {
+        course_name
     } else {
         let course = get_course_name(
             courses
@@ -61,13 +62,13 @@ pub fn download_or_update(
         Some(course) => course,
         None => anyhow::bail!("Could not find course with that name"),
     };
-    let pathbuf = if currentdir {
+    let path = if current_dir {
         std::env::current_dir()?
     } else {
         get_projects_dir()?
     };
 
-    match download_exercises(&pathbuf, client, &course) {
+    match download_exercises(&path, client, &course) {
         Ok(msg) => {
             io.println(&format!("\n{}", msg), PrintColor::Success)?;
             Ok(())
@@ -87,10 +88,10 @@ pub fn download_or_update(
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(
                     temp_file_path,
-                    format!("{};{}", &pathbuf.display(), &course.name),
+                    format!("{};{}", &path.display(), &course.name),
                 )?;
                 Command::new("cmd")
-                    .args(&[
+                    .args([
                         "/C",
                         "powershell",
                         "-Command",
@@ -111,17 +112,13 @@ pub fn download_or_update(
 }
 
 pub fn get_course_name(courses: Vec<String>) -> anyhow::Result<String> {
-    let result = interactive::interactive_list("Select your course:", courses)?;
+    let course = interactive::interactive_list("Select your course:", courses)?
+        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 
-    match result {
-        Some(course) => {
-            if course.is_empty() {
-                anyhow::bail!("Could not find a course by the given title");
-            } else {
-                Ok(course)
-            }
-        }
-        None => anyhow::bail!("Course selection was interrupted"),
+    if course.is_empty() {
+        anyhow::bail!("Could not find a course by the given title");
+    } else {
+        Ok(course)
     }
 }
 
@@ -209,6 +206,7 @@ pub fn download_exercises(
         path.display()
     ))
 }
+
 pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
     use std::io::prelude::*;
     let temp_file_path = get_projects_dir()?;

@@ -64,12 +64,11 @@ impl Io for IoProduction<'_> {
     }
 
     fn print(&mut self, text_to_output: &str, font_color: PrintColor) -> anyhow::Result<()> {
-        match self.test_mode {
-            true => {
-                self.output.write_all(text_to_output.as_bytes())?;
-                self.output.flush()?;
-            }
-            false => match font_color {
+        if self.test_mode {
+            self.output.write_all(text_to_output.as_bytes())?;
+            self.output.flush()?;
+        } else {
+            match font_color {
                 PrintColor::Success => {
                     let mut colorspec = ColorSpec::new();
                     colorspec.set_fg(Some(Color::Green));
@@ -101,7 +100,7 @@ impl Io for IoProduction<'_> {
                     colorspec.clear();
                     self.buffer.set_color(&colorspec)?;
                 }
-            },
+            }
         }
         Ok(())
     }

@@ -27,10 +27,6 @@ mod tests {
         input: &'a mut Iter<'a, &'a str>,
     }
 
-    #[cfg(test)]
-    impl IoTest<'_> {}
-
-    #[cfg(test)]
     impl Io for IoTest<'_> {
         fn read_line(&mut self) -> anyhow::Result<String> {
             let res = match self.input.next() {
@@ -57,13 +53,8 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    pub struct ClientTest {}
+    pub struct ClientTest;
 
-    #[cfg(test)]
-    impl ClientTest {}
-
-    #[cfg(test)]
     impl Client for ClientTest {
         fn paste(
             &self,
@@ -195,35 +186,30 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
+    #[test]
+    fn list_courses_with_client_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec![];
+        let mut input = input.iter();
 
-        #[test]
-        fn list_courses_with_client_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
 
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
+        let mut client = ClientTest;
+        list_courses(&mut io, &mut client).unwrap();
 
-            let mut client = ClientTest {};
-            list_courses(&mut io, &mut client).unwrap();
-
-            assert!(io.list[0].eq(""), "first line should be empty");
-            assert!(
-                io.list[1].eq("mooc-tutustumiskurssi"),
-                "Expected 'mooc-tutustumiskurssi', got {}",
-                io.list[1]
-            );
-            assert!(
-                io.list[2].eq("name"),
-                "Expected 'name', got '{}'",
-                io.list[2]
-            );
-        }
+        assert!(io.list[0].eq(""), "first line should be empty");
+        assert!(
+            io.list[1].eq("mooc-tutustumiskurssi"),
+            "Expected 'mooc-tutustumiskurssi', got {}",
+            io.list[1]
+        );
+        assert!(
+            io.list[2].eq("name"),
+            "Expected 'name', got '{}'",
+            io.list[2]
+        );
     }
 }

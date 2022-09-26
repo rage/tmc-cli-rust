@@ -100,46 +100,39 @@ where
 /// if succeeds, handles the input and returns Option<Option<String>> as return value
 ///
 /// None: nothing was selected yet
-/// Some(None): the user interrupted and the process should quit
-/// Some(Some(res)): the user has selected an item
+/// Some(None): the user selected nothing (quit with ESC)
+/// Some(Some(res)): the user selected an item
 fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
     if poll(Duration::from_millis(POLL_RATE))? {
         if let Event::Key(x) = read()? {
             // CTRL-C is the usual stop command
             // which is disabled by default because of raw mode
-            let selection = if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL
-            {
-                Some(None)
-            } else {
-                match x.code {
-                    KeyCode::Esc => Some(None),
-                    KeyCode::Up => {
-                        app.items.previous();
-                        None
-                    }
-                    KeyCode::Left => {
-                        app.items.previous();
-                        None
-                    }
-                    KeyCode::Right => {
-                        app.items.next();
-                        None
-                    }
-                    KeyCode::Down => {
-                        app.items.next();
-                        None
-                    }
-                    KeyCode::Enter => Some(app.get_selected()),
-                    KeyCode::Char(c) => {
-                        app.push_filter(c);
-                        None
-                    }
-                    KeyCode::Backspace => {
-                        app.pop_filter();
-                        None
-                    }
-                    _ => None,
+            if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
+                // respect the interrupt and exit immediately
+                std::process::exit(0);
+            }
+            let selection = match x.code {
+                KeyCode::Esc => Some(None),
+                KeyCode::Up | KeyCode::Left => {
+                    app.items.previous();
+                    None
                 }
+                KeyCode::Down | KeyCode::Right => {
+                    app.items.next();
+                    None
+                }
+                // if no selection, None
+                // else Some(Some(selection))
+                KeyCode::Enter => app.get_selected().map(Some),
+                KeyCode::Char(c) => {
+                    app.push_filter(c);
+                    None
+                }
+                KeyCode::Backspace => {
+                    app.pop_filter();
+                    None
+                }
+                _ => None,
             };
             return Ok(selection);
         }
@@ -155,19 +148,21 @@ fn event_loop<B>(
 where
     B: Backend,
 {
-    let mut result = None;
     loop {
         draw_terminal(terminal, &mut app, prompt)?;
 
-        if let Some(res) = read_keys(&mut app)? {
-            if res.is_some() {
-                result = res;
+        match read_keys(&mut app)? {
+            Some(Some(res)) => {
+                println!();
+                return Ok(Some(res));
             }
-            break;
+            Some(None) => {
+                // user interrupted selection
+                return Ok(None);
+            }
+            None => {
+                // nothing was selected, continue
+            }
         }
     }
-
-    println!();
-
-    Ok(result)
 }

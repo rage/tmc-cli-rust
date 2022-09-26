@@ -19,17 +19,16 @@ use std::{
 /// tmc update //runs update command in project dir
 /// tmc update -d //runs update command in current dir
 ///
-pub fn update(io: &mut dyn Io, client: &mut dyn Client, currentdir: bool) -> anyhow::Result<()> {
+pub fn update(io: &mut dyn Io, client: &mut dyn Client, current_dir: bool) -> anyhow::Result<()> {
     // Get a client that has credentials
     client.load_login()?;
-    let pathbuf = if currentdir {
+    let path = if current_dir {
         std::env::current_dir()?
     } else {
         get_projects_dir()?
     };
-    let tmp_path = &pathbuf;
-    let tmp_path = tmp_path.to_str().context("invalid path")?;
-    match call_update(&pathbuf, client) {
+    let tmp_path = path.to_str().context("invalid path")?;
+    match call_update(&path, client) {
         Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success)?,
         Err(msg) => {
             let os = std::env::consts::OS;
@@ -46,7 +45,7 @@ pub fn update(io: &mut dyn Io, client: &mut dyn Client, currentdir: bool) -> any
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(temp_file_path, tmp_path)?;
                 Command::new("cmd")
-                    .args(&[
+                    .args([
                         "/C",
                         "powershell",
                         "-Command",

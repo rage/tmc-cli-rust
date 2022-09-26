@@ -29,12 +29,12 @@ pub fn login(
     let message = client.try_login(username, password)?;
     io.println(&message, PrintColor::Success)?;
 
-    let res = if interactive_mode {
+    if interactive_mode {
         organization::set_organization(io, client)
     } else {
         organization::set_organization_old(io, client)
-    };
-    res.context("Could not set organization")?;
+    }
+    .context("Could not set organization")?;
 
     if client.is_test_mode() {
         return Ok(());
@@ -83,10 +83,8 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
         .name;
 
     // Get course by name
-    let course = match util::get_course_by_name(client, name_select)? {
-        Some(course) => course,
-        None => anyhow::bail!("Could not find course with that name"),
-    };
+    let course = util::get_course_by_name(client, name_select)?
+        .ok_or_else(|| anyhow::anyhow!("Could not find course with that name"))?;
     let path = util::get_projects_dir()?;
 
     let msg = download::download_exercises(&path, client, &course)?;
@@ -96,23 +94,12 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
 
 #[cfg(test)]
 mod tests {
-    use super::{super::util::*, *};
+    use super::*;
     use std::slice::Iter;
-    use tmc_langs::Organization;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl IoTest<'_> {
-        pub fn buffer_length(&mut self) -> usize {
-            self.list.len()
-        }
-
-        pub fn buffer_get(&mut self, index: usize) -> String {
-            self.list[index].to_string()
-        }
     }
 
     impl Io for IoTest<'_> {

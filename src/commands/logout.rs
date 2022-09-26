@@ -9,22 +9,12 @@ pub fn logout(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{super::util::*, *};
+    use super::*;
     use std::slice::Iter;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl IoTest<'_> {
-        pub fn buffer_length(&mut self) -> usize {
-            self.list.len()
-        }
-
-        pub fn buffer_get(&mut self, index: usize) -> String {
-            self.list[index].to_string()
-        }
     }
 
     impl Io for IoTest<'_> {

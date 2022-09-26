@@ -8,15 +8,12 @@ pub fn list_exercises(
     client: &mut dyn Client,
     course_name: &str,
 ) -> anyhow::Result<()> {
-    let course = match util::get_course_by_name(client, course_name)? {
-        Some(course) => course,
-        None => anyhow::bail!("Could not find a course with name '{}'", course_name),
-    };
-    let course_id = course.id;
+    let course = util::get_course_by_name(client, course_name)?
+        .ok_or_else(|| anyhow::anyhow!("Could not find a course with name '{}'", course_name))?;
 
-    let mut exercises = client.get_course_exercises(course_id)?;
+    let mut exercises = client.get_course_exercises(course.id)?;
     exercises.sort_unstable_by(|l, r| l.name.cmp(&r.name));
-    print_exercises(io, course_name, exercises)?;
+    print_exercises(io, course_name, &exercises)?;
     Ok(())
 }
 
@@ -24,14 +21,14 @@ pub fn list_exercises(
 fn print_exercises(
     io: &mut dyn Io,
     course_name: &str,
-    exercises: Vec<CourseExercise>,
+    exercises: &[CourseExercise],
 ) -> anyhow::Result<()> {
     io.println("", PrintColor::Normal)?;
     io.println(&format!("Course name: {}", course_name), PrintColor::Normal)?;
 
-    let none = "none".to_string();
-    let mut prev_deadline = "".to_string();
-    let mut prev_soft_deadline = "".to_string();
+    let none = "none";
+    let mut prev_deadline = "";
+    let mut prev_soft_deadline = "";
     for exercise in exercises {
         // Skip locked and disabled exercises
         if exercise.disabled || !exercise.unlocked {
@@ -39,31 +36,31 @@ fn print_exercises(
         }
 
         // Print deadline if it exists
-        if let Some(dl) = exercise.deadline {
+        if let Some(dl) = &exercise.deadline {
             if prev_deadline != dl {
-                io.println(&format!("Deadline: {}", &dl), PrintColor::Normal)?;
-                prev_deadline = dl.clone();
+                io.println(&format!("Deadline: {}", dl), PrintColor::Normal)?;
+                prev_deadline = dl;
             }
         } else if prev_deadline != none {
-            io.println(&format!("Deadline: {}", &none), PrintColor::Normal)?;
-            prev_deadline = none.clone();
+            io.println(&format!("Deadline: {}", none), PrintColor::Normal)?;
+            prev_deadline = none;
         }
 
         // TODO: Do we need soft deadline?
-        if let Some(dl) = exercise.soft_deadline {
+        if let Some(dl) = &exercise.soft_deadline {
             if prev_soft_deadline != dl {
-                io.println(&format!("Soft deadline: {}", &dl), PrintColor::Normal)?;
-                prev_soft_deadline = dl.clone();
+                io.println(&format!("Soft deadline: {}", dl), PrintColor::Normal)?;
+                prev_soft_deadline = dl;
             }
         } else if prev_soft_deadline != none {
-            io.println(&format!("Soft deadline: {}", &none), PrintColor::Normal)?;
-            prev_soft_deadline = none.clone();
+            io.println(&format!("Soft deadline: {}", none), PrintColor::Normal)?;
+            prev_soft_deadline = none;
         }
 
         let mut completed = true;
         let mut attempted = false;
 
-        for point in exercise.available_points {
+        for point in &exercise.available_points {
             if !exercise.awarded_points.contains(&point.name) {
                 completed = false;
             } else {
@@ -97,15 +94,12 @@ mod tests {
         DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
         SubmissionFinished, SubmissionStatus,
     };
+
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
         input: &'a mut Iter<'a, &'a str>,
     }
 
-    #[cfg(test)]
-    impl IoTest<'_> {}
-
-    #[cfg(test)]
     impl Io for IoTest<'_> {
         fn read_line(&mut self) -> anyhow::Result<String> {
             let res = match self.input.next() {
@@ -132,13 +126,8 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    pub struct ClientTest {}
+    pub struct ClientTest;
 
-    #[cfg(test)]
-    impl ClientTest {}
-
-    #[cfg(test)]
     impl Client for ClientTest {
         fn paste(
             &self,
@@ -337,138 +326,133 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
+    #[test]
+    fn list_exercises_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec![];
+        let mut input = input.iter();
 
-        #[test]
-        fn list_exercises_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
 
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
-
-            let points = vec![
-                //TODO: ExercisePoint is in private module
-                /*ExercisePoint {
-                    id: 0,
-                    exercise_id: 0,
-                    name: "1.1".to_string(),
-                    requires_review: true,
-                }*/
-            ];
-            let awarded_points = vec![/*"1.1".to_string()*/];
-
-            let exercises = vec![CourseExercise {
+        let points = vec![
+            //TODO: ExercisePoint is in private module
+            /*ExercisePoint {
                 id: 0,
-                available_points: points,
-                awarded_points: awarded_points,
-                name: "part01-01_example_exercise".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: false,
-                unlocked: true,
-            }];
+                exercise_id: 0,
+                name: "1.1".to_string(),
+                requires_review: true,
+            }*/
+        ];
+        let awarded_points = vec![/*"1.1".to_string()*/];
 
-            print_exercises(&mut io, "course_name", exercises).unwrap();
-            assert!(io.list[0].eq(""), "first line should be empty");
-            let course_string = "Course name: course_name";
-            assert!(
-                io.list[1].eq(course_string),
-                "Expected '{}', got '{}'",
-                course_string,
-                io.list[1]
-            );
-            let deadline_string = "Deadline: none";
-            let soft_deadline_string = "Soft deadline: none";
-            assert!(
-                io.list[2].eq(deadline_string),
-                "Expected '{}', got '{}'",
-                deadline_string,
-                io.list[2]
-            );
-            assert!(
-                io.list[3].eq(soft_deadline_string),
-                "Expected '{}', got '{}'",
-                soft_deadline_string,
-                io.list[3]
-            );
+        let exercises = [CourseExercise {
+            id: 0,
+            available_points: points,
+            awarded_points: awarded_points,
+            name: "part01-01_example_exercise".to_string(),
+            publish_time: None,
+            solution_visible_after: None,
+            deadline: None,
+            soft_deadline: None,
+            disabled: false,
+            unlocked: true,
+        }];
 
-            let exercise_string = "  Completed: part01-01_example_exercise";
-            assert!(
-                io.list[4].eq(exercise_string),
-                "Expected '{}', got '{}'",
-                exercise_string,
-                io.list[4]
-            );
-        }
+        print_exercises(&mut io, "course_name", &exercises).unwrap();
+        assert!(io.list[0].eq(""), "first line should be empty");
+        let course_string = "Course name: course_name";
+        assert!(
+            io.list[1].eq(course_string),
+            "Expected '{}', got '{}'",
+            course_string,
+            io.list[1]
+        );
+        let deadline_string = "Deadline: none";
+        let soft_deadline_string = "Soft deadline: none";
+        assert!(
+            io.list[2].eq(deadline_string),
+            "Expected '{}', got '{}'",
+            deadline_string,
+            io.list[2]
+        );
+        assert!(
+            io.list[3].eq(soft_deadline_string),
+            "Expected '{}', got '{}'",
+            soft_deadline_string,
+            io.list[3]
+        );
 
-        #[test]
-        fn list_exercises_with_client_test() {
-            let mut v: Vec<String> = Vec::new();
-            let input = vec![];
-            let mut input = input.iter();
+        let exercise_string = "  Completed: part01-01_example_exercise";
+        assert!(
+            io.list[4].eq(exercise_string),
+            "Expected '{}', got '{}'",
+            exercise_string,
+            io.list[4]
+        );
+    }
 
-            let mut io = IoTest {
-                list: &mut v,
-                input: &mut input,
-            };
-            let mut client = ClientTest {};
-            list_exercises(&mut io, &mut client, "course_name").unwrap();
+    #[test]
+    fn list_exercises_with_client_test() {
+        let mut v: Vec<String> = Vec::new();
+        let input = vec![];
+        let mut input = input.iter();
 
-            assert!(io.list[0].eq(""), "first line should be empty");
-            let course_string = "Course name: course_name";
-            assert!(
-                io.list[1].eq(course_string),
-                "Expected '{}', got '{}'",
-                course_string,
-                io.list[1]
-            );
+        let mut io = IoTest {
+            list: &mut v,
+            input: &mut input,
+        };
+        let mut client = ClientTest;
+        list_exercises(&mut io, &mut client, "course_name").unwrap();
 
-            let deadline_string = "Deadline: none";
-            let soft_deadline_string = "Soft deadline: none";
-            assert!(
-                io.list[2].eq(deadline_string),
-                "Expected '{}', got '{}'",
-                deadline_string,
-                io.list[2]
-            );
-            assert!(
-                io.list[3].eq(soft_deadline_string),
-                "Expected '{}', got '{}'",
-                soft_deadline_string,
-                io.list[3]
-            );
+        assert!(io.list[0].eq(""), "first line should be empty");
+        let course_string = "Course name: course_name";
+        assert!(
+            io.list[1].eq(course_string),
+            "Expected '{}', got '{}'",
+            course_string,
+            io.list[1]
+        );
 
-            let exercise_string_1 = "  Completed: part01-01_example_exercise";
-            assert!(
-                io.list[4].eq(exercise_string_1),
-                "Expected '{}', got '{}'",
-                exercise_string_1,
-                io.list[4]
-            );
+        let deadline_string = "Deadline: none";
+        let soft_deadline_string = "Soft deadline: none";
+        assert!(
+            io.list[2].eq(deadline_string),
+            "Expected '{}', got '{}'",
+            deadline_string,
+            io.list[2]
+        );
+        assert!(
+            io.list[3].eq(soft_deadline_string),
+            "Expected '{}', got '{}'",
+            soft_deadline_string,
+            io.list[3]
+        );
 
-            let exercise_string_2 = "  Completed: part02-03_example_valid";
-            assert!(
-                io.list[5].eq(exercise_string_2),
-                "Expected '{}', got '{}'",
-                exercise_string_2,
-                io.list[5]
-            );
+        let exercise_string_1 = "  Completed: part01-01_example_exercise";
+        assert!(
+            io.list[4].eq(exercise_string_1),
+            "Expected '{}', got '{}'",
+            exercise_string_1,
+            io.list[4]
+        );
 
-            let expected_size = 6;
-            assert!(
-                io.list.len().eq(&expected_size),
-                "Expected size '{}', got {}",
-                expected_size,
-                io.list.len()
-            );
-        }
+        let exercise_string_2 = "  Completed: part02-03_example_valid";
+        assert!(
+            io.list[5].eq(exercise_string_2),
+            "Expected '{}', got '{}'",
+            exercise_string_2,
+            io.list[5]
+        );
+
+        let expected_size = 6;
+        assert!(
+            io.list.len().eq(&expected_size),
+            "Expected size '{}', got {}",
+            expected_size,
+            io.list.len()
+        );
     }
 }

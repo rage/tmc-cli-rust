@@ -120,12 +120,9 @@ impl Client for ClientProduction {
             locale,
         ) {
             Err(client_error) => match client_error {
-                LangsError::TmcClient(ClientError::HttpError {
-                    url: _,
-                    status,
-                    error,
-                    obsolete_client: _,
-                }) => Err(format!("Status {}, message: {}", status, error)),
+                LangsError::TmcClient(ClientError::HttpError { status, error, .. }) => {
+                    Err(format!("Status {}, message: {}", status, error))
+                }
                 _ => Err(
                     "Received unhandled ClientError when calling paste command from tmc_client"
                         .to_string(),
@@ -270,17 +267,11 @@ impl Client for ClientProduction {
                 },
             ]);
         }
-        let result = self.tmc_client.get_organizations();
-        match result {
-            Ok(organizations) => {
-                let mut org_list: Vec<Organization> = Vec::new();
-                for org in organizations {
-                    org_list.push(org);
-                }
-                Ok(org_list)
-            }
-            _ => anyhow::bail!("Could not get organizations from server"),
-        }
+        let organizations = self
+            .tmc_client
+            .get_organizations()
+            .context("Could not get organizations from server")?;
+        Ok(organizations)
     }
 
     fn logout(&mut self) -> anyhow::Result<()> {
@@ -452,17 +443,14 @@ pub fn get_organization() -> anyhow::Result<String> {
     }
 }
 
-pub fn set_organization(org: &str) -> anyhow::Result<()> {
+pub fn set_organization(org: String) -> anyhow::Result<()> {
     let mut config = match TmcConfig::load(PLUGIN, &get_path()?) {
         Ok(config) => config,
         _ => anyhow::bail!("Config could not be loaded"),
     };
 
     config
-        .insert(
-            "organization".to_string(),
-            toml::Value::String(org.to_string()),
-        )
+        .insert("organization".to_string(), toml::Value::String(org))
         .context("Organization could not be changed")?;
 
     config
@@ -549,10 +537,8 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_course = match interactive_list("First select course: ", courses)? {
-        Some(selection) => selection,
-        None => anyhow::bail!("Course selection interrupted."),
-    };
+    let chosen_course = interactive_list("First select course: ", courses)?
+        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 
     let course_config = projects_config
         .courses
@@ -574,10 +560,8 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_exercise = match interactive_list("Select exercise: ", exercise_list)? {
-        Some(selection) => selection,
-        None => anyhow::bail!("Exercise selection interrupted."),
-    };
+    let chosen_exercise = interactive_list("Select exercise: ", exercise_list)?
+        .ok_or_else(|| anyhow::anyhow!("Didn't select any exercise"))?;
 
     let mut path = get_projects_dir()?;
     path.push(chosen_course);

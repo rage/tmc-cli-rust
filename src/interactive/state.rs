@@ -29,31 +29,39 @@ impl<T: Clone> StatefulList<T> {
     }
 
     pub fn next(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.displayed.len() - 1 {
-                    0
-                } else {
-                    i + 1
+        if self.displayed.is_empty() {
+            self.state.select(None);
+        } else {
+            let i = match self.state.selected() {
+                Some(i) => {
+                    if i >= self.displayed.len() - 1 {
+                        0
+                    } else {
+                        i + 1
+                    }
                 }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
+                None => 0,
+            };
+            self.state.select(Some(i));
+        }
     }
 
     pub fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.displayed.len() - 1
-                } else {
-                    i - 1
+        if self.displayed.is_empty() {
+            self.state.select(None);
+        } else {
+            let i = match self.state.selected() {
+                Some(i) => {
+                    if i == 0 {
+                        self.displayed.len() - 1
+                    } else {
+                        i - 1
+                    }
                 }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
+                None => 0,
+            };
+            self.state.select(Some(i));
+        }
     }
 }
 
@@ -108,7 +116,7 @@ impl AppState {
         self.items
             .state
             .selected()
-            .map(|selected| self.items.displayed[selected].clone())
+            .and_then(|selected| self.items.displayed.get(selected).cloned())
     }
 
     fn refresh_filtered(&mut self) {

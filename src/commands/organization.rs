@@ -28,11 +28,10 @@ pub fn set_organization_old(io: &mut dyn Io, client: &mut dyn Client) -> anyhow:
         "\nChoose organization by writing its slug: ",
         PrintColor::Normal,
     )?;
-    let mut slug = io.read_line()?;
-    slug = slug.trim().to_string();
+    let slug = io.read_line()?.trim().to_string();
 
     if let Some(org) = orgs.into_iter().find(|org| org.slug == slug) {
-        util::set_organization(&slug)?;
+        util::set_organization(slug)?;
         return Ok(org.name);
     }
 
@@ -53,35 +52,19 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Res
     pinned.push(others.clone());
 
     let prompt = String::from("Select your organization: ");
-    let mut org_name = match interactive::interactive_list(&prompt, pinned)? {
-        Some(result) => {
-            if result.eq(&others) {
-                let all = orgs.iter().map(|org| org.name.clone()).collect();
-                interactive_list(&prompt, all)?
-            } else {
-                Some(result)
-            }
-        }
-        None => anyhow::bail!("No organization chosen"),
+    let selection = interactive::interactive_list(&prompt, pinned)?
+        .ok_or_else(|| anyhow::anyhow!("Didn't select any organization"))?;
+    let org_name = if selection == others {
+        let all = orgs.iter().map(|org| org.name.clone()).collect();
+        interactive_list(&prompt, all)?
+            .ok_or_else(|| anyhow::anyhow!("Didn't select any organization"))?
+    } else {
+        selection
     };
 
-    org_name = match org_name {
-        Some(result) if result.eq(&others) => {
-            let all = orgs.iter().map(|org| org.name.clone()).collect();
-            interactive_list(&prompt, all)?
-        }
-        opt @ Some(_) => opt,
-        None => anyhow::bail!("No organization chosen"),
-    };
-
-    let org_name = match org_name {
-        Some(on) => on,
-        None => anyhow::bail!("No organization chosen"),
-    };
-
-    if let Some(org) = orgs.iter().find(|org| org.name == org_name) {
-        util::set_organization(&org.slug)?;
-        return Ok(org.name.to_owned());
+    if let Some(org) = orgs.into_iter().find(|org| org.name == org_name) {
+        util::set_organization(org.slug)?;
+        return Ok(org.name);
     }
 
     anyhow::bail!("Something strange happened");
