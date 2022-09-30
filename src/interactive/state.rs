@@ -3,27 +3,27 @@ use tui::widgets::ListState;
 /// Handles the state of the application
 /// Provides functions `next`, `previous` etc.
 /// which can be used to cycle through items interactively
-pub struct StatefulList<T> {
+pub struct StatefulList<'a, T> {
     pub state: ListState,
-    pub items: Vec<T>,
+    pub items: &'a [T],
     pub displayed: Vec<T>,
 }
 
-impl<T: Clone> Default for StatefulList<T> {
+impl<'a, T: Clone> Default for StatefulList<'a, T> {
     fn default() -> Self {
         StatefulList::new()
     }
 }
 
-impl<T: Clone> StatefulList<T> {
-    pub fn new() -> StatefulList<T> {
-        StatefulList::with_items(Vec::new())
+impl<'a, T: Clone> StatefulList<'a, T> {
+    pub fn new() -> StatefulList<'a, T> {
+        StatefulList::with_items(&[])
     }
 
-    pub fn with_items(items: Vec<T>) -> StatefulList<T> {
+    pub fn with_items(items: &[T]) -> StatefulList<T> {
         StatefulList {
             state: ListState::default(),
-            displayed: items.clone(),
+            displayed: items.to_vec(),
             items,
         }
     }
@@ -70,8 +70,8 @@ impl<T: Clone> StatefulList<T> {
 /// Example:
 ///
 /// ```
-/// let items = vec!["Eka".to_string(), "Toka".to_string(), "Kolmas".to_string()];
-/// let mut app = AppState::new(items.clone());
+/// let items = &["Eka", "Toka", "Kolmas"];
+/// let mut app = AppState::new(items);
 ///
 /// // no item is selected at first
 /// assert_eq!(None, app.get_selected());
@@ -82,13 +82,13 @@ impl<T: Clone> StatefulList<T> {
 /// app.push_filter('s');
 /// assert_eq!(items[2], app.get_selected().unwrap());
 /// ```
-pub struct AppState {
-    pub items: StatefulList<String>,
+pub struct AppState<'a> {
+    pub items: StatefulList<'a, &'a str>,
     pub filter: String,
 }
 
-impl AppState {
-    pub fn new(items: Vec<String>) -> AppState {
+impl<'a> AppState<'a> {
+    pub fn new(items: &'a [&'a str]) -> AppState<'a> {
         let filter = String::from("");
         let mut items = StatefulList::with_items(items);
         items.next();
@@ -116,7 +116,9 @@ impl AppState {
         self.items
             .state
             .selected()
-            .and_then(|selected| self.items.displayed.get(selected).cloned())
+            .and_then(|selected| self.items.displayed.get(selected))
+            .copied()
+            .map(String::from)
     }
 
     fn refresh_filtered(&mut self) {
@@ -141,18 +143,15 @@ mod tests {
 
     use super::AppState;
 
-    fn get_item_list() -> Vec<String> {
-        vec!["eka", "toka", "kolmas"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<_>>()
+    fn get_item_list() -> &'static [&'static str] {
+        &["eka", "toka", "kolmas"]
     }
 
     #[test]
     fn app_state_new() {
         let items = get_item_list();
 
-        let app = AppState::new(items.clone());
+        let app = AppState::new(items);
 
         assert_eq!(app.items.items, items);
         assert_eq!(app.items.displayed, items);

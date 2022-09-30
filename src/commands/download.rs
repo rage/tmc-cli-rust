@@ -44,10 +44,10 @@ pub fn download_or_update(
         course_name
     } else {
         let course = get_course_name(
-            courses
+            &courses
                 .iter()
-                .map(|course| course.course.title.clone())
-                .collect(),
+                .map(|course| course.course.title.as_str())
+                .collect::<Vec<_>>(),
         )?;
         &courses
             .iter()
@@ -111,7 +111,7 @@ pub fn download_or_update(
     }
 }
 
-pub fn get_course_name(courses: Vec<String>) -> anyhow::Result<String> {
+pub fn get_course_name<'a>(courses: &[&'a str]) -> anyhow::Result<String> {
     let course = interactive::interactive_list("Select your course:", courses)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 

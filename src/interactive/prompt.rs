@@ -35,15 +35,15 @@ const POLL_RATE: u64 = 1000;
 ///     println!("You chose: {}", choice);
 /// }
 /// ```
-pub fn interactive_list(prompt: &str, items: Vec<String>) -> anyhow::Result<Option<String>> {
+pub fn interactive_list<'a>(prompt: &str, items: &[&'a str]) -> anyhow::Result<Option<String>> {
     execute!(stdout(), EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
 
     terminal.clear()?;
     enable_raw_mode()?;
-    let app = AppState::new(items);
-    let result = event_loop(&mut terminal, app, prompt)?;
+    let mut app = AppState::new(items);
+    let result = event_loop(&mut terminal, &mut app, prompt)?;
 
     disable_raw_mode()?;
 
@@ -140,18 +140,18 @@ fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
     Ok(None)
 }
 
-fn event_loop<B>(
+fn event_loop<'a, B>(
     terminal: &mut Terminal<B>,
-    mut app: AppState,
+    app: &'a mut AppState<'_>,
     prompt: &str,
 ) -> anyhow::Result<Option<String>>
 where
     B: Backend,
 {
     loop {
-        draw_terminal(terminal, &mut app, prompt)?;
+        draw_terminal(terminal, app, prompt)?;
 
-        match read_keys(&mut app)? {
+        match read_keys(app)? {
             Some(Some(res)) => {
                 println!();
                 return Ok(Some(res));

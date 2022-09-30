@@ -66,12 +66,12 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
 
     let mut courses_displayed = courses
         .iter()
-        .map(|course| course.course.title.clone())
+        .map(|course| course.course.title.as_str())
         .collect::<Vec<_>>();
     let no_download = "Don't download anything".to_string();
-    courses_displayed.insert(0, no_download.clone());
+    courses_displayed.insert(0, no_download.as_str());
 
-    let course = download::get_course_name(courses_displayed)?;
+    let course = download::get_course_name(&courses_displayed)?;
     if course == no_download {
         anyhow::bail!("No course downloaded.");
     }

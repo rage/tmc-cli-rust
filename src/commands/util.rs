@@ -517,7 +517,7 @@ pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
 /// Choose course and then exercise interactively, return exercise path
 /// or Err(String) if either menu is interrupted or no items found
 pub fn choose_exercise() -> anyhow::Result<PathBuf> {
-    let mut courses: Vec<String> = Vec::new();
+    let mut courses = Vec::new();
 
     let projects_config = match ProjectsConfig::load(&get_projects_dir()?) {
         Ok(projects_config) => projects_config,
@@ -525,7 +525,7 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
     };
 
     for course in &projects_config.courses {
-        courses.push(course.0.clone());
+        courses.push(course.0.as_str());
     }
 
     if courses.is_empty() {
@@ -537,7 +537,7 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_course = interactive_list("First select course: ", courses)?
+    let chosen_course = interactive_list("First select course: ", &courses)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 
     let course_config = projects_config
@@ -545,10 +545,10 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         .get(&chosen_course)
         .context("Failed to find selected course")?;
 
-    let mut exercise_list: Vec<String> = Vec::new();
+    let mut exercise_list = Vec::new();
 
     for exercise in &course_config.exercises {
-        exercise_list.push(exercise.0.clone());
+        exercise_list.push(exercise.0.as_str());
     }
 
     if exercise_list.is_empty() {
@@ -560,7 +560,7 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_exercise = interactive_list("Select exercise: ", exercise_list)?
+    let chosen_exercise = interactive_list("Select exercise: ", &exercise_list)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any exercise"))?;
 
     let mut path = get_projects_dir()?;

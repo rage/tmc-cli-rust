@@ -45,18 +45,18 @@ pub fn set_organization(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Res
     let mut pinned = orgs
         .iter()
         .filter(|org| org.pinned)
-        .map(|org| org.name.clone())
+        .map(|org| org.name.as_str())
         .collect::<Vec<_>>();
 
     let others = String::from("View all organizations");
-    pinned.push(others.clone());
+    pinned.push(others.as_str());
 
     let prompt = String::from("Select your organization: ");
-    let selection = interactive::interactive_list(&prompt, pinned)?
+    let selection = interactive::interactive_list(&prompt, &pinned)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any organization"))?;
     let org_name = if selection == others {
-        let all = orgs.iter().map(|org| org.name.clone()).collect();
-        interactive_list(&prompt, all)?
+        let all = orgs.iter().map(|org| org.name.as_str()).collect::<Vec<_>>();
+        interactive_list(&prompt, &all)?
             .ok_or_else(|| anyhow::anyhow!("Didn't select any organization"))?
     } else {
         selection
