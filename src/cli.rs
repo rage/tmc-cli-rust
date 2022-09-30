@@ -1,6 +1,6 @@
-use clap::{AppSettings, Arg, Command};
+use clap::{Arg, Command};
 
-pub fn build_cli() -> Command<'static> {
+pub fn build_cli() -> Command {
     Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
@@ -120,7 +120,6 @@ pub fn build_cli() -> Command<'static> {
                 .about("Generate completion scripts for command line usage.")
                 .disable_version_flag(true)
                 .hide(true)
-                .setting(AppSettings::DeriveDisplayOrder)
                 .arg(Arg::new("bash").short('b').long("bash"))
                 .arg(Arg::new("zsh").short('z').long("zsh"))
                 .arg(Arg::new("powershell").short('p').long("powershell")),

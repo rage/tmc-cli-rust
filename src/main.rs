@@ -34,7 +34,7 @@ fn main() {
         &mut buffer,
         &mut stdout,
         &mut stdin,
-        matches.is_present("testmode"),
+        matches.contains_id("testmode"),
     );
     if let Err(err) = run(&mut io, &matches) {
         let error_string = err
@@ -49,7 +49,7 @@ fn main() {
 }
 
 fn run(io: &mut IoProduction, matches: &ArgMatches) -> anyhow::Result<()> {
-    match matches.occurrences_of("no-update") {
+    match matches.get_count("no-update") {
         0 => {
             let os = std::env::consts::OS;
             if os == "windows" {
@@ -63,11 +63,11 @@ fn run(io: &mut IoProduction, matches: &ArgMatches) -> anyhow::Result<()> {
 }
 
 fn generate_completions(matches: &ArgMatches) {
-    let shell = if matches.is_present("bash") {
+    let shell = if matches.contains_id("bash") {
         Shell::Bash
-    } else if matches.is_present("zsh") {
+    } else if matches.contains_id("zsh") {
         Shell::Zsh
-    } else if matches.is_present("powershell") {
+    } else if matches.contains_id("powershell") {
         Shell::PowerShell
     } else {
         return;

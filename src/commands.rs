@@ -15,7 +15,7 @@ use anyhow::Context;
 use util::{Client, ClientProduction};
 
 pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) -> anyhow::Result<()> {
-    let mut client = ClientProduction::new(matches.is_present("testmode"))?;
+    let mut client = ClientProduction::new(matches.contains_id("testmode"))?;
 
     // Authorize the client and raise error if not logged in when required
     match matches.subcommand() {
@@ -39,38 +39,38 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) -> anyhow::Result<()>
 
     match matches.subcommand() {
         Some(("login", args)) => {
-            let interactive_mode = !args.is_present("non-interactive");
+            let interactive_mode = !args.contains_id("non-interactive");
             login::login(io, &mut client, interactive_mode)?;
         }
         Some(("download", args)) => download::download_or_update(
             io,
             &mut client,
-            args.value_of("course"),
-            args.is_present("currentdir"),
+            args.get_one("course").copied(),
+            args.contains_id("currentdir"),
         )?,
         Some(("update", args)) => {
-            update::update(io, &mut client, args.is_present("currentdir"))?;
+            update::update(io, &mut client, args.contains_id("currentdir"))?;
         }
         Some(("organization", args)) => {
-            let interactive_mode = !args.is_present("non-interactive");
+            let interactive_mode = !args.contains_id("non-interactive");
             organization::organization(io, &mut client, interactive_mode)?
         }
         Some(("courses", _)) => courses::list_courses(io, &mut client)?,
         Some(("submit", args)) => {
-            submit::submit(io, &mut client, args.value_of("exercise"))?;
+            submit::submit(io, &mut client, args.get_one("exercise").copied())?;
         }
         Some(("exercises", args)) => {
-            if let Some(c) = args.value_of("course") {
+            if let Some(c) = args.get_one("course").copied() {
                 exercises::list_exercises(io, &mut client, c)?;
             } else {
                 io.println("argument for course not found", PrintColor::Normal)?;
             }
         }
         Some(("test", args)) => {
-            test::test(io, args.value_of("exercise"))?;
+            test::test(io, args.get_one("exercise").copied())?;
         }
         Some(("paste", args)) => {
-            paste::paste(io, &mut client, args.value_of("exercise"))?;
+            paste::paste(io, &mut client, args.get_one("exercise").copied())?;
         }
         Some(("logout", _)) => logout::logout(io, &mut client)?,
         Some(("fetchupdate", _)) => {
