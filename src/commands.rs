@@ -1,6 +1,7 @@
 mod courses;
 mod download;
 mod exercises;
+mod generate_completions;
 mod login;
 mod logout;
 mod organization;
@@ -10,21 +11,25 @@ mod test;
 mod update;
 pub mod util;
 
-use crate::io::{Io, PrintColor};
+use crate::{
+    cli::{Cli, Command},
+    io::Io,
+};
 use anyhow::Context;
 use util::{Client, ClientProduction};
 
-pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) -> anyhow::Result<()> {
-    let mut client = ClientProduction::new(matches.contains_id("testmode"))?;
+pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
+    let mut client = ClientProduction::new(cli.testmode)?;
+    println!("{}", client.test_mode);
 
     // Authorize the client and raise error if not logged in when required
-    match matches.subcommand() {
-        Some(("login", _)) => {
+    match cli.subcommand {
+        Command::Login { .. } => {
             if client.load_login().is_ok() {
                 anyhow::bail!("Already logged in. Please logout first with 'tmc logout'",);
             }
         }
-        Some(("test", _)) => (),
+        Command::Test { .. } => {}
         _ => {
             client
                 .load_login()
@@ -33,61 +38,54 @@ pub fn handle(matches: &clap::ArgMatches, io: &mut dyn Io) -> anyhow::Result<()>
     };
 
     // Check that organization is set
-    if let Some(("download" | "courses", _)) = matches.subcommand() {
+    if let Command::Download { .. } | Command::Courses { .. } = cli.subcommand {
         util::get_organization().context("No organization found. Run 'tmc organization' first.")?;
-    };
+    }
 
-    match matches.subcommand() {
-        Some(("login", args)) => {
-            let interactive_mode = !args.contains_id("non-interactive");
+    match cli.subcommand {
+        Command::Login { non_interactive } => {
+            let interactive_mode = !non_interactive;
             login::login(io, &mut client, interactive_mode)?;
         }
-        Some(("download", args)) => download::download_or_update(
-            io,
-            &mut client,
-            args.get_one("course").copied(),
-            args.contains_id("currentdir"),
-        )?,
-        Some(("update", args)) => {
-            update::update(io, &mut client, args.contains_id("currentdir"))?;
+        Command::Download { course, currentdir } => {
+            download::download_or_update(io, &mut client, course.as_deref(), currentdir)?
         }
-        Some(("organization", args)) => {
-            let interactive_mode = !args.contains_id("non-interactive");
+        Command::Update { currentdir } => {
+            update::update(io, &mut client, currentdir)?;
+        }
+        Command::Organization { non_interactive } => {
+            let interactive_mode = !non_interactive;
             organization::organization(io, &mut client, interactive_mode)?
         }
-        Some(("courses", _)) => courses::list_courses(io, &mut client)?,
-        Some(("submit", args)) => {
-            submit::submit(io, &mut client, args.get_one("exercise").copied())?;
+        Command::Courses => courses::list_courses(io, &mut client)?,
+        Command::Submit { exercise } => {
+            submit::submit(io, &mut client, exercise.as_deref())?;
         }
-        Some(("exercises", args)) => {
-            if let Some(c) = args.get_one("course").copied() {
-                exercises::list_exercises(io, &mut client, c)?;
-            } else {
-                io.println("argument for course not found", PrintColor::Normal)?;
-            }
+        Command::Exercises { course } => exercises::list_exercises(io, &mut client, &course)?,
+        Command::Test { exercise } => {
+            test::test(io, exercise.as_deref())?;
         }
-        Some(("test", args)) => {
-            test::test(io, args.get_one("exercise").copied())?;
+        Command::Paste { exercise } => {
+            paste::paste(io, &mut client, exercise.as_deref())?;
         }
-        Some(("paste", args)) => {
-            paste::paste(io, &mut client, args.get_one("exercise").copied())?;
-        }
-        Some(("logout", _)) => logout::logout(io, &mut client)?,
-        Some(("fetchupdate", _)) => {
+        Command::Logout => logout::logout(io, &mut client)?,
+        Command::Fetchupdate => {
             #[cfg(target_os = "windows")]
             crate::updater::process_update()?;
         }
-        Some(("cleartemp", _)) => {
+        Command::Cleartemp => {
             #[cfg(target_os = "windows")]
             crate::updater::cleartemp()?;
         }
-        Some(("elevateddownload", _)) => {
+        Command::Elevateddownload => {
             download::elevated_download(io, &mut client)?;
         }
-        Some(("elevatedupdate", _)) => {
+        Command::Elevatedupdate => {
             update::elevated_update(io, &mut client)?;
         }
-        _ => (), // Unknown subcommand or no subcommand was given
+        Command::GenerateCompletions { shell } => {
+            generate_completions::generate(shell);
+        }
     }
     Ok(())
 }

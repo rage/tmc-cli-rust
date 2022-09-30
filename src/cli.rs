@@ -1,127 +1,90 @@
-use clap::{Arg, Command};
+use clap::{Parser, Subcommand, ValueEnum};
 
-pub fn build_cli() -> Command {
-    Command::new(env!("CARGO_PKG_NAME"))
-        .version(env!("CARGO_PKG_VERSION"))
-        .about(env!("CARGO_PKG_DESCRIPTION"))
-        .arg_required_else_help(true)
-        .subcommand(Command::new("courses").about("List the available courses"))
-        .subcommand(
-            Command::new("download")
-                .about("Downloads course exercises")
-                .arg(
-                    Arg::new("course")
-                        .short('c')
-                        .long("course")
-                        .value_name("course name")
-                        .required(false),
-                )
-                .arg(
-                    Arg::new("currentdir")
-                        .short('d')
-                        .long("currentdir")
-                        .required(false),
-                ),
-        )
-        .subcommand(
-            Command::new("exercises")
-                .about("List the exercises for a specific course")
-                .arg(Arg::new("course").value_name("course").required(true)),
-        )
-        .subcommand(
-            Command::new("login").about("Login to TMC server").arg(
-                Arg::new("non-interactive")
-                    .short('n')
-                    .help("Initiates the non-interactive mode.")
-                    .long("non-interactive"),
-            ),
-        )
-        .subcommand(Command::new("logout").about("Logout from TMC server"))
-        .subcommand(
-            Command::new("organization")
-                .about("Change organization")
-                .arg(
-                    Arg::new("non-interactive")
-                        .short('n')
-                        .help("Initiates the non-interactive mode.")
-                        .long("non-interactive"),
-                ),
-        )
-        .subcommand(
-            Command::new("paste")
-                .about("Submit exercise to TMC pastebin")
-                .arg(Arg::new("exercise").value_name("exercise").required(false)),
-        )
-        .subcommand(
-            Command::new("submit")
-                .about("Submit exercises to TMC server")
-                .arg(Arg::new("exercise").value_name("exercise").required(false)),
-        )
-        .subcommand(
-            Command::new("test")
-                .about("Run local exercise tests")
-                .arg(Arg::new("exercise").value_name("exercise").required(false)),
-        )
-        .subcommand(
-            Command::new("fetchupdate")
-                .hide(true)
-                .about("Finishes the autoupdater. Administator rights needed."),
-        )
-        .subcommand(
-            Command::new("cleartemp")
-                .hide(true)
-                .about("Removes tempfiles. Administator rights needed."),
-        )
-        .subcommand(
-            Command::new("elevateddownload")
-                .hide(true)
-                .about("Downloads course from the tempfile. Administator rights needed."),
-        )
-        .subcommand(
-            Command::new("elevatedupdate")
-                .hide(true)
-                .about("updates course from the tempfile. Administator rights needed."),
-        )
-        .subcommand(
-            Command::new("update")
-                .about("Updates course exercises")
-                .arg(
-                    Arg::new("currentdir")
-                        .short('d')
-                        .long("currentdir")
-                        .required(false),
-                ),
-        )
-        .arg(
-            Arg::new("no-update")
-                .short('d')
-                .long("no-update")
-                .help("Disable auto update temporarily")
-                .hide(!cfg!(windows)), // hide on non-windows platforms
-        )
-        .arg(
-            Arg::new("force-update")
-                .short('u')
-                .long("force-update")
-                .help("Force auto update to run")
-                .hide(!cfg!(windows)), // hide on non-windows platforms
-        )
-        .arg(
-            Arg::new("testmode")
-                .long("testmode")
-                .help("Only for internal testing, disables server connection")
-                .hide(true),
-        )
-        .subcommand(
-            Command::new("generate-completions")
-                .override_usage(
-                    "tmc generate_completions --[your shell] > /path/to/your/completions/folder",
-                )
-                .about("Generate completion scripts for command line usage.")
-                .disable_version_flag(true)
-                .hide(true)
-                .arg(Arg::new("bash").short('b').long("bash"))
-                .arg(Arg::new("zsh").short('z').long("zsh"))
-                .arg(Arg::new("powershell").short('p').long("powershell")),
-        )
+#[derive(Parser, Debug)]
+#[command(
+    name = env!("CARGO_PKG_NAME"),
+    version,
+    author,
+    about,
+    subcommand_required(true),
+    arg_required_else_help(true)
+)]
+pub struct Cli {
+    /// Disable auto update temporarily
+    #[arg(short = 'd', long, hide = !cfg!(windows))]
+    pub no_update: bool,
+    /// Force auto update to run
+    #[arg(short = 'u', long, hide = !cfg!(windows))]
+    pub force_update: bool,
+    /// Only for internal testing, disables server connection
+    #[arg(long, hide = true)]
+    pub testmode: bool,
+    #[command(subcommand)]
+    pub subcommand: Command,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Command {
+    /// List the available courses
+    Courses,
+    /// Downloads course exercises
+    Download {
+        #[arg(short, long, value_name = "course name")]
+        course: Option<String>,
+        #[arg(short = 'd', long)]
+        currentdir: bool,
+    },
+    /// List the exercises for a specific course
+    Exercises { course: String },
+    /// Login to TMC server
+    Login {
+        /// Initiates the non-interactive mode.
+        #[arg(short, long)]
+        non_interactive: bool,
+    },
+    /// Logout from TMC server
+    Logout,
+    /// Change organization
+    Organization {
+        /// Initiates the non-interactive mode.
+        #[arg(short, long)]
+        non_interactive: bool,
+    },
+    /// Submit exercise to TMC pastebin
+    Paste { exercise: Option<String> },
+    /// Submit exercises to TMC server
+    Submit { exercise: Option<String> },
+    /// Run local exercise tests
+    Test { exercise: Option<String> },
+    /// Finishes the autoupdater. Administator rights needed.
+    #[clap(hide = true)]
+    Fetchupdate,
+    /// Removes tempfiles. Administator rights needed.
+    #[clap(hide = true)]
+    Cleartemp,
+    /// Downloads course from the tempfile. Administator rights needed.
+    #[clap(hide = true)]
+    Elevateddownload,
+    /// updates course from the tempfile. Administator rights needed.
+    #[clap(hide = true)]
+    Elevatedupdate,
+    /// Updates course exercises
+    Update {
+        #[arg(short = 'd', long)]
+        currentdir: bool,
+    },
+    /// Generate completion scripts for command line usage.
+    #[clap(
+        hide = true,
+        disable_version_flag = true,
+        override_usage = "tmc generate_completions --[your shell] > /path/to/your/completions/folder"
+    )]
+    GenerateCompletions { shell: ShellArg },
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum ShellArg {
+    Bash,
+    Zsh,
+    Powershell,
 }
