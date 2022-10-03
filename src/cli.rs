@@ -10,10 +10,10 @@ use clap::{Parser, Subcommand, ValueEnum};
     arg_required_else_help(true)
 )]
 pub struct Cli {
-    /// Disable auto update temporarily
+    /// Disable auto-update temporarily.
     #[arg(short = 'd', long, hide = !cfg!(windows))]
     pub no_update: bool,
-    /// Force auto update to run
+    /// Force auto-update to run.
     #[arg(short = 'u', long, hide = !cfg!(windows))]
     pub force_update: bool,
     /// Only for internal testing, disables server connection
@@ -25,17 +25,22 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// List the available courses
+    /// List the available courses.
     Courses,
-    /// Downloads course exercises
+    /// Download exercises for a course.
     Download {
+        /// If set, the exercises of this course are downloaded. If not set, the selection is done from an interactive menu.
         #[arg(short, long, value_name = "course name")]
         course: Option<String>,
+        /// If set, exercises are downloaded to the current working directory.
         #[arg(short = 'd', long)]
         currentdir: bool,
     },
-    /// List the exercises for a specific course
-    Exercises { course: String },
+    /// List the exercises for a specific course.
+    Exercises {
+        /// If set, the exercises of this course are listed. If not set, the selection is done from an interactive menu.
+        course: Option<String>,
+    },
     /// Login to TMC server
     Login {
         /// Initiates the non-interactive mode.
@@ -70,6 +75,7 @@ pub enum Command {
     Elevatedupdate,
     /// Updates course exercises
     Update {
+        /// If set, exercises in the current working directory are updated.
         #[arg(short = 'd', long)]
         currentdir: bool,
     },

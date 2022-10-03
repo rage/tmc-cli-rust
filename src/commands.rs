@@ -61,7 +61,9 @@ pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
         Command::Submit { exercise } => {
             submit::submit(io, &mut client, exercise.as_deref())?;
         }
-        Command::Exercises { course } => exercises::list_exercises(io, &mut client, &course)?,
+        Command::Exercises { course } => {
+            exercises::list_exercises(io, &mut client, course.as_deref())?
+        }
         Command::Test { exercise } => {
             test::test(io, exercise.as_deref())?;
         }

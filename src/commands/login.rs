@@ -71,7 +71,7 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
     let no_download = "Don't download anything".to_string();
     courses_displayed.insert(0, no_download.as_str());
 
-    let course = download::get_course_name(&courses_displayed)?;
+    let course = util::get_course_name(&courses_displayed)?;
     if course == no_download {
         anyhow::bail!("No course downloaded.");
     }

@@ -1,9 +1,8 @@
 use super::{
     util,
-    util::{get_organization, get_projects_dir, Client},
+    util::{get_projects_dir, Client},
 };
 use crate::{
-    interactive,
     io::{Io, PrintColor},
     progress_reporting,
     progress_reporting::ProgressBarManager,
@@ -22,39 +21,12 @@ pub fn download_or_update(
     course_name: Option<&str>,
     current_dir: bool,
 ) -> anyhow::Result<()> {
-    let _org =
-        get_organization().context("No organization found. Run 'tmc organization' first.")?;
-
-    io.println("Fetching courses...", PrintColor::Normal)?;
-    let courses = client.list_courses().context("Could not list courses.")?;
-
-    let mut courses = courses
-        .iter()
-        .map(|course| client.get_course_details(course.id))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    courses.sort_by(|a, b| {
-        a.course
-            .title
-            .to_lowercase()
-            .cmp(&b.course.title.to_lowercase())
-    });
-
+    let fetched_course_name;
     let name_select = if let Some(course_name) = course_name {
         course_name
     } else {
-        let course = get_course_name(
-            &courses
-                .iter()
-                .map(|course| course.course.title.as_str())
-                .collect::<Vec<_>>(),
-        )?;
-        &courses
-            .iter()
-            .find(|c| c.course.title == course)
-            .context("No course with the selected name was found")?
-            .course
-            .name
+        fetched_course_name = util::choose_course(io, client)?;
+        &fetched_course_name
     };
 
     // Get course by name
@@ -108,17 +80,6 @@ pub fn download_or_update(
                 anyhow::bail!(err);
             }
         }
-    }
-}
-
-pub fn get_course_name<'a>(courses: &[&'a str]) -> anyhow::Result<String> {
-    let course = interactive::interactive_list("Select your course:", courses)?
-        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
-
-    if course.is_empty() {
-        anyhow::bail!("Could not find a course by the given title");
-    } else {
-        Ok(course)
     }
 }
 

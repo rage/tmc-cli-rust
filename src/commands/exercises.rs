@@ -1,4 +1,4 @@
-use super::util::{self, Client};
+use super::util::{self, choose_course, Client};
 use crate::io::{Io, PrintColor};
 use tmc_langs::CourseExercise;
 
@@ -6,14 +6,21 @@ use tmc_langs::CourseExercise;
 pub fn list_exercises(
     io: &mut dyn Io,
     client: &mut dyn Client,
-    course_name: &str,
+    course_name: Option<&str>,
 ) -> anyhow::Result<()> {
-    let course = util::get_course_by_name(client, course_name)?
-        .ok_or_else(|| anyhow::anyhow!("Could not find a course with name '{}'", course_name))?;
+    let fetched_course_name;
+    let name_select = if let Some(course_name) = course_name {
+        course_name
+    } else {
+        fetched_course_name = choose_course(io, client)?;
+        &fetched_course_name
+    };
+    let course = util::get_course_by_name(client, name_select)?
+        .ok_or_else(|| anyhow::anyhow!("Could not find a course with name '{}'", name_select))?;
 
     let mut exercises = client.get_course_exercises(course.id)?;
     exercises.sort_unstable_by(|l, r| l.name.cmp(&r.name));
-    print_exercises(io, course_name, &exercises)?;
+    print_exercises(io, name_select, &exercises)?;
     Ok(())
 }
 
@@ -405,7 +412,7 @@ mod tests {
             input: &mut input,
         };
         let mut client = ClientTest;
-        list_exercises(&mut io, &mut client, "course_name").unwrap();
+        list_exercises(&mut io, &mut client, Some("course_name")).unwrap();
 
         assert!(io.list[0].eq(""), "first line should be empty");
         let course_string = "Course name: course_name";

@@ -1,4 +1,7 @@
-use crate::interactive::interactive_list;
+use crate::{
+    interactive::{self, interactive_list},
+    io::{Io, PrintColor},
+};
 use anyhow::Context;
 use reqwest::Url;
 use std::{
@@ -512,6 +515,48 @@ pub fn get_path() -> anyhow::Result<PathBuf> {
 
 pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
     tmc_langs::get_projects_dir(PLUGIN).map_err(Into::into)
+}
+
+pub fn choose_course(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
+    let _org =
+        get_organization().context("No organization found. Run 'tmc organization' first.")?;
+    io.println("Fetching courses...", PrintColor::Normal)?;
+    let courses = client.list_courses().context("Could not list courses.")?;
+
+    let mut courses = courses
+        .iter()
+        .map(|course| client.get_course_details(course.id))
+        .collect::<Result<Vec<_>, _>>()?;
+    courses.sort_by(|a, b| {
+        a.course
+            .title
+            .to_lowercase()
+            .cmp(&b.course.title.to_lowercase())
+    });
+    let course = get_course_name(
+        &courses
+            .iter()
+            .map(|course| course.course.title.as_str())
+            .collect::<Vec<_>>(),
+    )?;
+    let selection = courses
+        .into_iter()
+        .find(|c| c.course.title == course)
+        .context("No course with the selected name was found")?
+        .course
+        .name;
+    Ok(selection)
+}
+
+pub fn get_course_name<'a>(courses: &[&'a str]) -> anyhow::Result<String> {
+    let course = interactive::interactive_list("Select your course:", courses)?
+        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
+
+    if course.is_empty() {
+        anyhow::bail!("Could not find a course by the given title");
+    } else {
+        Ok(course)
+    }
 }
 
 /// Choose course and then exercise interactively, return exercise path

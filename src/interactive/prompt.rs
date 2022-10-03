@@ -71,7 +71,7 @@ where
             .displayed
             .iter()
             .map(|i| {
-                let lines = vec![Spans::from(i.clone())];
+                let lines = vec![Spans::from(*i)];
                 ListItem::new(lines).style(Style::default())
             })
             .collect();
