@@ -33,13 +33,11 @@ fn main() {
         cli.testmode,
     );
     if let Err(err) = run(&mut io, cli) {
-        let error_string = err
-            .chain()
-            .map(|e| e.to_string())
-            .collect::<Vec<_>>()
-            .join("\n  caused by: ");
+        let error_string = format!("{err:?}");
         if let Err(err) = io.println(&error_string, PrintColor::Failed) {
-            println!("Failed to print error: {err}");
+            println!(
+                "Failed to print error due to error {err}\nThe underlying error was {error_string}"
+            );
         }
     }
 }

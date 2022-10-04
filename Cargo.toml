@@ -15,7 +15,7 @@ license = "Apache-2.0"
 rust-version = "1.58.1"
 
 [dependencies]
-anyhow = "1.0.56"
+anyhow = { version = "1.0.56", features = ["backtrace"] }
 clap = { version = "4.0.7", features = ["derive"] }
 clap_complete = "4.0.2"
 crossterm = "0.25.0"
