@@ -36,7 +36,7 @@ fn main() {
         let error_string = format!("{err:?}");
         if let Err(err) = io.println(&error_string, PrintColor::Failed) {
             println!(
-                "Failed to print error due to error {err}\nThe underlying error was {error_string}"
+                "Failed to print error due to error {err}\nThe underlying error was\n{error_string}"
             );
         }
     }

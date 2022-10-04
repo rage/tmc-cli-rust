@@ -20,7 +20,6 @@ use util::{Client, ClientProduction};
 
 pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
     let mut client = ClientProduction::new(cli.testmode)?;
-    println!("{}", client.test_mode);
 
     // Authorize the client and raise error if not logged in when required
     match cli.subcommand {

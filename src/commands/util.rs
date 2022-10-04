@@ -548,7 +548,7 @@ pub fn choose_course(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result
     Ok(selection)
 }
 
-pub fn get_course_name<'a>(courses: &[&'a str]) -> anyhow::Result<String> {
+pub fn get_course_name(courses: &[&str]) -> anyhow::Result<String> {
     let course = interactive::interactive_list("Select your course:", courses)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 
