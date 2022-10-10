@@ -216,6 +216,7 @@ fn update(version: String) -> anyhow::Result<()> {
     let pb = ProgressBar::new(size);
     pb.set_style(ProgressStyle::default_bar()
                  .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+                 .expect("known to be valid")
                  .progress_chars("#>-"));
     while downloaded < size {
         let n = {
