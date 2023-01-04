@@ -23,7 +23,7 @@ parts:
     plugin: nil
     source: . 
     override-pull: | 
-      curl https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v1.1.0 > tmc
+      curl "https://download.mooc.fi/tmc-cli-rust/tmc-cli-rust-x86_64-unknown-linux-gnu-v$SNAP_VERSION" > tmc
       chmod +x tmc
       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
       cp tmc $SNAPCRAFT_PART_INSTALL/bin/
