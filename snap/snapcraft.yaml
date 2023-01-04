@@ -1,7 +1,7 @@
 name: tmc-cli-rust
 title: TestMyCode CLI
 base: core20
-version: 1.1.0
+version: 1.1.1
 issues: https://github.com/rage/tmc-cli-rust/issues
 source-code: https://github.com/rage/tmc-cli-rust.git
 website: https://tmc.mooc.fi/
