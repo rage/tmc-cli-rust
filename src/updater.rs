@@ -91,7 +91,7 @@ pub fn process_update() -> anyhow::Result<()> {
 
 fn elevate(command: String) -> anyhow::Result<()> {
     Command::new("powershell")
-        .args(&[
+        .args([
             "-Command",
             "Start-Process",
             "tmc.exe",
@@ -124,7 +124,7 @@ fn is_it_time_yet() -> anyhow::Result<bool> {
         .duration_since(UNIX_EPOCH)
         .context("Time went backwards")?
         .as_millis();
-    let update = now - last_check as u128 > DELAY_MILLIS_24H;
+    let update = now - last_check > DELAY_MILLIS_24H;
     Ok(update)
 }
 
@@ -210,7 +210,7 @@ fn update(version: String) -> anyhow::Result<()> {
         anyhow::bail!("Download request failed with status: {:?}", resp.status());
     }
     let filepath = env::current_exe()?;
-    let mut dest = fs::File::create(&filepath)?;
+    let mut dest = fs::File::create(filepath)?;
     let mut src = io::BufReader::new(resp);
     let mut downloaded = 0;
     let pb = ProgressBar::new(size);
@@ -244,7 +244,7 @@ fn stash_old_executable() -> anyhow::Result<()> {
     let tmp_dir = tmp_filepath.join("tmp");
     fs::create_dir_all(&tmp_dir)?;
     let tmp_tmc = tmp_dir.join("tmc.exe");
-    fs::rename(&filepath, &tmp_tmc)?;
+    fs::rename(&filepath, tmp_tmc)?;
     Ok(())
 }
 
