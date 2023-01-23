@@ -22,7 +22,7 @@ if ! PAGE=$(curl -s https://download.mooc.fi); then
 fi
 
 # Adding spaces so ${PAGE[@]} will work.
-PAGE=$(echo $PAGE | sed -E 's:</Contents><Contents>:</Contents> <Contents>:g')
+PAGE=$(echo "$PAGE" | sed -E 's:</Contents><Contents>:</Contents> <Contents>:g')
 
 fileprefx=""
 if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
@@ -40,19 +40,19 @@ regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
 
 # Finding the latest version of the executable
 version="0.0.0"
-for entry in ${PAGE[@]}; do
+for entry in "${PAGE[@]}"; do
   if [[ ${entry} =~ $regx ]]; then        
     noprefix="${BASH_REMATCH[0]#$prefx}" #remove prefix
-    newversion="${noprefix%$suffx}" #remove suffix
+    newversion="${noprefix%"$suffx"}" #remove suffix
 
-    IFS=. verold=(${version##*-})
-    IFS=. vernew=(${newversion##*-})
+    IFS=. verold=("${version##*-}")
+    IFS=. vernew=("${newversion##*-}")
 
-    if ((${vernew[0]} > ${verold[0]} )); then
+    if (("${vernew[0]}" > "${verold[0]}" )); then
       version=$newversion
-    elif ((${vernew[0]} >= ${verold[0]} )) && ((${vernew[1]} > ${verold[1]} )) ; then
+    elif (("${vernew[0]}" >= "${verold[0]}" )) && (("${vernew[1]}" > "${verold[1]}" )) ; then
       version=$newversion
-    elif ((${vernew[0]} >= ${verold[0]} )) && ((${vernew[1]} >= ${verold[1]} )) && ((${vernew[2]} > ${verold[2]} )) ; then
+    elif (("${vernew[0]}" >= "${verold[0]}" )) && (("${vernew[1]}" >= "${verold[1]}" )) && (("${vernew[2]}" > "${verold[2]}" )) ; then
       version=$newversion
     fi
   fi
@@ -101,7 +101,7 @@ fi
 sed -i '/alias tmc=/d' "$PROFILEFILE"
 sed -i "/export TMC_LANGS_CONFIG_DIR=/d" "$PROFILEFILE"
 
-echo $PROFILEFILE
+echo "$PROFILEFILE"
 
 COMPLETIONS_PATH=$HOME/.local/share/tmc-autocomplete
 
