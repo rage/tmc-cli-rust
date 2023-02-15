@@ -31,7 +31,7 @@ fn print_exercises(
     exercises: &[CourseExercise],
 ) -> anyhow::Result<()> {
     io.println("", PrintColor::Normal)?;
-    io.println(&format!("Course name: {}", course_name), PrintColor::Normal)?;
+    io.println(&format!("Course name: {course_name}"), PrintColor::Normal)?;
 
     let none = "none";
     let mut prev_deadline = "";
@@ -45,22 +45,22 @@ fn print_exercises(
         // Print deadline if it exists
         if let Some(dl) = &exercise.deadline {
             if prev_deadline != dl {
-                io.println(&format!("Deadline: {}", dl), PrintColor::Normal)?;
+                io.println(&format!("Deadline: {dl}"), PrintColor::Normal)?;
                 prev_deadline = dl;
             }
         } else if prev_deadline != none {
-            io.println(&format!("Deadline: {}", none), PrintColor::Normal)?;
+            io.println(&format!("Deadline: {none}"), PrintColor::Normal)?;
             prev_deadline = none;
         }
 
         // TODO: Do we need soft deadline?
         if let Some(dl) = &exercise.soft_deadline {
             if prev_soft_deadline != dl {
-                io.println(&format!("Soft deadline: {}", dl), PrintColor::Normal)?;
+                io.println(&format!("Soft deadline: {dl}"), PrintColor::Normal)?;
                 prev_soft_deadline = dl;
             }
         } else if prev_soft_deadline != none {
-            io.println(&format!("Soft deadline: {}", none), PrintColor::Normal)?;
+            io.println(&format!("Soft deadline: {none}"), PrintColor::Normal)?;
             prev_soft_deadline = none;
         }
 
@@ -117,13 +117,13 @@ mod tests {
         }
 
         fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{}", output);
+            print!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }
 
         fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{}", output);
+            println!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }
@@ -358,7 +358,7 @@ mod tests {
         let exercises = [CourseExercise {
             id: 0,
             available_points: points,
-            awarded_points: awarded_points,
+            awarded_points,
             name: "part01-01_example_exercise".to_string(),
             publish_time: None,
             solution_visible_after: None,

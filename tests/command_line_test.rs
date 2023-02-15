@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 
-const PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
+const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,9 +18,9 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
 fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--wrong_argument").arg("--no-update");
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("error: Found argument '--wrong_argument' which wasn't expected, or isn't valid in this context"));
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "error: unexpected argument '--wrong_argument' found",
+    ));
 
     Ok(())
 }

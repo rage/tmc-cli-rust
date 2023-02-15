@@ -35,7 +35,7 @@ const POLL_RATE: u64 = 1000;
 ///     println!("You chose: {}", choice);
 /// }
 /// ```
-pub fn interactive_list<'a>(prompt: &str, items: &[&'a str]) -> anyhow::Result<Option<String>> {
+pub fn interactive_list(prompt: &str, items: &[&str]) -> anyhow::Result<Option<String>> {
     execute!(stdout(), EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
@@ -140,9 +140,9 @@ fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
     Ok(None)
 }
 
-fn event_loop<'a, B>(
+fn event_loop<B>(
     terminal: &mut Terminal<B>,
-    app: &'a mut AppState<'_>,
+    app: &mut AppState<'_>,
     prompt: &str,
 ) -> anyhow::Result<Option<String>>
 where

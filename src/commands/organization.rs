@@ -85,7 +85,7 @@ pub fn organization(
     };
 
     io.println(
-        &format!("Selected {} as organization.", org),
+        &format!("Selected {org} as organization."),
         PrintColor::Success,
     )?;
     Ok(())

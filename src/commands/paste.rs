@@ -47,7 +47,7 @@ pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> an
         }
         Err(err) => {
             manager.force_join();
-            io.println(&format!("Error: {} ", err), PrintColor::Failed)?;
+            io.println(&format!("Error: {err} "), PrintColor::Failed)?;
         }
     }
     Ok(())

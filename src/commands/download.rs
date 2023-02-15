@@ -42,7 +42,7 @@ pub fn download_or_update(
 
     match download_exercises(&path, client, &course) {
         Ok(msg) => {
-            io.println(&format!("\n{}", msg), PrintColor::Success)?;
+            io.println(&format!("\n{msg}"), PrintColor::Success)?;
             Ok(())
         }
         Err(err) => {
@@ -138,7 +138,7 @@ pub fn download_exercises(
                                     id.exercise_slug
                                 ));
                                 for message in messages {
-                                    res.push_str(&format!("\n    with message: '{}'", message));
+                                    res.push_str(&format!("\n    with message: '{message}'"));
                                 }
                             }
 

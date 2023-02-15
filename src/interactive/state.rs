@@ -162,7 +162,7 @@ mod tests {
     fn app_select_next() {
         let items = get_item_list();
 
-        let mut app = AppState::new(items.clone());
+        let mut app = AppState::new(items);
 
         //assert_eq!(items[0], items[app.items.get_current().unwrap()]);
         assert_eq!(items[0], app.get_selected().unwrap());
@@ -176,7 +176,7 @@ mod tests {
     fn app_test_filter_push_pop() {
         let items = get_item_list();
 
-        let mut app = AppState::new(items.clone());
+        let mut app = AppState::new(items);
 
         app.push_filter('s');
         assert_eq!(items[2], app.get_selected().unwrap());

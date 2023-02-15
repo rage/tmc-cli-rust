@@ -27,13 +27,13 @@ mod tests {
         }
 
         fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{}", output);
+            print!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }
 
         fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{}", output);
+            println!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }

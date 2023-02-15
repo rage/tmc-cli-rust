@@ -92,7 +92,7 @@ impl ClientProduction {
     }
 
     fn explain_login_fail(error: LangsError) -> String {
-        let res = format!("{:?}", error);
+        let res = format!("{error:?}");
 
         if res.contains("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.") {
             return WRONG_LOGIN.to_string();
@@ -124,7 +124,7 @@ impl Client for ClientProduction {
         ) {
             Err(client_error) => match client_error {
                 LangsError::TmcClient(ClientError::HttpError { status, error, .. }) => {
-                    Err(format!("Status {}, message: {}", status, error))
+                    Err(format!("Status {status}, message: {error}"))
                 }
                 _ => Err(
                     "Received unhandled ClientError when calling paste command from tmc_client"
@@ -682,8 +682,5 @@ pub fn get_progress_string(completed: usize, total: usize, length: usize) -> Str
     } else {
         " "
     };
-    format!(
-        "{}{}%[{}]",
-        spaces, completed_percentage_readable, progress_string
-    )
+    format!("{spaces}{completed_percentage_readable}%[{progress_string}]")
 }

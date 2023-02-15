@@ -29,7 +29,7 @@ pub fn update(io: &mut dyn Io, client: &mut dyn Client, current_dir: bool) -> an
     };
     let tmp_path = path.to_str().context("invalid path")?;
     match call_update(&path, client) {
-        Ok(msg) => io.println(&format!("\n{}", msg), PrintColor::Success)?,
+        Ok(msg) => io.println(&format!("\n{msg}"), PrintColor::Success)?,
         Err(msg) => {
             let os = std::env::consts::OS;
             if os == "windows"

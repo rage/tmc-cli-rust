@@ -60,7 +60,7 @@ pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> a
             manager.force_join();
 
             io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", &new_submission.show_submission_url), PrintColor::Normal)?;
-            io.println(&format!("Error message: {:#?}", err), PrintColor::Normal)?;
+            io.println(&format!("Error message: {err:#?}"), PrintColor::Normal)?;
         }
     }
     Ok(())
@@ -96,13 +96,13 @@ fn print_wait_for_submission_results(
     if all_passed {
         if let Some(solution_url) = submission_finished.solution_url {
             io.println(
-                &format!("Model solution: {}", solution_url),
+                &format!("Model solution: {solution_url}"),
                 PrintColor::Normal,
             )?;
         }
     } else {
         if let Some(error) = submission_finished.error {
-            io.println(&format!("Error: {}", error), PrintColor::Failed)?;
+            io.println(&format!("Error: {error}"), PrintColor::Failed)?;
         }
 
         if let Some(test_cases) = submission_finished.test_cases {
@@ -115,14 +115,14 @@ fn print_wait_for_submission_results(
                     io.println(&format!("Failed: {}", case.name), PrintColor::Failed)?;
                     if let Some(message) = case.message {
                         let formatted = message.replace('\n', "\n        ");
-                        io.println(&format!("        {}", formatted), PrintColor::Normal)?;
+                        io.println(&format!("        {formatted}"), PrintColor::Normal)?;
                     }
                     io.println("", PrintColor::Normal)?;
                 }
                 total += 1;
             }
             io.println(
-                &format!("\nTest results: {}/{} tests passed", completed, total),
+                &format!("\nTest results: {completed}/{total} tests passed"),
                 PrintColor::Normal,
             )?;
 
@@ -139,5 +139,5 @@ fn into_locale(arg: &str) -> Result<Language> {
     Language::from_locale(arg)
         .or_else(|| Language::from_639_1(arg))
         .or_else(|| Language::from_639_3(arg))
-        .with_context(|| format!("Invalid locale: {}", arg))
+        .with_context(|| format!("Invalid locale: {arg}"))
 }

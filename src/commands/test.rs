@@ -44,7 +44,7 @@ fn print_result_test(
     print_progress: bool,
 ) -> anyhow::Result<bool> {
     io.println("", PrintColor::Normal)?;
-    io.println(&format!("Testing: {}", exercise_name), PrintColor::Normal)?;
+    io.println(&format!("Testing: {exercise_name}"), PrintColor::Normal)?;
 
     let mut tests_passed = 0;
     let mut tests_total = 0;
@@ -66,10 +66,7 @@ fn print_result_test(
 
     io.println("", PrintColor::Normal)?;
     io.println(
-        &format!(
-            "Test results: {}/{} tests passed",
-            tests_passed, tests_total
-        ),
+        &format!("Test results: {tests_passed}/{tests_total} tests passed"),
         PrintColor::Normal,
     )?;
     if tests_passed == tests_total {
@@ -108,13 +105,13 @@ mod tests {
         }
 
         fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{}", output);
+            print!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }
 
         fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{}", output);
+            println!("{output}");
             self.list.push(output.to_string());
             Ok(())
         }
@@ -242,7 +239,7 @@ mod tests {
         );
 
         assert!(
-            io.list[5].contains("█"),
+            io.list[5].contains('█'),
             "line does not contain progress bar char '█'"
         );
         assert!(
@@ -311,7 +308,7 @@ mod tests {
         );
 
         assert!(
-            io.list[5].contains("█"),
+            io.list[5].contains('█'),
             "line does not contain progress bar char '█'"
         );
         assert!(
@@ -379,7 +376,7 @@ mod tests {
             "line does not contain completed tests, should be '0/1' "
         );
         assert!(
-            io.list[7].contains("░"),
+            io.list[7].contains('░'),
             "line does not contain progress bar char '█'"
         );
         assert!(
