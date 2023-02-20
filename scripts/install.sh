@@ -6,54 +6,51 @@ echo "~ Installing TMC-CLI ~"
 echo "(If your shell is not bash, you may have to do the installation manually.)"
 echo ""
 
-os="$(uname -s)"
-platform="$(uname -m)"
-
-if (( $# == 2 )); then
-  # Get platform-string from first argument, OS from the second
-  platform=$1
-  os=$2
-fi
-
 echo "Fetching latest version URL from https://download.mooc.fi"
 if ! PAGE=$(curl -s https://download.mooc.fi); then
   echo "Failed to reach download.mooc.fi" >&2
   exit
 fi
 
-# Adding spaces so ${PAGE[@]} will work.
-PAGE=$(echo "$PAGE" | sed -E 's:</Contents><Contents>:</Contents> <Contents>:g')
-
-fileprefx=""
-if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
-  fileprefx="tmc-cli-rust-${platform}-apple-darwin-v"
+# get platform and os, e.g. "x86_64" and "Linux"
+if (( $# == 2 )); then
+  # get from args if any
+  platform=$1
+  os=$2
 else
-  fileprefx="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
+  # else get from uname
+  platform="$(uname -m)"
+  os="$(uname -s)"
 fi
 
+if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
+  file_prefix="tmc-cli-rust-${platform}-apple-darwin-v"
+else
+  file_prefix="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
+fi
 
-prefx="<Key>tmc-cli-rust/$fileprefx"
-suffx="</Key>"
-
-
-regx="${prefx}[0-9]+\.[0-9]+\.[0-9]+${suffx}"
+prefix="tmc-cli-rust/$file_prefix"
+regex="^${prefix}[0-9]+\.[0-9]+\.[0-9]+$"
 
 # Finding the latest version of the executable
 version="0.0.0"
-for entry in "${PAGE[@]}"; do
-  if [[ ${entry} =~ $regx ]]; then        
-    noprefix="${BASH_REMATCH[0]#$prefx}" #remove prefix
-    newversion="${noprefix%"$suffx"}" #remove suffix
+# splits using < and >, hacky but gets the job done...
+IFS="<>"
+read -r -a entries <<< "$PAGE"
+for entry in "${entries[@]}"; do
+  if [[ ${entry} =~ $regex ]]; then
+    new_version="${BASH_REMATCH[0]#$prefix}" #remove prefix
 
-    IFS=. verold=("${version##*-}")
-    IFS=. vernew=("${newversion##*-}")
+    IFS=.
+    read -r -a old <<< "$version"
+    read -r -a new <<< "$new_version"
 
-    if (("${vernew[0]}" > "${verold[0]}" )); then
-      version=$newversion
-    elif (("${vernew[0]}" >= "${verold[0]}" )) && (("${vernew[1]}" > "${verold[1]}" )) ; then
-      version=$newversion
-    elif (("${vernew[0]}" >= "${verold[0]}" )) && (("${vernew[1]}" >= "${verold[1]}" )) && (("${vernew[2]}" > "${verold[2]}" )) ; then
-      version=$newversion
+    if (( "${new[0]}" > "${old[0]}" )); then
+      version=$new_version
+    elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" > "${old[1]}" )) ; then
+      version=$new_version
+    elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" >= "${old[1]}" )) && (( "${new[2]}" > "${old[2]}" )) ; then
+      version=$new_version
     fi
   fi
 done
@@ -64,7 +61,7 @@ if [[ $version == "0.0.0" ]]; then
 fi
 echo "Latest version: $version" 
 
-filename="${fileprefx}${version}"
+filename="${file_prefix}${version}"
 URL="https://download.mooc.fi/tmc-cli-rust/$filename"
 
 echo ""
