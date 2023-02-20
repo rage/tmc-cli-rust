@@ -29,8 +29,7 @@ else
   file_prefix="tmc-cli-rust-${platform}-unknown-linux-gnu-v"
 fi
 
-prefix="tmc-cli-rust/$file_prefix"
-regex="^${prefix}[0-9]+\.[0-9]+\.[0-9]+$"
+regex="^tmc-cli-rust/${file_prefix}([0-9]+\.[0-9]+\.[0-9]+)$"
 
 # Finding the latest version of the executable
 version="0.0.0"
@@ -39,7 +38,7 @@ IFS="<>"
 read -r -a entries <<< "$PAGE"
 for entry in "${entries[@]}"; do
   if [[ ${entry} =~ $regex ]]; then
-    new_version="${BASH_REMATCH[0]#$prefix}" #remove prefix
+    new_version="${BASH_REMATCH[1]}"
 
     IFS=.
     read -r -a old <<< "$version"
