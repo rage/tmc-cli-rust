@@ -65,7 +65,7 @@ pub fn cleartemp() -> Result<(), std::io::Error> {
     tmp_filepath.pop();
     let tmp_filepath = Path::new(&tmp_filepath).join("tmp");
     let tmp_filepath = tmp_filepath.join("tmc.exe");
-    fs::remove_file(&tmp_filepath)?;
+    fs::remove_file(tmp_filepath)?;
     println!("Temp cleared!");
     Ok(())
 }
