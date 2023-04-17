@@ -13,10 +13,17 @@ mod updater;
 
 use clap::Parser;
 use cli::Cli;
+use flexi_logger::{FileSpec, Logger, WriteMode};
 use io::{Io, IoProduction, PrintColor};
 use termcolor::{BufferWriter, ColorChoice};
 
 fn main() {
+    Logger::try_with_env()
+        .expect("Failed to initialize logger")
+        .log_to_file(FileSpec::default())
+        .write_mode(WriteMode::BufferAndFlush)
+        .start()
+        .expect("Failed to initialize logging");
     let cli = Cli::parse();
 
     let mut stdout = std::io::stdout();
