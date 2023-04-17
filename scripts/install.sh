@@ -13,15 +13,9 @@ if ! PAGE=$(curl -s https://download.mooc.fi); then
 fi
 
 # get platform and os, e.g. "x86_64" and "Linux"
-if (( $# == 2 )); then
-  # get from args if any
-  platform=$1
-  os=$2
-else
-  # else get from uname
-  platform="$(uname -m)"
-  os="$(uname -s)"
-fi
+platform=${1:-$(uname -m)}
+os=${2:-$(uname -s)}
+version=${3:-""}
 
 if [[ "$os" == "Darwin" ]] || [[ "$os" == "mac" ]]; then
   file_prefix="tmc-cli-rust-${platform}-apple-darwin-v"
@@ -31,34 +25,37 @@ fi
 
 regex="^tmc-cli-rust/${file_prefix}([0-9]+\.[0-9]+\.[0-9]+)$"
 
-# Finding the latest version of the executable
-version="0.0.0"
-# splits using < and >, hacky but gets the job done...
-IFS="<>"
-read -r -a entries <<< "$PAGE"
-for entry in "${entries[@]}"; do
-  if [[ ${entry} =~ $regex ]]; then
-    new_version="${BASH_REMATCH[1]}"
+if [ "$version" = "" ];
+then
+  # Finding the latest version of the executable
+  version="0.0.0"
+  # splits using < and >, hacky but gets the job done...
+  IFS="<>"
+  read -r -a entries <<< "$PAGE"
+  for entry in "${entries[@]}"; do
+    if [[ ${entry} =~ $regex ]]; then
+      new_version="${BASH_REMATCH[1]}"
 
-    IFS=.
-    read -r -a old <<< "$version"
-    read -r -a new <<< "$new_version"
+      IFS=.
+      read -r -a old <<< "$version"
+      read -r -a new <<< "$new_version"
 
-    if (( "${new[0]}" > "${old[0]}" )); then
-      version=$new_version
-    elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" > "${old[1]}" )) ; then
-      version=$new_version
-    elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" >= "${old[1]}" )) && (( "${new[2]}" > "${old[2]}" )) ; then
-      version=$new_version
+      if (( "${new[0]}" > "${old[0]}" )); then
+        version=$new_version
+      elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" > "${old[1]}" )) ; then
+        version=$new_version
+      elif (( "${new[0]}" >= "${old[0]}" )) && (( "${new[1]}" >= "${old[1]}" )) && (( "${new[2]}" > "${old[2]}" )) ; then
+        version=$new_version
+      fi
     fi
-  fi
-done
+  done
 
-if [[ $version == "0.0.0" ]]; then 
-  echo "Could not find version";
-  exit 1
+  if [[ $version == "0.0.0" ]]; then
+    echo "Could not find version";
+    exit 1
+  fi
+  echo "Latest version: $version"
 fi
-echo "Latest version: $version" 
 
 filename="${file_prefix}${version}"
 URL="https://download.mooc.fi/tmc-cli-rust/$filename"
@@ -109,7 +106,6 @@ echo "alias tmc='$CMD'" >> "$PROFILEFILE"
 echo "export TMC_LANGS_CONFIG_DIR='$HOME/tmc-config'" >> "$PROFILEFILE"
 
 echo ""
-
 
 
 #
