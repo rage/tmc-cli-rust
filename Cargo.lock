@@ -2118,6 +2118,7 @@ dependencies = [
  "crossterm 0.26.1",
  "flexi_logger",
  "indicatif",
+ "log",
  "predicates",
  "reqwest",
  "rpassword",

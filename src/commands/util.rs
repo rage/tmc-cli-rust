@@ -245,7 +245,7 @@ impl Client for ClientProduction {
             Err(ClientError::NotAuthenticated) => {
                 anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
-            _ => anyhow::bail!("Unknown error. Please try again."),
+            Err(err) => anyhow::bail!("Unexpected error: '{err}'."),
         }
     }
 
@@ -357,7 +357,7 @@ impl Client for ClientProduction {
             Err(ClientError::NotAuthenticated) => {
                 anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
-            _ => anyhow::bail!("Unknown error. Please try again."),
+            Err(err) => anyhow::bail!("Unexpected error: '{err}'."),
         }
     }
 
