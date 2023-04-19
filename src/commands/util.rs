@@ -566,7 +566,7 @@ pub fn choose_exercise() -> anyhow::Result<PathBuf> {
 
     let projects_config = match ProjectsConfig::load(&get_projects_dir()?) {
         Ok(projects_config) => projects_config,
-        Err(_err) => anyhow::bail!("Could not load info about projects"),
+        Err(err) => anyhow::bail!("Could not load info about projects due to '{err}'"),
     };
 
     for course in &projects_config.courses {
