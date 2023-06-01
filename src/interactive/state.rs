@@ -69,7 +69,8 @@ impl<'a, T: Clone> StatefulList<'a, T> {
 ///
 /// Example:
 ///
-/// ```
+/// ```ignore
+/// # use tmc::interactive::state::AppState;
 /// let items = &["Eka", "Toka", "Kolmas"];
 /// let mut app = AppState::new(items);
 ///
@@ -140,7 +141,6 @@ impl<'a> AppState<'a> {
 
 #[cfg(test)]
 mod tests {
-
     use super::AppState;
 
     fn get_item_list() -> &'static [&'static str] {

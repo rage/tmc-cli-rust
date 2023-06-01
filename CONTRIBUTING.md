@@ -8,7 +8,7 @@ Only hard requirement is that all tags which are used to create release builds *
 
 ## Formatting
 
-Code should be formatted with [`cargo fmt`](https://github.com/rust-lang/rustfmt) and linted with [`cargo clippy`](https://github.com/rust-lang/rust-clippy).
+Code should be formatted with [`cargo +nightly fmt`](https://github.com/rust-lang/rustfmt) and linted with [`cargo clippy`](https://github.com/rust-lang/rust-clippy).
 
 ## Releasing a new version
 

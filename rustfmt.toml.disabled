@@ -1,5 +1,0 @@
-# You can use this file to keep the imports formatted with `cargo +nightly fmt`
-# This config uses some nightly options, so it has the .disabled extension to avoid it from causing errors on stable
-
-imports_granularity="Crate"
-group_imports="One"

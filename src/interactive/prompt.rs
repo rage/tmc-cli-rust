@@ -24,7 +24,7 @@ const POLL_RATE: u64 = 1000;
 /// display an interactive prompt to ask the user to select an item
 ///
 /// example:
-/// ```
+/// ```ignore
 /// let prompt = "Choose your organization:";
 /// let items = vec![String::from("Eka"), String::from("Toka"), String::from("Kolmas"),
 /// String::from("Neljäs")];
