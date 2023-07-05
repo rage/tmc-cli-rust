@@ -105,7 +105,7 @@ fn elevate(command: String) -> anyhow::Result<()> {
 }
 
 fn is_it_time_yet() -> anyhow::Result<bool> {
-    let config = TmcConfig::load(PLUGIN, get_path()?.as_path())?;
+    let config = TmcCliConfig::load()?;
 
     let value = config.get("update-last-checked");
     let last_check = match &value {
@@ -129,7 +129,7 @@ fn is_it_time_yet() -> anyhow::Result<bool> {
 }
 
 fn generate_time_stamp() -> anyhow::Result<()> {
-    let mut config = TmcConfig::load(PLUGIN, get_path()?.as_path())?;
+    let mut config = TmcCliConfig::load()?;
     let now = SystemTime::now();
     let since_the_epoch = now
         .duration_since(UNIX_EPOCH)

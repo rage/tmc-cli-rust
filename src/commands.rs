@@ -4,6 +4,7 @@ mod exercises;
 mod generate_completions;
 mod login;
 mod logout;
+mod mooc;
 mod organization;
 mod paste;
 mod submit;
@@ -37,11 +38,12 @@ pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
     };
 
     // Check that organization is set
-    if let Command::Download { .. } | Command::Courses { .. } = cli.subcommand {
+    if cli.subcommand.requires_organization_set() {
         util::get_organization().context("No organization found. Run 'tmc organization' first.")?;
     }
 
     match cli.subcommand {
+        // tmc commands
         Command::Login { non_interactive } => {
             let interactive_mode = !non_interactive;
             login::login(io, &mut client, interactive_mode)?;
@@ -70,6 +72,20 @@ pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
             paste::paste(io, &mut client, exercise.as_deref())?;
         }
         Command::Logout => logout::logout(io, &mut client)?,
+
+        // mooc commands
+        Command::MoocCourses => mooc::courses::run(io, &mut client)?,
+        Command::MoocCourseExercises { course } => {
+            mooc::course_exercises::run(io, &mut client, course.as_deref())?
+        }
+        Command::MoocDownloadExercises { course, currentdir } => {
+            mooc::download_exercises::run(io, &mut client, course.as_deref(), currentdir)?
+        }
+        Command::MoocSubmitExercise { path } => {
+            mooc::submit_exercise::run(io, &mut client, path.as_deref())?
+        }
+
+        // hidden commands
         Command::Fetchupdate => {
             #[cfg(target_os = "windows")]
             crate::updater::process_update()?;

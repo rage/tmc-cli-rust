@@ -9,7 +9,10 @@ use crate::{
 };
 use anyhow::Context;
 use std::{path::Path, process::Command};
-use tmc_langs::{ClientUpdateData, Course, DownloadResult};
+use tmc_langs::{
+    tmc::{response::Course, ClientUpdateData},
+    DownloadResult,
+};
 
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course

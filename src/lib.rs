@@ -1,5 +1,6 @@
 mod cli;
 mod commands;
+mod config;
 mod interactive;
 mod io;
 mod progress_reporting;

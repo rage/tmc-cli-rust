@@ -6,7 +6,10 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use reqwest::Url;
-use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
+use tmc_langs::{
+    tmc::{response::SubmissionFinished, ClientUpdateData},
+    Language,
+};
 
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or

@@ -5,7 +5,7 @@ use crate::{
     progress_reporting::ProgressBarManager,
 };
 use anyhow::Context;
-use tmc_langs::{ClientUpdateData, Language};
+use tmc_langs::{tmc::ClientUpdateData, Language};
 
 /// Sends the course exercise submission with paste message to the server.
 /// Path to the exercise can be given as a parameter or

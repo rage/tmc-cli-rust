@@ -18,9 +18,14 @@ mod tests {
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
-        ClientError, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
-        DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
-        SubmissionFinished, SubmissionStatus,
+        tmc::{
+            response::{
+                Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
+                Organization, SubmissionFinished, SubmissionStatus,
+            },
+            TestMyCodeClientError,
+        },
+        DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
     };
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -129,7 +134,7 @@ mod tests {
         fn wait_for_submission(
             &self,
             _submission_url: Url,
-        ) -> Result<SubmissionFinished, ClientError> {
+        ) -> Result<SubmissionFinished, TestMyCodeClientError> {
             Ok(SubmissionFinished {
                 api_version: 0,
                 all_tests_passed: Some(true),
@@ -163,7 +168,7 @@ mod tests {
         fn get_exercise_details(
             &mut self,
             _exercise_ids: Vec<u32>,
-        ) -> Result<Vec<ExercisesDetails>, ClientError> {
+        ) -> Result<Vec<ExercisesDetails>, TestMyCodeClientError> {
             unimplemented!()
         }
 
@@ -178,10 +183,16 @@ mod tests {
             })
         }
 
-        fn get_course_details(&self, _: u32) -> std::result::Result<CourseDetails, ClientError> {
+        fn get_course_details(
+            &self,
+            _: u32,
+        ) -> std::result::Result<CourseDetails, TestMyCodeClientError> {
             unimplemented!()
         }
-        fn get_organization(&self, _: &str) -> std::result::Result<Organization, ClientError> {
+        fn get_organization(
+            &self,
+            _: &str,
+        ) -> std::result::Result<Organization, TestMyCodeClientError> {
             unimplemented!()
         }
     }

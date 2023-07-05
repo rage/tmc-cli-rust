@@ -1,11 +1,11 @@
-use super::{download, organization, util, util::Client};
+use super::{download, util, util::Client};
 use crate::io::{Io, PrintColor};
 use anyhow::Context;
 
 pub fn login(
     io: &mut dyn Io,
     client: &mut dyn Client,
-    interactive_mode: bool,
+    _interactive_mode: bool,
 ) -> anyhow::Result<()> {
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
@@ -29,26 +29,36 @@ pub fn login(
     let message = client.try_login(username, password)?;
     io.println(&message, PrintColor::Success)?;
 
+    /*
+    now that courses mooc is supported,
+    no need to always select an org
     if interactive_mode {
         organization::set_organization(io, client)
     } else {
         organization::set_organization_old(io, client)
     }
     .context("Could not set organization")?;
+    */
 
     if client.is_test_mode() {
         return Ok(());
     }
 
+    /*
+    now that courses mooc is supported,
+    no need to always select a course
     if interactive_mode {
         download_after_login(client, io)?;
     } else {
-        io.println("Logged in and selected organization", PrintColor::Success)?;
+
     }
+    */
+
+    io.println("Logged in", PrintColor::Success)?;
     Ok(())
 }
 
-pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow::Result<()> {
+pub fn _download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow::Result<()> {
     io.println("Fetching courses...", PrintColor::Normal)?;
     let courses = client.list_courses()?;
 
