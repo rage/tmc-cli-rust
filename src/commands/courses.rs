@@ -17,7 +17,7 @@ mod tests {
     use super::*;
     use bytes::Bytes;
     use reqwest::Url;
-    use std::{io::Cursor, path::Path, slice::Iter};
+    use std::{io::Cursor, path::Path};
     use termcolor::NoColor;
     use tmc_langs::{
         mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus},

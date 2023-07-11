@@ -1,4 +1,4 @@
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::{BufRead, BufReader, Read};
 use termcolor::{Color, ColorSpec, WriteColor};
 
 pub enum PrintColor {
@@ -49,8 +49,7 @@ impl Io<'_> {
         match print_color {
             PrintColor::Success => {
                 let mut colorspec = ColorSpec::new();
-                colorspec.set_fg(Some(Color::Green));
-                colorspec.set_bold(true);
+                colorspec.set_fg(Some(Color::Green)).set_bold(true);
                 self.output.set_color(&colorspec)?;
 
                 self.output.write_all(text_to_output.as_bytes())?;
@@ -63,8 +62,7 @@ impl Io<'_> {
             }
             PrintColor::Failed => {
                 let mut colorspec = ColorSpec::new();
-                colorspec.set_fg(Some(Color::Red));
-                colorspec.set_bold(true);
+                colorspec.set_fg(Some(Color::Red)).set_bold(true);
                 self.output.set_color(&colorspec)?;
 
                 self.output.write_all(text_to_output.as_bytes())?;
