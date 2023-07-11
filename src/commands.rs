@@ -81,6 +81,9 @@ pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
         Command::MoocDownloadExercises { course, currentdir } => {
             mooc::download_exercises::run(io, &mut client, course.as_deref(), currentdir)?
         }
+        Command::MoocUpdateExercises { course } => {
+            mooc::update_exercises::run(io, &mut client, course.as_deref())?
+        }
         Command::MoocSubmitExercise { path } => {
             mooc::submit_exercise::run(io, &mut client, path.as_deref())?
         }

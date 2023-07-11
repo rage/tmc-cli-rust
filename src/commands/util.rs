@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tmc_langs::{
-    mooc::{self, ExerciseSlideSubmission, MoocClient},
+    mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus, MoocClient},
     tmc::{
         response::{
             Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
@@ -83,25 +83,23 @@ pub trait Client {
     ) -> Result<NewSubmission, String>;
 
     // mooc commands
-    fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
-        todo!()
-    }
+    fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>>;
     fn mooc_course_exercises(
         &self,
-        _course_instance_id: Uuid,
-    ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>> {
-        todo!()
-    }
-    fn mooc_download_exercise(&self, _url: String) -> anyhow::Result<Bytes> {
-        todo!()
-    }
+        course_instance_id: Uuid,
+    ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>>;
+    fn mooc_download_exercise(&self, url: String) -> anyhow::Result<Bytes>;
     fn mooc_submit_exercise(
         &self,
-        _exercise_id: Uuid,
-        _exercise_slide_submission: &ExerciseSlideSubmission,
-    ) -> anyhow::Result<()> {
-        todo!()
-    }
+        exercise_id: Uuid,
+        slide_id: Uuid,
+        task_id: Uuid,
+        archive: &Path,
+    ) -> anyhow::Result<ExerciseTaskSubmissionResult>;
+    fn mooc_get_submission_grading(
+        &self,
+        submission_id: Uuid,
+    ) -> anyhow::Result<ExerciseTaskSubmissionStatus>;
 }
 
 impl ClientProduction {
@@ -496,11 +494,21 @@ impl Client for ClientProduction {
     fn mooc_submit_exercise(
         &self,
         exercise_id: Uuid,
-        exercise_slide_submission: &ExerciseSlideSubmission,
-    ) -> anyhow::Result<()> {
-        self.mooc_client
-            .submit(exercise_id, exercise_slide_submission)?;
-        Ok(())
+        slide_id: Uuid,
+        task_id: Uuid,
+        archive: &Path,
+    ) -> anyhow::Result<ExerciseTaskSubmissionResult> {
+        let res = self
+            .mooc_client
+            .submit(exercise_id, slide_id, task_id, archive)?;
+        Ok(res)
+    }
+    fn mooc_get_submission_grading(
+        &self,
+        submission_id: Uuid,
+    ) -> anyhow::Result<ExerciseTaskSubmissionStatus> {
+        let res = self.mooc_client.get_submission_grading(submission_id)?;
+        Ok(res)
     }
 }
 

@@ -8,7 +8,7 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--help").arg("--no-update");
     cmd.assert().success().stdout(predicate::str::contains(
-        "Client for downloading, testing and submitting exercises through the TestMyCode system.",
+        "Client for downloading, testing and submitting exercises through the TestMyCode and MOOC.fi systems.",
     ));
 
     Ok(())
@@ -124,9 +124,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .write_stdin("testusername\ntestpassword\nimag\n")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
-            "Choose organization by writing its slug: ",
-        ));
+        .stdout(predicate::str::contains("Logged in successfully!"));
 
     // organization -n
     // test

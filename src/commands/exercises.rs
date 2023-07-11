@@ -94,9 +94,11 @@ fn print_exercises(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bytes::Bytes;
     use reqwest::Url;
     use std::{path::Path, slice::Iter};
     use tmc_langs::{
+        mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus},
         tmc::{
             response::{
                 Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission,
@@ -106,6 +108,7 @@ mod tests {
         },
         DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
     };
+    use uuid::Uuid;
 
     pub struct IoTest<'a> {
         list: &'a mut Vec<String>,
@@ -334,6 +337,33 @@ mod tests {
             unimplemented!()
         }
         fn get_organization(&self, _: &str) -> Result<Organization, TestMyCodeClientError> {
+            unimplemented!()
+        }
+        fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
+            unimplemented!()
+        }
+        fn mooc_course_exercises(
+            &self,
+            _course_instance_id: Uuid,
+        ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>> {
+            unimplemented!()
+        }
+        fn mooc_download_exercise(&self, _url: String) -> anyhow::Result<Bytes> {
+            unimplemented!()
+        }
+        fn mooc_submit_exercise(
+            &self,
+            _exercise_id: Uuid,
+            _slide_id: Uuid,
+            _task_id: Uuid,
+            _archive: &Path,
+        ) -> anyhow::Result<ExerciseTaskSubmissionResult> {
+            unimplemented!()
+        }
+        fn mooc_get_submission_grading(
+            &self,
+            _submission_id: Uuid,
+        ) -> anyhow::Result<ExerciseTaskSubmissionStatus> {
             unimplemented!()
         }
     }

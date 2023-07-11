@@ -1,20 +1,6 @@
 use std::io::{BufRead, BufReader, Read, Write};
 use termcolor::{Buffer, BufferWriter, Color, ColorSpec, WriteColor};
 
-/// Example use:
-///
-///let stdin = stdin();
-///let mut lock = stdin.lock();
-///
-///let mut stdout = stdout();
-///
-///let mut io = IO::new(&mut stdout, &mut lock);
-///
-///let x = io.read_line();
-///
-///io.print(&x);
-///
-
 pub enum PrintColor {
     Success,
     Normal,
@@ -29,10 +15,36 @@ pub struct IoProduction<'a> {
     test_mode: bool,
 }
 
+/// Example use:
+/**
+```no_run
+use termcolor::{BufferWriter, ColorChoice};
+use tmc::{IoProduction, Io, PrintColor};
+
+# fn f() -> anyhow::Result<()> {
+let mut bufferwriter = BufferWriter::stderr(ColorChoice::Always);
+let mut buffer = bufferwriter.buffer();
+let mut stdout = std::io::stdout();
+let mut stdin = std::io::stdin();
+
+let mut io = IoProduction::new(
+    &mut bufferwriter,
+    &mut buffer,
+    &mut stdout,
+    &mut stdin,
+    false,
+);
+
+let x = io.read_line()?;
+
+io.print(&x, PrintColor::Normal)?;
+# Ok(()) }
+```
+*/
 pub trait Io {
     fn read_line(&mut self) -> anyhow::Result<String>;
-    fn print(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()>;
-    fn println(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()>;
+    fn print(&mut self, output: &str, print_color: PrintColor) -> anyhow::Result<()>;
+    fn println(&mut self, output: &str, print_color: PrintColor) -> anyhow::Result<()>;
     fn read_password(&mut self) -> anyhow::Result<String>;
 }
 
@@ -63,12 +75,12 @@ impl Io for IoProduction<'_> {
         Ok(x)
     }
 
-    fn print(&mut self, text_to_output: &str, font_color: PrintColor) -> anyhow::Result<()> {
+    fn print(&mut self, text_to_output: &str, print_color: PrintColor) -> anyhow::Result<()> {
         if self.test_mode {
             self.output.write_all(text_to_output.as_bytes())?;
             self.output.flush()?;
         } else {
-            match font_color {
+            match print_color {
                 PrintColor::Success => {
                     let mut colorspec = ColorSpec::new();
                     colorspec.set_fg(Some(Color::Green));
@@ -105,8 +117,8 @@ impl Io for IoProduction<'_> {
         Ok(())
     }
 
-    fn println(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()> {
-        self.print(output, font_color)?;
+    fn println(&mut self, output: &str, print_color: PrintColor) -> anyhow::Result<()> {
+        self.print(output, print_color)?;
         self.print("\n", PrintColor::Normal)?;
         Ok(())
     }

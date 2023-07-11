@@ -10,13 +10,17 @@ pub fn run(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
 }
 
 /// Prints information about given exercises
-fn print_courses(io: &mut dyn Io, course: &[CourseInstance]) -> anyhow::Result<()> {
+fn print_courses(io: &mut dyn Io, courses: &[CourseInstance]) -> anyhow::Result<()> {
+    if courses.is_empty() {
+        io.println("No enrolled courses found", PrintColor::Normal)?;
+        return Ok(());
+    }
+
     io.println(
         "\nCurrently enrolled courses.mooc.fi courses",
         PrintColor::Normal,
     )?;
-
-    for course in course {
+    for course in courses {
         let course_identifier = super::course_identifier(course);
         io.println(&format!("  {}", course_identifier), PrintColor::Normal)?;
     }

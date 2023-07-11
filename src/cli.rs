@@ -88,6 +88,11 @@ pub enum Command {
         #[arg(short = 'd', long)]
         currentdir: bool,
     },
+    /// Updates local exercises for the selected course.
+    MoocUpdateExercises {
+        /// If set, the exercises of this course are downloaded. If not set, the selection is done from an interactive menu.
+        course: Option<String>,
+    },
     /// Submits an exercise.
     MoocSubmitExercise {
         /// If set, the exercise at this path is submitted. If not set, the selection is done from an interactive menu.
