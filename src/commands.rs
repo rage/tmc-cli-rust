@@ -19,7 +19,7 @@ use crate::{
 use anyhow::Context;
 use util::{Client, ClientProduction};
 
-pub fn handle(cli: Cli, io: &mut dyn Io) -> anyhow::Result<()> {
+pub fn handle(cli: Cli, io: &mut Io) -> anyhow::Result<()> {
     let mut client = ClientProduction::new(cli.testmode)?;
 
     // Authorize the client and raise error if not logged in when required

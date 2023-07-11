@@ -14,7 +14,7 @@ use tmc_langs::{tmc::ClientUpdateData, Language};
 /// # Errors
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn paste(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
+pub fn paste(io: &mut Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
     // todo: use context
     let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
 

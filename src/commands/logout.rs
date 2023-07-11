@@ -1,7 +1,7 @@
 use super::util::Client;
 use crate::io::{Io, PrintColor};
 
-pub fn logout(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn logout(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
     client.logout()?;
     io.println("Logged out successfully.", PrintColor::Success)?;
     Ok(())
@@ -17,7 +17,7 @@ mod tests {
         input: &'a mut Iter<'a, &'a str>,
     }
 
-    impl Io for IoTest<'_> {
+    impl IoTest<'_> {
         fn read_line(&mut self) -> anyhow::Result<String> {
             let res = match self.input.next() {
                 Some(string) => string,

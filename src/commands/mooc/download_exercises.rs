@@ -8,7 +8,7 @@ use tmc_langs::mooc::{CourseInstance, PublicSpec, TmcExerciseSlide};
 use uuid::Uuid;
 
 pub fn run(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     slug: Option<&str>,
     current_dir: bool,
@@ -25,7 +25,7 @@ pub fn run(
 
 /// Prints information about given exercises
 fn download_exercises(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     course: &CourseInstance,
     exercises: Vec<TmcExerciseSlide>,
@@ -79,7 +79,7 @@ fn download_exercises(
 // handles a single exercise download
 // this way one download erroring out doesn't end the entire download process
 fn download_exercise(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     config: &mut TmcCliConfig,
     course: &CourseInstance,

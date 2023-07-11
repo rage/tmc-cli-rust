@@ -2,7 +2,7 @@ use super::super::util::Client;
 use crate::{Io, PrintColor};
 use tmc_langs::mooc::{CourseInstance, TmcExerciseSlide};
 
-pub fn run(io: &mut dyn Io, client: &mut dyn Client, slug: Option<&str>) -> anyhow::Result<()> {
+pub fn run(io: &mut Io, client: &mut dyn Client, slug: Option<&str>) -> anyhow::Result<()> {
     let Some(course) = super::get_course_by_slug_or_selection(io, client, slug)? else {
         return Ok(());
     };
@@ -16,7 +16,7 @@ pub fn run(io: &mut dyn Io, client: &mut dyn Client, slug: Option<&str>) -> anyh
 
 /// Prints information about given exercises
 fn print_exercises(
-    io: &mut dyn Io,
+    io: &mut Io,
     course: &CourseInstance,
     exercises: &[TmcExerciseSlide],
 ) -> anyhow::Result<()> {
@@ -31,4 +31,20 @@ fn print_exercises(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{commands::util::ClientProduction, Io};
+    use std::io::Cursor;
+    use termcolor::NoColor;
+
+    #[test]
+    fn test() {
+        let client = ClientProduction::new(false).unwrap();
+
+        let mut writer = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let io = Io::new(&mut writer, &mut input);
+    }
 }

@@ -19,7 +19,7 @@ use std::{
 /// tmc update //runs update command in project dir
 /// tmc update -d //runs update command in current dir
 ///
-pub fn update(io: &mut dyn Io, client: &mut dyn Client, current_dir: bool) -> anyhow::Result<()> {
+pub fn update(io: &mut Io, client: &mut dyn Client, current_dir: bool) -> anyhow::Result<()> {
     // Get a client that has credentials
     client.load_login()?;
     let path = if current_dir {
@@ -73,7 +73,7 @@ fn call_update(path: &Path, client: &mut dyn Client) -> anyhow::Result<String> {
     ))
 }
 
-pub fn elevated_update(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn elevated_update(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
     use std::io::prelude::*;
     let temp_file_path = get_projects_dir()?;
     let temp_file_path = temp_file_path.join("temp.txt");

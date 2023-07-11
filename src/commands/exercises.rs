@@ -4,7 +4,7 @@ use tmc_langs::tmc::response::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     course_name: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -26,7 +26,7 @@ pub fn list_exercises(
 
 /// Prints information about given exercises
 fn print_exercises(
-    io: &mut dyn Io,
+    io: &mut Io,
     course_name: &str,
     exercises: &[CourseExercise],
 ) -> anyhow::Result<()> {
@@ -96,7 +96,8 @@ mod tests {
     use super::*;
     use bytes::Bytes;
     use reqwest::Url;
-    use std::{path::Path, slice::Iter};
+    use std::{io::Cursor, path::Path};
+    use termcolor::NoColor;
     use tmc_langs::{
         mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus},
         tmc::{
@@ -109,37 +110,6 @@ mod tests {
         DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
     };
     use uuid::Uuid;
-
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> anyhow::Result<String> {
-            let res = match self.input.next() {
-                Some(string) => string,
-                None => "",
-            };
-            Ok(res.to_string())
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn read_password(&mut self) -> anyhow::Result<String> {
-            self.read_line()
-        }
-    }
 
     pub struct ClientTest;
 
@@ -370,14 +340,9 @@ mod tests {
 
     #[test]
     fn list_exercises_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let points = vec![
             //TODO: ExercisePoint is in private module
@@ -404,97 +369,97 @@ mod tests {
         }];
 
         print_exercises(&mut io, "course_name", &exercises).unwrap();
-        assert!(io.list[0].eq(""), "first line should be empty");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert!(output[0].eq(""), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
-            io.list[1].eq(course_string),
+            output[1].eq(course_string),
             "Expected '{}', got '{}'",
             course_string,
-            io.list[1]
+            output[1]
         );
         let deadline_string = "Deadline: none";
         let soft_deadline_string = "Soft deadline: none";
         assert!(
-            io.list[2].eq(deadline_string),
+            output[2].eq(deadline_string),
             "Expected '{}', got '{}'",
             deadline_string,
-            io.list[2]
+            output[2]
         );
         assert!(
-            io.list[3].eq(soft_deadline_string),
+            output[3].eq(soft_deadline_string),
             "Expected '{}', got '{}'",
             soft_deadline_string,
-            io.list[3]
+            output[3]
         );
 
         let exercise_string = "  Completed: part01-01_example_exercise";
         assert!(
-            io.list[4].eq(exercise_string),
+            output[4].eq(exercise_string),
             "Expected '{}', got '{}'",
             exercise_string,
-            io.list[4]
+            output[4]
         );
     }
 
     #[test]
     fn list_exercises_with_client_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
         let mut client = ClientTest;
         list_exercises(&mut io, &mut client, Some("course_name")).unwrap();
 
-        assert!(io.list[0].eq(""), "first line should be empty");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert!(output[0].eq(""), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
-            io.list[1].eq(course_string),
+            output[1].eq(course_string),
             "Expected '{}', got '{}'",
             course_string,
-            io.list[1]
+            output[1]
         );
 
         let deadline_string = "Deadline: none";
         let soft_deadline_string = "Soft deadline: none";
         assert!(
-            io.list[2].eq(deadline_string),
+            output[2].eq(deadline_string),
             "Expected '{}', got '{}'",
             deadline_string,
-            io.list[2]
+            output[2]
         );
         assert!(
-            io.list[3].eq(soft_deadline_string),
+            output[3].eq(soft_deadline_string),
             "Expected '{}', got '{}'",
             soft_deadline_string,
-            io.list[3]
+            output[3]
         );
 
         let exercise_string_1 = "  Completed: part01-01_example_exercise";
         assert!(
-            io.list[4].eq(exercise_string_1),
+            output[4].eq(exercise_string_1),
             "Expected '{}', got '{}'",
             exercise_string_1,
-            io.list[4]
+            output[4]
         );
 
         let exercise_string_2 = "  Completed: part02-03_example_valid";
         assert!(
-            io.list[5].eq(exercise_string_2),
+            output[5].eq(exercise_string_2),
             "Expected '{}', got '{}'",
             exercise_string_2,
-            io.list[5]
+            output[5]
         );
 
         let expected_size = 6;
         assert!(
-            io.list.len().eq(&expected_size),
+            output.len().eq(&expected_size),
             "Expected size '{}', got {}",
             expected_size,
-            io.list.len()
+            output.len()
         );
     }
 }

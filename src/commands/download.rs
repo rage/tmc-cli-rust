@@ -19,7 +19,7 @@ use tmc_langs::{
 // currentdir determines if course should be downloaded to current directory or central project directory
 // Will run in privileged stage if needed on Windows.
 pub fn download_or_update(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     course_name: Option<&str>,
     current_dir: bool,
@@ -171,7 +171,7 @@ pub fn download_exercises(
     ))
 }
 
-pub fn elevated_download(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn elevated_download(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
     use std::io::prelude::*;
     let temp_file_path = get_projects_dir()?;
     let temp_file_path = temp_file_path.join("temp.txt");

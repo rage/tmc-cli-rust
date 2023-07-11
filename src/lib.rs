@@ -11,9 +11,9 @@ mod progress_reporting;
 mod updater;
 
 pub use cli::Cli;
-pub use io::{Io, IoProduction, PrintColor};
+pub use io::{Io, PrintColor};
 
-pub fn run(cli: Cli, io: &mut dyn Io) {
+pub fn run(cli: Cli, io: &mut Io) {
     if let Err(err) = run_inner(io, cli) {
         let error_string = format!("{err:#}");
         log::error!("{error_string}");
@@ -25,7 +25,7 @@ pub fn run(cli: Cli, io: &mut dyn Io) {
     }
 }
 
-fn run_inner(io: &mut dyn Io, cli: Cli) -> anyhow::Result<()> {
+fn run_inner(io: &mut Io, cli: Cli) -> anyhow::Result<()> {
     if cli.no_update {
         let os = std::env::consts::OS;
         if os == "windows" {

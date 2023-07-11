@@ -2,8 +2,8 @@
 
 use clap::Parser;
 use flexi_logger::{FileSpec, Logger, WriteMode};
-use termcolor::{BufferWriter, ColorChoice};
-use tmc::{Cli, IoProduction};
+use termcolor::{ColorChoice, StandardStream};
+use tmc::{Cli, Io};
 
 fn main() {
     // writes logs into a file if RUST_LOG is set
@@ -15,16 +15,13 @@ fn main() {
         .expect("Failed to initialize logging");
 
     let cli = Cli::parse();
-    let mut stdout = std::io::stdout();
     let mut stdin = std::io::stdin();
-    let mut bufferwriter = BufferWriter::stderr(ColorChoice::Always);
-    let mut buffer = bufferwriter.buffer();
-    let mut io = IoProduction::new(
-        &mut bufferwriter,
-        &mut buffer,
-        &mut stdout,
-        &mut stdin,
-        cli.testmode,
-    );
+    let color = if cli.testmode {
+        ColorChoice::Never
+    } else {
+        ColorChoice::Always
+    };
+    let mut output = StandardStream::stderr(color);
+    let mut io = Io::new(&mut output, &mut stdin);
     tmc::run(cli, &mut io);
 }

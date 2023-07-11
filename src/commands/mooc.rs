@@ -27,7 +27,7 @@ use tmc_langs::{
 // Ok(None) => user declined to select a course
 // Err => something went wrong
 fn get_course_by_slug_or_selection(
-    io: &mut dyn Io,
+    io: &mut Io,
     client: &mut dyn Client,
     slug: Option<&str>,
 ) -> anyhow::Result<Option<CourseInstance>> {
@@ -73,7 +73,7 @@ fn get_course_by_slug_or_selection(
 // Ok(None) => user declined to select an exercise
 // Err => something went wrong
 fn select_exercise(
-    io: &mut dyn Io,
+    io: &mut Io,
     course: &CourseInstance,
     config: &TmcCliConfig,
 ) -> anyhow::Result<Option<LocalMoocExercise>> {

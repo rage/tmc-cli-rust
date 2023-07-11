@@ -2,7 +2,7 @@ use super::util::Client;
 use crate::io::{Io, PrintColor};
 
 /// Lists available courses from clients organization
-pub fn list_courses(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn list_courses(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
     let mut course_list = client.list_courses()?;
     course_list.sort_unstable_by(|l, r| l.name.cmp(&r.name));
     io.println("", PrintColor::Normal)?;
@@ -17,7 +17,8 @@ mod tests {
     use super::*;
     use bytes::Bytes;
     use reqwest::Url;
-    use std::{path::Path, slice::Iter};
+    use std::{io::Cursor, path::Path, slice::Iter};
+    use termcolor::NoColor;
     use tmc_langs::{
         mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus},
         tmc::{
@@ -30,36 +31,6 @@ mod tests {
         DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
     };
     use uuid::Uuid;
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> anyhow::Result<String> {
-            let res = match self.input.next() {
-                Some(string) => string,
-                None => "",
-            };
-            Ok(res.to_string())
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn read_password(&mut self) -> anyhow::Result<String> {
-            self.read_line()
-        }
-    }
 
     pub struct ClientTest;
 
@@ -229,28 +200,21 @@ mod tests {
 
     #[test]
     fn list_courses_with_client_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let mut client = ClientTest;
         list_courses(&mut io, &mut client).unwrap();
 
-        assert!(io.list[0].eq(""), "first line should be empty");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert!(output[0].eq(""), "first line should be empty");
         assert!(
-            io.list[1].eq("mooc-tutustumiskurssi"),
+            output[1].eq("mooc-tutustumiskurssi"),
             "Expected 'mooc-tutustumiskurssi', got {}",
-            io.list[1]
+            output[1]
         );
-        assert!(
-            io.list[2].eq("name"),
-            "Expected 'name', got '{}'",
-            io.list[2]
-        );
+        assert!(output[2].eq("name"), "Expected 'name', got '{}'", output[2]);
     }
 }

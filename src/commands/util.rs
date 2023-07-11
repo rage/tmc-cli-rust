@@ -590,7 +590,7 @@ pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
     tmc_langs::get_projects_dir(PLUGIN).map_err(Into::into)
 }
 
-pub fn choose_course(io: &mut dyn Io, client: &mut dyn Client) -> anyhow::Result<String> {
+pub fn choose_course(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<String> {
     let _org =
         get_organization().context("No organization found. Run 'tmc organization' first.")?;
     io.println("Fetching courses...", PrintColor::Normal)?;
