@@ -1,5 +1,7 @@
-use super::{util, util::Client};
+use super::util;
 use crate::{
+    client::Client,
+    config::TmcCliConfig,
     io::{Io, PrintColor},
     progress_reporting,
     progress_reporting::ProgressBarManager,
@@ -18,11 +20,17 @@ use tmc_langs::{
 /// # Errors
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn submit(io: &mut Io, client: &mut Client, path: Option<&str>) -> anyhow::Result<()> {
+pub fn submit(
+    io: &mut Io,
+    client: &mut Client,
+    path: Option<&str>,
+    config: &TmcCliConfig,
+) -> anyhow::Result<()> {
     let locale = into_locale("fin").expect("The locale should always be valid.");
 
     // todo: use context
-    let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
+    let exercise_path =
+        util::exercise_pathfinder(path, config).context("Error finding exercise")?;
 
     let (project_config, course_slug, exercise_slug) = util::parse_exercise_dir(exercise_path)?;
 

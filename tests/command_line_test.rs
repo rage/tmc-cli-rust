@@ -1,12 +1,16 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
+use std::collections::HashMap;
 
 const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME)?;
-    cmd.arg("--help").arg("--no-update");
+    let mut envs = HashMap::new();
+    envs.insert("RUST_LOG", "debug".to_string());
+
+    let mut cmd = command(&envs);
+    cmd.arg("--help");
     cmd.assert().success().stdout(predicate::str::contains(
         "Client for downloading, testing and submitting exercises through the TestMyCode and MOOC.fi systems.",
     ));
@@ -16,8 +20,11 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin(PKG_NAME)?;
-    cmd.arg("--wrong_argument").arg("--no-update");
+    let mut envs = HashMap::new();
+    envs.insert("RUST_LOG", "debug".to_string());
+
+    let mut cmd = command(&envs);
+    cmd.arg("--wrong_argument");
     cmd.assert().failure().stderr(predicate::str::contains(
         "error: unexpected argument '--wrong_argument' found",
     ));
@@ -55,15 +62,25 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
             imag
     */
 
+    let config_dir = tempfile::tempdir().unwrap();
+    let server = mockito::Server::new();
+
+    let mut envs = HashMap::new();
+    envs.insert(
+        "TMC_LANGS_CONFIG_DIR",
+        config_dir.path().as_os_str().to_str().unwrap().to_string(),
+    );
+    envs.insert("TMC_LANGS_ROOT_URL", server.url());
+    envs.insert("RUST_LOG", "debug".to_string());
+
     // logout
-    let mut cmd = Command::cargo_bin(PKG_NAME)?;
-    cmd.arg("--testmode").arg("--no-update").arg("logout");
-    cmd.assert();
+    let mut cmd = command(&envs);
+    cmd.arg("--testmode").envs(&envs).arg("logout");
+    cmd.assert().success();
 
     // download -c test-tmc-test-course -f folder_for_download
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("download")
         .arg("-c")
         .arg("test-tmc-test-course");
@@ -72,9 +89,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     ));
 
     // courses
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("courses")
         .assert()
         .success()
@@ -83,9 +99,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // submit
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("submit")
         .assert()
         .success()
@@ -94,9 +109,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // paste
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("paste")
         .assert()
         .success()
@@ -105,9 +119,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // exercises
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("exercises")
         .arg("test-tmc-test-course");
     cmd.assert().success().stderr(predicate::str::contains(
@@ -116,9 +129,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // login -n
     // testusername testpassword imag
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("login")
         .arg("-n")
         .write_stdin("testusername\ntestpassword\nimag\n")
@@ -128,9 +140,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
 
     // organization -n
     // test
-    let mut cmd = Command::cargo_bin(PKG_NAME)?;
+    let mut cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("organization")
         .arg("-n")
         .write_stdin("test\n")
@@ -141,16 +152,15 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         ));
 
     // courses
-    cmd = Command::cargo_bin(PKG_NAME)?;
-    cmd.arg("--testmode").arg("--no-update").arg("courses");
+    cmd = command(&envs);
+    cmd.arg("--testmode").arg("courses");
     cmd.assert()
         .success()
         .stderr(predicate::str::contains("test-tmc-test-course"));
 
     // exercises test-tmc-test-course
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("exercises")
         .arg("test-tmc-test-course");
     cmd.assert()
@@ -158,9 +168,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stderr(predicate::str::contains("Imaginary test exercise"));
 
     // download -c test-tmc-test-course -f folder_for_download
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("download")
         .arg("-c")
         .arg("test-tmc-test-course");
@@ -169,9 +178,8 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stderr(predicate::str::contains("Download was successful!"));
 
     // test folder/nonexistant_ex
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("test")
         .arg("folder/nonexistant_ex");
     cmd.assert()
@@ -179,17 +187,16 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stderr(predicate::str::contains("Failed to load projects config"));
 
     // logout
-    let mut cmd = Command::cargo_bin(PKG_NAME)?;
-    cmd.arg("--testmode").arg("--no-update").arg("logout");
+    let mut cmd = command(&envs);
+    cmd.arg("--testmode").arg("logout");
     cmd.assert()
         .success()
         .stderr(predicate::str::contains("Logged out successfully"));
 
     // login
     // totallywrongname cantrememberpasswordeither imag
-    cmd = Command::cargo_bin(PKG_NAME)?;
+    cmd = command(&envs);
     cmd.arg("--testmode")
-        .arg("--no-update")
         .arg("login")
         .write_stdin("totallywrongname\ncantrememberpasswordeither\nimag\n")
         .assert()
@@ -197,4 +204,10 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .stderr(predicate::str::contains("Wrong username or password"));
 
     Ok(())
+}
+
+fn command(envs: &HashMap<&str, String>) -> Command {
+    let mut command = Command::cargo_bin(PKG_NAME).unwrap();
+    command.envs(envs);
+    command
 }

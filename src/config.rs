@@ -1,7 +1,7 @@
 //! Wrapper around TmcConfig
 
-use crate::commands::util;
-use std::path::Path;
+use crate::PLUGIN;
+use std::path::{Path, PathBuf};
 use tmc_langs::TmcConfig;
 
 const ORGANIZATION_KEY: &str = "organization";
@@ -13,12 +13,17 @@ pub struct TmcCliConfig {
 }
 
 impl TmcCliConfig {
-    pub fn load() -> anyhow::Result<Self> {
-        let config = TmcConfig::load(util::PLUGIN)?;
+    pub fn location() -> anyhow::Result<PathBuf> {
+        let path = TmcConfig::get_location(PLUGIN)?;
+        Ok(path)
+    }
+
+    pub fn load(path: PathBuf) -> anyhow::Result<Self> {
+        let config = TmcConfig::load_from(PLUGIN, path)?;
         Ok(Self { config })
     }
 
-    pub fn save(self) -> anyhow::Result<()> {
+    pub fn save(&mut self) -> anyhow::Result<()> {
         let Self { config } = self;
 
         config.save()?;
@@ -34,7 +39,7 @@ impl TmcCliConfig {
         self.config.get(ORGANIZATION_KEY).and_then(|v| v.as_str())
     }
 
-    pub fn insert_organization(&mut self, org: String) {
+    pub fn set_organization(&mut self, org: String) {
         self.config
             .insert(ORGANIZATION_KEY.to_string(), toml::Value::String(org));
     }
@@ -43,7 +48,7 @@ impl TmcCliConfig {
         self.config.get(TEST_LOGIN_KEY).and_then(|v| v.as_str())
     }
 
-    pub fn insert_test_login(&mut self) {
+    pub fn set_test_login(&mut self) {
         let key = TEST_LOGIN_KEY.to_string();
         let value = toml::Value::String(TEST_LOGIN_VALUE.to_string());
         self.config.insert(key, value);

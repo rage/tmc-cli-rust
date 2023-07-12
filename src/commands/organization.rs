@@ -1,11 +1,16 @@
-use super::{util, util::Client};
 use crate::{
+    client::Client,
+    config::TmcCliConfig,
     interactive::{self, interactive_list},
     io::{Io, PrintColor},
 };
 
 // Asks for organization from user and saves it into file
-pub fn set_organization_old(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {
+pub fn set_organization_old(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<String> {
     // List all organizations
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(b.name.cmp(&a.name)));
@@ -31,14 +36,19 @@ pub fn set_organization_old(io: &mut Io, client: &mut Client) -> anyhow::Result<
     let slug = io.read_line()?.trim().to_string();
 
     if let Some(org) = orgs.into_iter().find(|org| org.slug == slug) {
-        util::set_organization(slug)?;
+        config.set_organization(org.slug);
+        config.save()?;
         return Ok(org.name);
     }
 
     anyhow::bail!("No such organization for the given slug: {}", slug);
 }
 
-pub fn set_organization(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {
+pub fn set_organization(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<String> {
     io.println("Fetching organizations...", PrintColor::Normal)?;
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(a.name.cmp(&b.name)));
@@ -63,7 +73,8 @@ pub fn set_organization(io: &mut Io, client: &mut Client) -> anyhow::Result<Stri
     };
 
     if let Some(org) = orgs.into_iter().find(|org| org.name == org_name) {
-        util::set_organization(org.slug)?;
+        config.set_organization(org.slug);
+        config.save()?;
         return Ok(org.name);
     }
 
@@ -75,13 +86,12 @@ pub fn organization(
     io: &mut Io,
     client: &mut Client,
     interactive_mode: bool,
+    config: &mut TmcCliConfig,
 ) -> anyhow::Result<()> {
-    client.load_login()?;
-
     let org = if interactive_mode {
-        set_organization(io, client)?
+        set_organization(io, client, config)?
     } else {
-        set_organization_old(io, client)?
+        set_organization_old(io, client, config)?
     };
 
     io.println(

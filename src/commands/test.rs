@@ -1,5 +1,6 @@
 use crate::{
     commands::util,
+    config::TmcCliConfig,
     io::{Io, PrintColor},
 };
 use anyhow::Context;
@@ -8,9 +9,10 @@ use tmc_langs::RunResult;
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
-pub fn test(io: &mut Io, path: Option<&str>) -> anyhow::Result<()> {
+pub fn test(io: &mut Io, path: Option<&str>, config: &TmcCliConfig) -> anyhow::Result<()> {
     // todo: use context
-    let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
+    let exercise_path =
+        util::exercise_pathfinder(path, config).context("Error finding exercise")?;
     test_exercise_path(io, &exercise_path)?;
     Ok(())
 }

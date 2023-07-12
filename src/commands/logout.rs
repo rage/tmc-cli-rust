@@ -1,8 +1,11 @@
-use super::util::Client;
-use crate::io::{Io, PrintColor};
+use crate::{
+    client::Client,
+    config::TmcCliConfig,
+    io::{Io, PrintColor},
+};
 
-pub fn logout(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
-    client.logout()?;
+pub fn logout(io: &mut Io, client: &mut Client, config: &mut TmcCliConfig) -> anyhow::Result<()> {
+    client.logout(config)?;
     io.println("Logged out successfully.", PrintColor::Success)?;
     Ok(())
 }

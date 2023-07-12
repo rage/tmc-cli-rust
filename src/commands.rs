@@ -13,13 +13,14 @@ pub mod util;
 
 use crate::{
     cli::{Cli, Command},
+    client::Client,
+    config::TmcCliConfig,
     io::Io,
 };
 use anyhow::Context;
 use std::env;
-use util::Client;
 
-pub fn handle(cli: Cli, io: &mut Io) -> anyhow::Result<()> {
+pub fn handle(cli: Cli, io: &mut Io, mut config: TmcCliConfig) -> anyhow::Result<()> {
     let tmc_root_url = match env::var("TMC_LANGS_TMC_ROOT_URL") {
         Ok(url) => url
             .parse()
@@ -28,56 +29,77 @@ pub fn handle(cli: Cli, io: &mut Io) -> anyhow::Result<()> {
     };
     let mut client = Client::new(tmc_root_url, cli.testmode)?;
 
-    // Authorize the client and raise error if not logged in when required
-    match cli.subcommand {
-        Command::Login { .. } => {
-            if client.load_login().is_ok() {
-                anyhow::bail!("Already logged in. Please logout first with 'tmc logout'",);
-            }
+    let require_logged_out = |client: &mut Client| {
+        let exists = client.load_login(&config).is_ok();
+        if exists {
+            anyhow::bail!("Already logged in. Please logout first with 'tmc logout'");
         }
-        Command::Test { .. } => {}
-        _ => {
-            client
-                .load_login()
-                .context("No login found. Login to use this command with 'tmc login'")?;
-        }
+        anyhow::Ok(())
     };
-
-    // Check that organization is set
-    if cli.subcommand.requires_organization_set() {
-        util::get_organization().context("No organization found. Run 'tmc organization' first.")?;
-    }
+    let require_logged_in = |client: &mut Client| {
+        let exists = client.load_login(&config).is_ok();
+        if !exists {
+            anyhow::bail!("No login found. Login to use this command with 'tmc login'");
+        }
+        anyhow::Ok(())
+    };
+    let require_org = || {
+        config.get_organization().ok_or_else(|| anyhow::anyhow!("No organization selected. You can select an organization with the `organization` command."))
+    };
 
     match cli.subcommand {
         // tmc commands
         Command::Login { non_interactive } => {
+            require_logged_out(&mut client)?;
             let interactive_mode = !non_interactive;
-            login::login(io, &mut client, interactive_mode)?;
+            login::login(io, &mut client, interactive_mode, &mut config)?;
         }
         Command::Download { course, currentdir } => {
-            download::download_or_update(io, &mut client, course.as_deref(), currentdir)?
+            require_logged_in(&mut client)?;
+            let org = require_org()?;
+            download::download_or_update(
+                io,
+                &mut client,
+                course.as_deref(),
+                currentdir,
+                &config,
+                org,
+            )?;
         }
         Command::Update { currentdir } => {
-            update::update(io, &mut client, currentdir)?;
+            require_logged_in(&mut client)?;
+            update::update(io, &mut client, currentdir, &config)?;
         }
         Command::Organization { non_interactive } => {
+            require_logged_in(&mut client)?;
             let interactive_mode = !non_interactive;
-            organization::organization(io, &mut client, interactive_mode)?
+            organization::organization(io, &mut client, interactive_mode, &mut config)?;
         }
-        Command::Courses => courses::list_courses(io, &mut client)?,
+        Command::Courses => {
+            require_logged_in(&mut client)?;
+            let org = require_org()?;
+            courses::list_courses(io, &mut client, org)?;
+        }
         Command::Submit { exercise } => {
-            submit::submit(io, &mut client, exercise.as_deref())?;
+            require_logged_in(&mut client)?;
+            submit::submit(io, &mut client, exercise.as_deref(), &config)?;
         }
         Command::Exercises { course } => {
-            exercises::list_exercises(io, &mut client, course.as_deref())?
+            require_logged_in(&mut client)?;
+            let org = require_org()?;
+            exercises::list_exercises(io, &mut client, course.as_deref(), org)?
         }
         Command::Test { exercise } => {
-            test::test(io, exercise.as_deref())?;
+            test::test(io, exercise.as_deref(), &config)?;
         }
         Command::Paste { exercise } => {
-            paste::paste(io, &mut client, exercise.as_deref())?;
+            require_logged_in(&mut client)?;
+            paste::paste(io, &mut client, exercise.as_deref(), &config)?;
         }
-        Command::Logout => logout::logout(io, &mut client)?,
+        Command::Logout => {
+            require_logged_in(&mut client)?;
+            logout::logout(io, &mut client, &mut config)?;
+        }
 
         // hidden commands
         Command::Fetchupdate => {
@@ -89,10 +111,11 @@ pub fn handle(cli: Cli, io: &mut Io) -> anyhow::Result<()> {
             crate::updater::cleartemp()?;
         }
         Command::Elevateddownload => {
-            download::elevated_download(io, &mut client)?;
+            let org = require_org()?;
+            download::elevated_download(io, &mut client, &config, org)?;
         }
         Command::Elevatedupdate => {
-            update::elevated_update(io, &mut client)?;
+            update::elevated_update(io, &mut client, &config)?;
         }
         Command::GenerateCompletions { shell } => {
             generate_completions::generate(shell);

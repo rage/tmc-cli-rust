@@ -1,8 +1,17 @@
-use super::{download, util, util::Client};
-use crate::io::{Io, PrintColor};
+use super::{download, organization, util};
+use crate::{
+    client::Client,
+    config::TmcCliConfig,
+    io::{Io, PrintColor},
+};
 use anyhow::Context;
 
-pub fn login(io: &mut Io, client: &mut Client, _interactive_mode: bool) -> anyhow::Result<()> {
+pub fn login(
+    io: &mut Io,
+    client: &mut Client,
+    interactive_mode: bool,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<()> {
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
     username = username.trim().to_string();
@@ -22,41 +31,36 @@ pub fn login(io: &mut Io, client: &mut Client, _interactive_mode: bool) -> anyho
     };
     password = password.trim().to_string();
 
-    let message = client.try_login(username, password)?;
+    let message = client.try_login(username, password, config)?;
     io.println(&message, PrintColor::Success)?;
 
-    /*
-    now that courses mooc is supported,
-    no need to always select an org
-    if interactive_mode {
-        organization::set_organization(io, client)
+    let org = if interactive_mode {
+        organization::set_organization(io, client, config)
     } else {
-        organization::set_organization_old(io, client)
+        organization::set_organization_old(io, client, config)
     }
     .context("Could not set organization")?;
-    */
 
     if client.is_test_mode() {
         return Ok(());
     }
 
-    /*
-    now that courses mooc is supported,
-    no need to always select a course
     if interactive_mode {
-        download_after_login(client, io)?;
-    } else {
-
+        download_after_login(client, io, config, &org)?;
     }
-    */
 
     io.println("Logged in", PrintColor::Success)?;
     Ok(())
 }
 
-pub fn _download_after_login(client: &mut Client, io: &mut Io) -> anyhow::Result<()> {
+pub fn download_after_login(
+    client: &mut Client,
+    io: &mut Io,
+    config: &TmcCliConfig,
+    org: &str,
+) -> anyhow::Result<()> {
     io.println("Fetching courses...", PrintColor::Normal)?;
-    let courses = client.list_courses()?;
+    let courses = client.list_courses(org)?;
 
     let mut courses = courses
         .iter()
@@ -89,11 +93,11 @@ pub fn _download_after_login(client: &mut Client, io: &mut Io) -> anyhow::Result
         .name;
 
     // Get course by name
-    let course = util::get_course_by_name(client, name_select)?
+    let course = util::get_course_by_name(client, name_select, org)?
         .ok_or_else(|| anyhow::anyhow!("Could not find course with that name"))?;
-    let path = util::get_projects_dir()?;
+    let path = config.get_projects_dir();
 
-    let msg = download::download_exercises(&path, client, &course)?;
+    let msg = download::download_exercises(path, client, &course)?;
     io.println(&msg, PrintColor::Success)?;
     Ok(())
 }
