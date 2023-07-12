@@ -4,14 +4,12 @@ use crate::{
     io::{Io, PrintColor},
 };
 use anyhow::Context;
-use bytes::Bytes;
 use reqwest::Url;
 use std::{
     env,
     path::{Path, PathBuf},
 };
 use tmc_langs::{
-    mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus, MoocClient},
     tmc::{
         response::{
             Course, CourseDetails, CourseExercise, NewSubmission, Organization, SubmissionFinished,
@@ -21,7 +19,6 @@ use tmc_langs::{
     Credentials, DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
     ProjectsConfig,
 };
-use uuid::Uuid;
 
 pub const PLUGIN: &str = "tmc_cli_rust";
 pub const PLUGIN_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -434,7 +431,9 @@ pub fn exercise_pathfinder(path: Option<&str>) -> anyhow::Result<PathBuf> {
 }
 
 pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
-    tmc_langs::get_projects_dir(PLUGIN).map_err(Into::into)
+    let cfg = TmcCliConfig::load()?;
+    let dir = cfg.get_projects_dir();
+    Ok(dir.to_path_buf())
 }
 
 pub fn choose_course(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {

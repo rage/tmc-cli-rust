@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand, ValueEnum};
-use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
