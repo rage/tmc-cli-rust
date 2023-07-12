@@ -2,7 +2,6 @@
 
 use clap::Parser;
 use flexi_logger::{FileSpec, Logger, WriteMode};
-
 use termcolor::{ColorChoice, StandardStream};
 use tmc::{Cli, Io};
 
