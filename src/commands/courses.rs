@@ -1,9 +1,11 @@
-use super::util::Client;
-use crate::io::{Io, PrintColor};
+use crate::{
+    client::Client,
+    io::{Io, PrintColor},
+};
 
 /// Lists available courses from clients organization
-pub fn list_courses(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
-    let mut course_list = client.list_courses()?;
+pub fn list_courses(io: &mut Io, client: &mut Client, org: &str) -> anyhow::Result<()> {
+    let mut course_list = client.list_courses(org)?;
     course_list.sort_unstable_by(|l, r| l.name.cmp(&r.name));
     io.println("", PrintColor::Normal)?;
     for course in course_list {
@@ -15,16 +17,8 @@ pub fn list_courses(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_helper::{self, TestSetup};
     use mockito::{Matcher, Mock, Server, ServerGuard};
-    use std::io::Cursor;
-    use termcolor::NoColor;
-
-    fn logging() {
-        let _ = flexi_logger::Logger::try_with_env()
-            .unwrap()
-            .log_to_stdout()
-            .start();
-    }
 
     fn mock_server() -> (ServerGuard, Vec<Mock>) {
         let mut server = Server::new();
@@ -92,15 +86,15 @@ mod tests {
 
     #[test]
     fn list_courses_with_client_test() {
-        logging();
+        test_helper::logging();
         let (server, _mocks) = mock_server();
+        let (mut input, mut output) = test_helper::input_output();
+        let TestSetup {
+            mut io, mut client, ..
+        } = test_helper::setup(&mut input, &mut output, &server);
+        client.set_tmc_token(test_helper::tmc_token());
 
-        let mut output = NoColor::new(Vec::<u8>::new());
-        let mut input = Cursor::new(Vec::<u8>::new());
-        let mut io = Io::new(&mut output, &mut input);
-
-        let mut client = Client::new(server.url().parse().unwrap(), false).unwrap();
-        list_courses(&mut io, &mut client).unwrap();
+        list_courses(&mut io, &mut client, "test").unwrap();
 
         let output = String::from_utf8(output.into_inner()).unwrap();
         let output = output.lines().collect::<Vec<_>>();
