@@ -1,11 +1,11 @@
 use super::util::{self, choose_course, Client};
 use crate::io::{Io, PrintColor};
-use tmc_langs::CourseExercise;
+use tmc_langs::tmc::response::CourseExercise;
 
 /// Lists exercises for a given course
 pub fn list_exercises(
-    io: &mut dyn Io,
-    client: &mut dyn Client,
+    io: &mut Io,
+    client: &mut Client,
     course_name: Option<&str>,
 ) -> anyhow::Result<()> {
     let fetched_course_name;
@@ -26,7 +26,7 @@ pub fn list_exercises(
 
 /// Prints information about given exercises
 fn print_exercises(
-    io: &mut dyn Io,
+    io: &mut Io,
     course_name: &str,
     exercises: &[CourseExercise],
 ) -> anyhow::Result<()> {
@@ -94,255 +94,77 @@ fn print_exercises(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use reqwest::Url;
-    use std::{path::Path, slice::Iter};
-    use tmc_langs::{
-        ClientError, Course, CourseDetails, CourseExercise, DownloadOrUpdateCourseExercisesResult,
-        DownloadResult, ExercisesDetails, LangsError, Language, NewSubmission, Organization,
-        SubmissionFinished, SubmissionStatus,
-    };
+    use mockito::{Matcher, Mock, Server, ServerGuard};
+    use std::io::Cursor;
+    use termcolor::NoColor;
+    use tmc_langs::tmc::response::CourseExercise;
 
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
+    fn logging() {
+        let _ = flexi_logger::Logger::try_with_env()
+            .unwrap()
+            .log_to_stdout()
+            .start();
     }
 
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> anyhow::Result<String> {
-            let res = match self.input.next() {
-                Some(string) => string,
-                None => "",
-            };
-            Ok(res.to_string())
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn read_password(&mut self) -> anyhow::Result<String> {
-            self.read_line()
-        }
-    }
-
-    pub struct ClientTest;
-
-    impl Client for ClientTest {
-        fn paste(
-            &self,
-            _projects_dir: &Path,
-            _course_slug: &str,
-            _exercise_slug: &str,
-            _paste_message: Option<String>,
-            _locale: Option<Language>,
-        ) -> Result<NewSubmission, String> {
-            Err("not implemented".to_string())
-        }
-        fn is_test_mode(&mut self) -> bool {
-            false
-        }
-        fn load_login(&mut self) -> anyhow::Result<()> {
-            Ok(())
-        }
-        fn try_login(&mut self, _username: String, _password: String) -> anyhow::Result<String> {
-            Ok("ok".to_string())
-        }
-        fn list_courses(&mut self) -> anyhow::Result<Vec<Course>> {
-            Ok(vec![
-                Course {
-                    id: 0,
-                    name: "name".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
-                },
-                Course {
-                    id: 88,
-                    name: "course_name".to_string(),
-                    title: "".to_string(),
-                    description: None,
-                    details_url: "".to_string(),
-                    unlock_url: "".to_string(),
-                    reviews_url: "".to_string(),
-                    comet_url: "".to_string(),
-                    spyware_urls: vec![],
-                },
-            ])
-        }
-        fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>> {
-            Ok(vec![])
-        }
-        fn logout(&mut self) -> anyhow::Result<()> {
-            Ok(())
-        }
-        fn submit(
-            &self,
-            _projects_dir: &Path,
-            _course_slug: &str,
-            _exercise_slug: &str,
-            _locale: Option<Language>,
-        ) -> Result<NewSubmission, LangsError> {
-            Ok(NewSubmission {
-                show_submission_url: "".to_string(),
-                paste_url: "".to_string(),
-                submission_url: "".to_string(),
-            })
-        }
-        fn wait_for_submission(
-            &self,
-            _submission_url: Url,
-        ) -> Result<SubmissionFinished, ClientError> {
-            Ok(SubmissionFinished {
-                api_version: 0,
-                all_tests_passed: Some(true),
-                user_id: 0,
-                login: "".to_string(),
-                course: "".to_string(),
-                exercise_name: "".to_string(),
-                status: SubmissionStatus::Ok,
-                points: vec!["".to_string()],
-                valgrind: Some("".to_string()),
-                submission_url: "".to_string(),
-                solution_url: Some("".to_string()),
-                submitted_at: "".to_string(),
-                processing_time: Some(0),
-                reviewed: true,
-                requests_review: true,
-                paste_url: Some("".to_string()),
-                message_for_paste: Some("".to_string()),
-                missing_review_points: vec!["".to_string()],
-                test_cases: None,
-                feedback_questions: None,
-                feedback_answer_url: Some("".to_string()),
-                error: Some("".to_string()),
-                validations: None,
-            })
-        }
-        fn get_course_exercises(&mut self, _course_id: u32) -> anyhow::Result<Vec<CourseExercise>> {
-            /*TODO: ExercisePoint is in private module*/
-            //let points = vec![];
-            //let awarded_points = vec![/*"1.1".to_string()*/];
-
-            let exercise1 = CourseExercise {
-                id: 0,
-                available_points: vec![],
-                awarded_points: vec![],
-                name: "part01-01_example_exercise".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: false,
-                unlocked: true,
-            };
-            let exercise2 = CourseExercise {
-                id: 24,
-                available_points: vec![],
-                awarded_points: vec![],
-                name: "part01-02_example_disabled".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: true,
-                unlocked: true,
-            };
-            let exercise3 = CourseExercise {
-                id: 578,
-                available_points: vec![],
-                awarded_points: vec![],
-                name: "part02-01_example_not_unlocked".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: false,
-                unlocked: false,
-            };
-
-            let exercise4 = CourseExercise {
-                id: 578,
-                available_points: vec![],
-                awarded_points: vec![],
-                name: "part02-02_example_disabled2".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: true,
-                unlocked: false,
-            };
-
-            let exercise5 = CourseExercise {
-                id: 578,
-                available_points: vec![],
-                awarded_points: vec![],
-                name: "part02-03_example_valid".to_string(),
-                publish_time: None,
-                solution_visible_after: None,
-                deadline: None,
-                soft_deadline: None,
-                disabled: false,
-                unlocked: true,
-            };
-
-            let exercises = vec![exercise1, exercise2, exercise3, exercise4, exercise5];
-            Ok(exercises)
-        }
-
-        fn get_exercise_details(
-            &mut self,
-            _exercise_ids: Vec<u32>,
-        ) -> Result<Vec<ExercisesDetails>, ClientError> {
-            unimplemented!()
-        }
-        fn update_exercises(
-            &mut self,
-            _path: &Path,
-        ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
-            unimplemented!()
-        }
-        fn download_or_update_exercises(
-            &mut self,
-            _download_params: &[u32],
-            _path: &Path,
-        ) -> Result<DownloadResult, LangsError> {
-            Ok(DownloadResult::Success {
-                downloaded: vec![],
-                skipped: vec![],
-            })
-        }
-
-        fn get_course_details(&self, _: u32) -> Result<CourseDetails, ClientError> {
-            unimplemented!()
-        }
-        fn get_organization(&self, _: &str) -> Result<Organization, ClientError> {
-            unimplemented!()
-        }
+    fn mock_server() -> (ServerGuard, Vec<Mock>) {
+        let mut server = Server::new();
+        let mut mocks = Vec::new();
+        mocks.push(
+            server
+                .mock("GET", "/api/v8/core/org/test/courses")
+                .match_query(Matcher::Any)
+                .with_body(
+                    serde_json::json!([
+                        {
+                            "id": 1,
+                            "name": "course_name",
+                            "title": "title",
+                            "details_url": "example.com",
+                            "unlock_url": "example.com",
+                            "reviews_url": "example.com",
+                            "comet_url": "example.com",
+                            "spyware_urls": ["example.com"],
+                        },
+                    ])
+                    .to_string(),
+                )
+                .create(),
+        );
+        mocks.push(
+            server
+                .mock("GET", "/api/v8/courses/1/exercises")
+                .match_query(Matcher::Any)
+                .with_body(
+                    serde_json::json!([
+                        {
+                            "id": 1,
+                            "available_points": [],
+                            "awarded_points": [],
+                            "name": "part01-01_example_exercise",
+                            "disabled": false,
+                            "unlocked": true,
+                        },
+                        {
+                            "id": 2,
+                            "available_points": [],
+                            "awarded_points": [],
+                            "name": "part02-03_example_valid",
+                            "disabled": false,
+                            "unlocked": true,
+                        },
+                    ])
+                    .to_string(),
+                )
+                .create(),
+        );
+        (server, mocks)
     }
 
     #[test]
     fn list_exercises_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let points = vec![
             //TODO: ExercisePoint is in private module
@@ -369,97 +191,100 @@ mod tests {
         }];
 
         print_exercises(&mut io, "course_name", &exercises).unwrap();
-        assert!(io.list[0].eq(""), "first line should be empty");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert!(output[0].eq(""), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
-            io.list[1].eq(course_string),
+            output[1].eq(course_string),
             "Expected '{}', got '{}'",
             course_string,
-            io.list[1]
+            output[1]
         );
         let deadline_string = "Deadline: none";
         let soft_deadline_string = "Soft deadline: none";
         assert!(
-            io.list[2].eq(deadline_string),
+            output[2].eq(deadline_string),
             "Expected '{}', got '{}'",
             deadline_string,
-            io.list[2]
+            output[2]
         );
         assert!(
-            io.list[3].eq(soft_deadline_string),
+            output[3].eq(soft_deadline_string),
             "Expected '{}', got '{}'",
             soft_deadline_string,
-            io.list[3]
+            output[3]
         );
 
         let exercise_string = "  Completed: part01-01_example_exercise";
         assert!(
-            io.list[4].eq(exercise_string),
+            output[4].eq(exercise_string),
             "Expected '{}', got '{}'",
             exercise_string,
-            io.list[4]
+            output[4]
         );
     }
 
     #[test]
     fn list_exercises_with_client_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
+        logging();
+        let (server, _mocks) = mock_server();
 
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
-        let mut client = ClientTest;
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
+
+        let mut client = Client::new(server.url().parse().unwrap(), false).unwrap();
         list_exercises(&mut io, &mut client, Some("course_name")).unwrap();
 
-        assert!(io.list[0].eq(""), "first line should be empty");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert!(output[0].eq(""), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
-            io.list[1].eq(course_string),
+            output[1].eq(course_string),
             "Expected '{}', got '{}'",
             course_string,
-            io.list[1]
+            output[1]
         );
 
         let deadline_string = "Deadline: none";
         let soft_deadline_string = "Soft deadline: none";
         assert!(
-            io.list[2].eq(deadline_string),
+            output[2].eq(deadline_string),
             "Expected '{}', got '{}'",
             deadline_string,
-            io.list[2]
+            output[2]
         );
         assert!(
-            io.list[3].eq(soft_deadline_string),
+            output[3].eq(soft_deadline_string),
             "Expected '{}', got '{}'",
             soft_deadline_string,
-            io.list[3]
+            output[3]
         );
 
         let exercise_string_1 = "  Completed: part01-01_example_exercise";
         assert!(
-            io.list[4].eq(exercise_string_1),
+            output[4].eq(exercise_string_1),
             "Expected '{}', got '{}'",
             exercise_string_1,
-            io.list[4]
+            output[4]
         );
 
         let exercise_string_2 = "  Completed: part02-03_example_valid";
         assert!(
-            io.list[5].eq(exercise_string_2),
+            output[5].eq(exercise_string_2),
             "Expected '{}', got '{}'",
             exercise_string_2,
-            io.list[5]
+            output[5]
         );
 
         let expected_size = 6;
         assert!(
-            io.list.len().eq(&expected_size),
+            output.len().eq(&expected_size),
             "Expected size '{}', got {}",
             expected_size,
-            io.list.len()
+            output.len()
         );
     }
 }

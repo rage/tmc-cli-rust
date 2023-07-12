@@ -1,19 +1,5 @@
-use std::io::{BufRead, BufReader, Read, Write};
-use termcolor::{Buffer, BufferWriter, Color, ColorSpec, WriteColor};
-
-/// Example use:
-///
-///let stdin = stdin();
-///let mut lock = stdin.lock();
-///
-///let mut stdout = stdout();
-///
-///let mut io = IO::new(&mut stdout, &mut lock);
-///
-///let x = io.read_line();
-///
-///io.print(&x);
-///
+use std::io::{BufRead, BufReader, Read};
+use termcolor::{Color, ColorSpec, WriteColor};
 
 pub enum PrintColor {
     Success,
@@ -21,97 +7,80 @@ pub enum PrintColor {
     Failed,
 }
 
-pub struct IoProduction<'a> {
-    bufferwriter: &'a mut BufferWriter,
-    buffer: &'a mut Buffer,
-    output: &'a mut dyn Write,
+pub struct Io<'a> {
+    output: &'a mut dyn WriteColor,
     input: BufReader<&'a mut dyn Read>,
-    test_mode: bool,
 }
 
-pub trait Io {
-    fn read_line(&mut self) -> anyhow::Result<String>;
-    fn print(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()>;
-    fn println(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()>;
-    fn read_password(&mut self) -> anyhow::Result<String>;
-}
+/// Example use:
+/**
+```no_run
+use termcolor::{ColorChoice, StandardStream};
+use tmc::{Io, PrintColor};
 
-impl IoProduction<'_> {
-    pub fn new<'a>(
-        bufferwriter: &'a mut BufferWriter,
-        buffer: &'a mut Buffer,
-        output: &'a mut impl Write,
-        input: &'a mut dyn Read,
-        test_mode: bool,
-    ) -> IoProduction<'a> {
-        let reader = BufReader::new(input);
-        IoProduction {
-            bufferwriter,
-            buffer,
-            output,
-            input: reader,
-            test_mode,
-        }
-    }
-}
+# fn f() -> anyhow::Result<()> {
+let mut output = StandardStream::stderr(ColorChoice::Always);
+let mut input = std::io::stdin();
 
-impl Io for IoProduction<'_> {
-    fn read_line(&mut self) -> anyhow::Result<String> {
-        let mut x = String::new();
+let mut io = Io::new(
+    &mut output,
+    &mut input,
+);
 
-        self.input.read_line(&mut x)?;
-        Ok(x)
+let x = io.read_line()?;
+
+io.print(&x, PrintColor::Normal)?;
+# Ok(()) }
+```
+*/
+impl Io<'_> {
+    pub fn new<'a>(output: &'a mut dyn WriteColor, input: &'a mut dyn Read) -> Io<'a> {
+        let input = BufReader::new(input);
+        Io { output, input }
     }
 
-    fn print(&mut self, text_to_output: &str, font_color: PrintColor) -> anyhow::Result<()> {
-        if self.test_mode {
-            self.output.write_all(text_to_output.as_bytes())?;
-            self.output.flush()?;
-        } else {
-            match font_color {
-                PrintColor::Success => {
-                    let mut colorspec = ColorSpec::new();
-                    colorspec.set_fg(Some(Color::Green));
-                    colorspec.set_bold(true);
-                    self.buffer.set_color(&colorspec)?;
+    pub fn read_line(&mut self) -> anyhow::Result<String> {
+        let mut buf = String::new();
+        self.input.read_line(&mut buf)?;
+        Ok(buf)
+    }
 
-                    self.buffer.write_all(text_to_output.as_bytes())?;
-                    self.bufferwriter.print(self.buffer)?;
-                    self.buffer.clear();
+    pub fn print(&mut self, text_to_output: &str, print_color: PrintColor) -> anyhow::Result<()> {
+        match print_color {
+            PrintColor::Success => {
+                let mut colorspec = ColorSpec::new();
+                colorspec.set_fg(Some(Color::Green)).set_bold(true);
+                self.output.set_color(&colorspec)?;
 
-                    colorspec.clear();
-                    self.buffer.set_color(&colorspec)?;
-                }
-                PrintColor::Normal => {
-                    self.buffer.write_all(text_to_output.as_bytes())?;
-                    self.bufferwriter.print(self.buffer)?;
-                    self.buffer.clear();
-                }
-                PrintColor::Failed => {
-                    let mut colorspec = ColorSpec::new();
-                    colorspec.set_fg(Some(Color::Red));
-                    colorspec.set_bold(true);
-                    self.buffer.set_color(&colorspec)?;
+                self.output.write_all(text_to_output.as_bytes())?;
 
-                    self.buffer.write_all(text_to_output.as_bytes())?;
-                    self.bufferwriter.print(self.buffer)?;
-                    self.buffer.clear();
+                colorspec.clear();
+                self.output.set_color(&colorspec)?;
+            }
+            PrintColor::Normal => {
+                self.output.write_all(text_to_output.as_bytes())?;
+            }
+            PrintColor::Failed => {
+                let mut colorspec = ColorSpec::new();
+                colorspec.set_fg(Some(Color::Red)).set_bold(true);
+                self.output.set_color(&colorspec)?;
 
-                    colorspec.clear();
-                    self.buffer.set_color(&colorspec)?;
-                }
+                self.output.write_all(text_to_output.as_bytes())?;
+
+                colorspec.clear();
+                self.output.set_color(&colorspec)?;
             }
         }
         Ok(())
     }
 
-    fn println(&mut self, output: &str, font_color: PrintColor) -> anyhow::Result<()> {
-        self.print(output, font_color)?;
+    pub fn println(&mut self, output: &str, print_color: PrintColor) -> anyhow::Result<()> {
+        self.print(output, print_color)?;
         self.print("\n", PrintColor::Normal)?;
         Ok(())
     }
 
-    fn read_password(&mut self) -> anyhow::Result<String> {
+    pub fn read_password(&mut self) -> anyhow::Result<String> {
         rpassword::read_password().map_err(Into::into)
     }
 }

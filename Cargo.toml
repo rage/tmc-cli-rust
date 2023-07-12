@@ -2,20 +2,21 @@
 name = "tmc"
 version = "1.1.2"
 authors = [
-    "University of Helsinki <mooc@cs.helsinki.fi>",
-    "HoolaBoola <jaime.heikkiladias@helsinki.fi>",
-    "Robustic <juha.malinen@helsinki.fi>",
-    "ShootingStar91 <arttu.kangas@helsinki.fi>",
-    "Nooblue <joni.sikio@helsinki.fi>",
-    "Daniel Martinez <daniel.x.martinez@helsinki.fi>",
+  "University of Helsinki <mooc@cs.helsinki.fi>",
+  "HoolaBoola <jaime.heikkiladias@helsinki.fi>",
+  "Robustic <juha.malinen@helsinki.fi>",
+  "ShootingStar91 <arttu.kangas@helsinki.fi>",
+  "Nooblue <joni.sikio@helsinki.fi>",
+  "Daniel Martinez <daniel.x.martinez@helsinki.fi>",
 ]
 edition = "2021"
-description = "Client for downloading, testing and submitting exercises through the TestMyCode system."
+description = "Client for downloading, testing and submitting exercises through the TestMyCode and MOOC.fi systems."
 license = "Apache-2.0"
-rust-version = "1.66.1"
+rust-version = "1.70.0"
 
 [dependencies]
 anyhow = { version = "1.0.56", features = ["backtrace"] }
+bytes = "1.4.0"
 clap = { version = "4.0.7", features = ["derive"] }
 clap_complete = "4.0.2"
 crossterm = "0.26.0"
@@ -23,25 +24,30 @@ flexi_logger = "0.25.3"
 indicatif = "0.17.1"
 log = "0.4.17"
 reqwest = { version = "0.11.9", default-features = false, features = [
-    "blocking",
-    "json",
-    "rustls-tls",
-    "multipart",
+  "blocking",
+  "json",
+  "rustls-tls",
+  "multipart",
 ] }
 rpassword = "7.0.0"
 serde = "1.0.136"
 serde_json = "1.0.79"
 termcolor = "1.1.3"
 terminal_size = "0.2.1"
-tmc-langs = { git = "https://github.com/rage/tmc-langs-rust/", ref = "0.31.2" }
+tmc-langs = { git = "https://github.com/rage/tmc-langs-rust", tag = "0.32.0" }
 toml = "0.7.2"
 tui = { version = "0.19.0", default-features = false, features = ['crossterm'] }
 url = "2.2.2"
+uuid = { version = "1.4.0", features = ["v4"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.4"
+mockito = "1.1.0"
 predicates = "3.0.3"
 
 [build-dependencies]
 clap = { version = "4.0.7", features = ["derive"] }
 clap_complete = "4.0.2"
+
+# [patch."https://github.com/rage/tmc-langs-rust"]
+# tmc-langs = { path = "../tmc-langs-rust/crates/tmc-langs" }

@@ -1,12 +1,8 @@
-use super::{download, organization, util, util::Client};
+use super::{download, util, util::Client};
 use crate::io::{Io, PrintColor};
 use anyhow::Context;
 
-pub fn login(
-    io: &mut dyn Io,
-    client: &mut dyn Client,
-    interactive_mode: bool,
-) -> anyhow::Result<()> {
+pub fn login(io: &mut Io, client: &mut Client, _interactive_mode: bool) -> anyhow::Result<()> {
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
     username = username.trim().to_string();
@@ -29,26 +25,36 @@ pub fn login(
     let message = client.try_login(username, password)?;
     io.println(&message, PrintColor::Success)?;
 
+    /*
+    now that courses mooc is supported,
+    no need to always select an org
     if interactive_mode {
         organization::set_organization(io, client)
     } else {
         organization::set_organization_old(io, client)
     }
     .context("Could not set organization")?;
+    */
 
     if client.is_test_mode() {
         return Ok(());
     }
 
+    /*
+    now that courses mooc is supported,
+    no need to always select a course
     if interactive_mode {
         download_after_login(client, io)?;
     } else {
-        io.println("Logged in and selected organization", PrintColor::Success)?;
+
     }
+    */
+
+    io.println("Logged in", PrintColor::Success)?;
     Ok(())
 }
 
-pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow::Result<()> {
+pub fn _download_after_login(client: &mut Client, io: &mut Io) -> anyhow::Result<()> {
     io.println("Fetching courses...", PrintColor::Normal)?;
     let courses = client.list_courses()?;
 
@@ -94,40 +100,6 @@ pub fn download_after_login(client: &mut dyn Client, io: &mut dyn Io) -> anyhow:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::slice::Iter;
-
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> anyhow::Result<String> {
-            let res = match self.input.next() {
-                Some(string) => string,
-                None => "",
-            };
-            Ok(res.to_string())
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn read_password(&mut self) -> anyhow::Result<String> {
-            self.read_line()
-        }
-    }
-
     /*
     #[test]
     fn login_with_incorrect_username_or_password_test() {

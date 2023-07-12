@@ -6,7 +6,10 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use reqwest::Url;
-use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
+use tmc_langs::{
+    tmc::{response::SubmissionFinished, ClientUpdateData},
+    Language,
+};
 
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
@@ -15,7 +18,7 @@ use tmc_langs::{ClientUpdateData, Language, SubmissionFinished};
 /// # Errors
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> anyhow::Result<()> {
+pub fn submit(io: &mut Io, client: &mut Client, path: Option<&str>) -> anyhow::Result<()> {
     let locale = into_locale("fin").expect("The locale should always be valid.");
 
     // todo: use context
@@ -67,7 +70,7 @@ pub fn submit(io: &mut dyn Io, client: &mut dyn Client, path: Option<&str>) -> a
 }
 
 fn print_wait_for_submission_results(
-    io: &mut dyn Io,
+    io: &mut Io,
     submission_finished: SubmissionFinished,
 ) -> anyhow::Result<()> {
     let mut all_passed = false;

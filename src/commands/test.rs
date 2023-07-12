@@ -8,7 +8,7 @@ use tmc_langs::RunResult;
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
-pub fn test(io: &mut dyn Io, path: Option<&str>) -> anyhow::Result<()> {
+pub fn test(io: &mut Io, path: Option<&str>) -> anyhow::Result<()> {
     // todo: use context
     let exercise_path = util::exercise_pathfinder(path).context("Error finding exercise")?;
     test_exercise_path(io, &exercise_path)?;
@@ -16,13 +16,13 @@ pub fn test(io: &mut dyn Io, path: Option<&str>) -> anyhow::Result<()> {
 }
 
 /// Wrapper around test_exercise funtion to get uniform Result type
-fn test_exercise_path(io: &mut dyn Io, path: &Path) -> anyhow::Result<()> {
+fn test_exercise_path(io: &mut Io, path: &Path) -> anyhow::Result<()> {
     test_exercise(io, path, true)?;
     Ok(())
 }
 
 /// Executes tests for a single exercise, returns true if all tests passed (false if not).
-fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> anyhow::Result<bool> {
+fn test_exercise(io: &mut Io, path: &Path, print_progress: bool) -> anyhow::Result<bool> {
     // Get exercise folder name from last component in path
     let mut exercise_name = "";
     for component in path.components() {
@@ -38,7 +38,7 @@ fn test_exercise(io: &mut dyn Io, path: &Path, print_progress: bool) -> anyhow::
 
 /// Prints the result of running tests for a single exercise
 fn print_result_test(
-    io: &mut dyn Io,
+    io: &mut Io,
     run_result: RunResult,
     exercise_name: &str,
     print_progress: bool,
@@ -87,39 +87,9 @@ fn print_result_test(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{collections::HashMap, slice::Iter};
+    use std::{collections::HashMap, io::Cursor};
+    use termcolor::NoColor;
     use tmc_langs::{RunResult, RunStatus, TestResult};
-
-    pub struct IoTest<'a> {
-        list: &'a mut Vec<String>,
-        input: &'a mut Iter<'a, &'a str>,
-    }
-
-    impl Io for IoTest<'_> {
-        fn read_line(&mut self) -> anyhow::Result<String> {
-            let res = match self.input.next() {
-                Some(string) => string,
-                None => "",
-            };
-            Ok(res.to_string())
-        }
-
-        fn print(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            print!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn println(&mut self, output: &str, _font_color: PrintColor) -> anyhow::Result<()> {
-            println!("{output}");
-            self.list.push(output.to_string());
-            Ok(())
-        }
-
-        fn read_password(&mut self) -> anyhow::Result<String> {
-            self.read_line()
-        }
-    }
 
     #[test]
     fn generate_progress_string_empty_test() {
@@ -194,14 +164,9 @@ mod tests {
 
     #[test]
     fn print_test_results_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let logs: HashMap<String, String> = HashMap::new();
         let run_result = RunResult::new(RunStatus::Passed, vec![], logs);
@@ -209,41 +174,43 @@ mod tests {
 
         let all_tests_passed = print_result_test(&mut io, run_result, exercise_name, true).unwrap();
 
-        assert_eq!(io.list[0], "");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert_eq!(output[0], "");
 
         assert!(
-            io.list[1].contains("Testing"),
+            output[1].contains("Testing"),
             "line does not contain 'Testing'"
         );
         assert!(
-            io.list[1].contains(exercise_name),
+            output[1].contains(exercise_name),
             "line does not contain exercise name"
         );
-        assert_eq!(io.list[2], "");
+        assert_eq!(output[2], "");
         assert!(
-            io.list[3].contains("Test results"),
+            output[3].contains("Test results"),
             "line does not contain 'Test results'"
         );
         assert!(
-            io.list[3].contains("0/0"),
+            output[3].contains("0/0"),
             "line does not contain completed tests, should be '0/0' "
         );
 
         assert!(
-            io.list[4].contains("All tests passed"),
+            output[4].contains("All tests passed"),
             "line does not contain 'All tests passed'"
         );
         assert!(
-            io.list[4].contains("tmc submit"),
+            output[4].contains("tmc submit"),
             "line does not contain hint 'tmc submit'"
         );
 
         assert!(
-            io.list[5].contains('█'),
+            output[5].contains('█'),
             "line does not contain progress bar char '█'"
         );
         assert!(
-            io.list[5].contains("100%"),
+            output[5].contains("100%"),
             "line does not contain progress '100%'"
         );
         assert!(
@@ -254,14 +221,9 @@ mod tests {
 
     #[test]
     fn print_test_result_with_passed_tests_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let test_result_completed = TestResult {
             name: "the_first_test".to_string(),
@@ -278,41 +240,43 @@ mod tests {
 
         let all_tests_passed = print_result_test(&mut io, run_result, exercise_name, true).unwrap();
 
-        assert_eq!(io.list[0], "");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert_eq!(output[0], "");
 
         assert!(
-            io.list[1].contains("Testing"),
+            output[1].contains("Testing"),
             "line does not contain 'Testing'"
         );
         assert!(
-            io.list[1].contains(exercise_name),
+            output[1].contains(exercise_name),
             "line does not contain exercise name"
         );
-        assert_eq!(io.list[2], "");
+        assert_eq!(output[2], "");
         assert!(
-            io.list[3].contains("Test results"),
+            output[3].contains("Test results"),
             "line does not contain 'Test results'"
         );
         assert!(
-            io.list[3].contains("1/1"),
+            output[3].contains("1/1"),
             "line does not contain completed tests, should be '1/1' "
         );
 
         assert!(
-            io.list[4].contains("All tests passed"),
+            output[4].contains("All tests passed"),
             "line does not contain 'All tests passed'"
         );
         assert!(
-            io.list[4].contains("tmc submit"),
+            output[4].contains("tmc submit"),
             "line does not contain hint 'tmc submit'"
         );
 
         assert!(
-            io.list[5].contains('█'),
+            output[5].contains('█'),
             "line does not contain progress bar char '█'"
         );
         assert!(
-            io.list[5].contains("100%"),
+            output[5].contains("100%"),
             "line does not contain progress '100%'"
         );
         assert!(
@@ -323,14 +287,9 @@ mod tests {
 
     #[test]
     fn print_test_result_with_failed_tests_test() {
-        let mut v: Vec<String> = Vec::new();
-        let input = vec![];
-        let mut input = input.iter();
-
-        let mut io = IoTest {
-            list: &mut v,
-            input: &mut input,
-        };
+        let mut output = NoColor::new(Vec::<u8>::new());
+        let mut input = Cursor::new(Vec::<u8>::new());
+        let mut io = Io::new(&mut output, &mut input);
 
         let test_result_message = "The test seems to have failed";
         let test_result_completed = TestResult {
@@ -348,39 +307,41 @@ mod tests {
 
         let all_tests_passed = print_result_test(&mut io, run_result, exercise_name, true).unwrap();
 
-        assert_eq!(io.list[0], "");
+        let output = String::from_utf8(output.into_inner()).unwrap();
+        let output = output.lines().collect::<Vec<_>>();
+        assert_eq!(output[0], "");
 
         assert!(
-            io.list[1].contains("Testing"),
+            output[1].contains("Testing"),
             "line does not contain 'Testing'"
         );
         assert!(
-            io.list[1].contains(exercise_name),
+            output[1].contains(exercise_name),
             "line does not contain exercise name"
         );
         assert!(
-            io.list[2].contains("Failed"),
+            output[2].contains("Failed"),
             "line does not contain 'Failed'"
         );
         assert!(
-            io.list[3].contains(test_result_message),
+            output[3].contains(test_result_message),
             "line does not contain message from test_result"
         );
 
         assert!(
-            io.list[6].contains("Test results"),
+            output[6].contains("Test results"),
             "line does not contain 'Test results'"
         );
         assert!(
-            io.list[6].contains("0/1"),
+            output[6].contains("0/1"),
             "line does not contain completed tests, should be '0/1' "
         );
         assert!(
-            io.list[7].contains('░'),
+            output[7].contains('░'),
             "line does not contain progress bar char '█'"
         );
         assert!(
-            io.list[7].contains(" 0%"),
+            output[7].contains(" 0%"),
             "line does not contain progress ' 0%'"
         );
         assert!(

@@ -8,7 +8,7 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--help").arg("--no-update");
     cmd.assert().success().stdout(predicate::str::contains(
-        "Client for downloading, testing and submitting exercises through the TestMyCode system.",
+        "Client for downloading, testing and submitting exercises through the TestMyCode and MOOC.fi systems.",
     ));
 
     Ok(())
@@ -67,7 +67,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("download")
         .arg("-c")
         .arg("test-tmc-test-course");
-    cmd.assert().success().stdout(predicate::str::contains(
+    cmd.assert().success().stderr(predicate::str::contains(
         "No login found. Login to use this command with 'tmc login'",
     ));
 
@@ -78,7 +78,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("courses")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "No login found. Login to use this command with 'tmc login'",
         ));
 
@@ -89,7 +89,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("submit")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "No login found. Login to use this command with 'tmc login'",
         ));
 
@@ -100,7 +100,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("paste")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "No login found. Login to use this command with 'tmc login'",
         ));
 
@@ -110,7 +110,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--no-update")
         .arg("exercises")
         .arg("test-tmc-test-course");
-    cmd.assert().success().stdout(predicate::str::contains(
+    cmd.assert().success().stderr(predicate::str::contains(
         "No login found. Login to use this command with 'tmc login'",
     ));
 
@@ -124,9 +124,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .write_stdin("testusername\ntestpassword\nimag\n")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
-            "Choose organization by writing its slug: ",
-        ));
+        .stderr(predicate::str::contains("Logged in successfully!"));
 
     // organization -n
     // test
@@ -138,7 +136,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .write_stdin("test\n")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "Selected test organization as organization.",
         ));
 
@@ -147,7 +145,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
     cmd.arg("--testmode").arg("--no-update").arg("courses");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("test-tmc-test-course"));
+        .stderr(predicate::str::contains("test-tmc-test-course"));
 
     // exercises test-tmc-test-course
     cmd = Command::cargo_bin(PKG_NAME)?;
@@ -157,7 +155,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("test-tmc-test-course");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Imaginary test exercise"));
+        .stderr(predicate::str::contains("Imaginary test exercise"));
 
     // download -c test-tmc-test-course -f folder_for_download
     cmd = Command::cargo_bin(PKG_NAME)?;
@@ -168,7 +166,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("test-tmc-test-course");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Download was successful!"));
+        .stderr(predicate::str::contains("Download was successful!"));
 
     // test folder/nonexistant_ex
     cmd = Command::cargo_bin(PKG_NAME)?;
@@ -178,14 +176,14 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .arg("folder/nonexistant_ex");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Failed to load projects config"));
+        .stderr(predicate::str::contains("Failed to load projects config"));
 
     // logout
     let mut cmd = Command::cargo_bin(PKG_NAME)?;
     cmd.arg("--testmode").arg("--no-update").arg("logout");
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Logged out successfully"));
+        .stderr(predicate::str::contains("Logged out successfully"));
 
     // login
     // totallywrongname cantrememberpasswordeither imag
@@ -196,7 +194,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         .write_stdin("totallywrongname\ncantrememberpasswordeither\nimag\n")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Wrong username or password"));
+        .stderr(predicate::str::contains("Wrong username or password"));
 
     Ok(())
 }
