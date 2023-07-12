@@ -33,16 +33,21 @@ pub fn run(cli: Cli, io: &mut Io) {
 }
 
 fn run_inner(io: &mut Io, cli: Cli) -> anyhow::Result<()> {
+    let config_path = TmcCliConfig::location()?;
+    let config = TmcCliConfig::load(config_path)?;
+
+    #[cfg(target_os = "windows")]
+    let mut config = config;
+
     if cli.no_update {
         let os = std::env::consts::OS;
         if os == "windows" {
             #[cfg(target_os = "windows")]
-            updater::check_for_update(cli.force_update)?;
+            updater::check_for_update(&mut config, cli.force_update)?;
         }
     } else {
         println!("No Auto-Updates");
     }
-    let config_path = TmcCliConfig::location()?;
-    let config = TmcCliConfig::load(config_path)?;
+
     commands::handle(cli, io, config)
 }

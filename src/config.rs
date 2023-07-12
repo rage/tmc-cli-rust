@@ -55,7 +55,30 @@ impl TmcCliConfig {
     }
 
     pub fn remove_test_login(&mut self) {
-        let key = TEST_LOGIN_KEY;
-        self.config.remove(key);
+        self.config.remove(TEST_LOGIN_KEY);
+    }
+}
+
+#[cfg(target_os = "windows")]
+impl TmcCliConfig {
+    const UPDATE_LAST_CHECKED_KEY: &str = "update-last-checked";
+
+    pub fn get_update_last_checked(&self) -> Option<u128> {
+        self.config
+            .get(Self::UPDATE_LAST_CHECKED_KEY)
+            .and_then(|v| v.as_str())
+            .and_then(|s| s.parse::<u128>().ok())
+    }
+
+    pub fn update_last_checked(&mut self) {
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        let key = Self::UPDATE_LAST_CHECKED_KEY.to_string();
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Invalid system time")
+            .as_millis();
+        self.config
+            .insert(key, toml::Value::String(timestamp.to_string()));
     }
 }
