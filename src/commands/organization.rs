@@ -5,7 +5,7 @@ use crate::{
 };
 
 // Asks for organization from user and saves it into file
-pub fn set_organization_old(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<String> {
+pub fn set_organization_old(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {
     // List all organizations
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(b.name.cmp(&a.name)));
@@ -38,7 +38,7 @@ pub fn set_organization_old(io: &mut Io, client: &mut dyn Client) -> anyhow::Res
     anyhow::bail!("No such organization for the given slug: {}", slug);
 }
 
-pub fn set_organization(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<String> {
+pub fn set_organization(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {
     io.println("Fetching organizations...", PrintColor::Normal)?;
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(a.name.cmp(&b.name)));
@@ -73,7 +73,7 @@ pub fn set_organization(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<
 // Check if logged in, then ask for organization
 pub fn organization(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     interactive_mode: bool,
 ) -> anyhow::Result<()> {
     client.load_login()?;

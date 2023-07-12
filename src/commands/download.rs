@@ -20,7 +20,7 @@ use tmc_langs::{
 // Will run in privileged stage if needed on Windows.
 pub fn download_or_update(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     course_name: Option<&str>,
     current_dir: bool,
 ) -> anyhow::Result<()> {
@@ -88,7 +88,7 @@ pub fn download_or_update(
 
 pub fn download_exercises(
     path: &Path,
-    client: &mut dyn Client,
+    client: &mut Client,
     course: &Course,
 ) -> anyhow::Result<String> {
     match client.get_course_exercises(course.id) {
@@ -171,7 +171,7 @@ pub fn download_exercises(
     ))
 }
 
-pub fn elevated_download(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn elevated_download(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
     use std::io::prelude::*;
     let temp_file_path = get_projects_dir()?;
     let temp_file_path = temp_file_path.join("temp.txt");

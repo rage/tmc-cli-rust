@@ -2,7 +2,7 @@ use super::super::util::Client;
 use crate::{Io, PrintColor};
 use tmc_langs::mooc::CourseInstance;
 
-pub fn run(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn run(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
     let mut courses = client.mooc_courses()?;
     courses.sort_by_cached_key(|c| c.course_name.clone());
     print_courses(io, &courses)?;

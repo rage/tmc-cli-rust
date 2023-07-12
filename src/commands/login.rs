@@ -2,7 +2,7 @@ use super::{download, util, util::Client};
 use crate::io::{Io, PrintColor};
 use anyhow::Context;
 
-pub fn login(io: &mut Io, client: &mut dyn Client, _interactive_mode: bool) -> anyhow::Result<()> {
+pub fn login(io: &mut Io, client: &mut Client, _interactive_mode: bool) -> anyhow::Result<()> {
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
     username = username.trim().to_string();
@@ -54,7 +54,7 @@ pub fn login(io: &mut Io, client: &mut dyn Client, _interactive_mode: bool) -> a
     Ok(())
 }
 
-pub fn _download_after_login(client: &mut dyn Client, io: &mut Io) -> anyhow::Result<()> {
+pub fn _download_after_login(client: &mut Client, io: &mut Io) -> anyhow::Result<()> {
     io.println("Fetching courses...", PrintColor::Normal)?;
     let courses = client.list_courses()?;
 

@@ -7,7 +7,7 @@ use std::{collections::HashMap, ops::DerefMut};
 use tmc_langs::mooc::{PublicSpec, TmcExerciseTask};
 use uuid::Uuid;
 
-pub fn run(io: &mut Io, client: &mut dyn Client, course: Option<&str>) -> anyhow::Result<()> {
+pub fn run(io: &mut Io, client: &mut Client, course: Option<&str>) -> anyhow::Result<()> {
     let Some(course) = super::get_course_by_slug_or_selection(io, client, course)? else {
         return Ok(());
     };
@@ -28,7 +28,7 @@ pub fn run(io: &mut Io, client: &mut dyn Client, course: Option<&str>) -> anyhow
 
 fn update_exercises(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     mooc_exercises: HashMap<(Uuid, Uuid, Uuid), TmcExerciseTask>,
 ) -> anyhow::Result<()> {
     let config = TmcCliConfig::load()?;
@@ -54,7 +54,7 @@ fn update_exercises(
 // this way one update erroring out doesn't end the entire update process
 fn update_exercise(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     local_exercise: &mut LocalMoocExercise,
     mooc_exercises: &HashMap<(Uuid, Uuid, Uuid), TmcExerciseTask>,
 ) -> anyhow::Result<()> {

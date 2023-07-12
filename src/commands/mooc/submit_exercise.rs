@@ -9,7 +9,7 @@ use tmc_langs::{
     Compression,
 };
 
-pub fn run(io: &mut Io, client: &mut dyn Client, path: Option<&Path>) -> anyhow::Result<()> {
+pub fn run(io: &mut Io, client: &mut Client, path: Option<&Path>) -> anyhow::Result<()> {
     let Some(exercise) = select_exercise(io, client, path)? else {
         return Ok(());
     };
@@ -94,7 +94,7 @@ pub fn run(io: &mut Io, client: &mut dyn Client, path: Option<&Path>) -> anyhow:
 
 fn select_exercise(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     path: Option<&Path>,
 ) -> anyhow::Result<Option<LocalMoocExercise>> {
     let config = TmcCliConfig::load()?;

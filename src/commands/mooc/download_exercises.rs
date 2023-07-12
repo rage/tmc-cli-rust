@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 pub fn run(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     slug: Option<&str>,
     current_dir: bool,
 ) -> anyhow::Result<()> {
@@ -26,7 +26,7 @@ pub fn run(
 /// Prints information about given exercises
 fn download_exercises(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     course: &CourseInstance,
     exercises: Vec<TmcExerciseSlide>,
     current_dir: bool,
@@ -80,7 +80,7 @@ fn download_exercises(
 // this way one download erroring out doesn't end the entire download process
 fn download_exercise(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     config: &mut TmcCliConfig,
     course: &CourseInstance,
     projects_dir: &Path,

@@ -1,7 +1,7 @@
 use super::util::Client;
 use crate::io::{Io, PrintColor};
 
-pub fn logout(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<()> {
+pub fn logout(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
     client.logout()?;
     io.println("Logged out successfully.", PrintColor::Success)?;
     Ok(())

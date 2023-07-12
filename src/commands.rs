@@ -17,10 +17,19 @@ use crate::{
     io::Io,
 };
 use anyhow::Context;
-use util::{Client, ClientProduction};
+use std::env;
+use util::Client;
 
 pub fn handle(cli: Cli, io: &mut Io) -> anyhow::Result<()> {
-    let mut client = ClientProduction::new(cli.testmode)?;
+    let tmc_root_url = match env::var("TMC_LANGS_TMC_ROOT_URL") {
+        Ok(url) => url
+            .parse()
+            .with_context(|| format!("Failed to parse TMC_LANGS_TMC_ROOT_URL ({url}) as a URL"))?,
+        Err(_) => "https://tmc.mooc.fi".parse().expect("known to work"),
+    };
+    let mooc_root_url = env::var("TMC_LANGS_MOOC_ROOT_URL")
+        .unwrap_or_else(|_| "https://courses.mooc.fi".to_string());
+    let mut client = Client::new(tmc_root_url, mooc_root_url, cli.testmode)?;
 
     // Authorize the client and raise error if not logged in when required
     match cli.subcommand {

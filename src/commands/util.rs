@@ -14,8 +14,7 @@ use tmc_langs::{
     mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus, MoocClient},
     tmc::{
         response::{
-            Course, CourseDetails, CourseExercise, ExercisesDetails, NewSubmission, Organization,
-            SubmissionFinished,
+            Course, CourseDetails, CourseExercise, NewSubmission, Organization, SubmissionFinished,
         },
         TestMyCodeClient, TestMyCodeClientError, Token,
     },
@@ -29,90 +28,14 @@ pub const PLUGIN_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 
-pub struct ClientProduction {
+pub struct Client {
     pub tmc_client: TestMyCodeClient,
     pub mooc_client: MoocClient,
     pub test_mode: bool,
 }
 
-pub trait Client {
-    // tmc commands
-    fn load_login(&mut self) -> anyhow::Result<()>;
-    fn try_login(&mut self, username: String, password: String) -> anyhow::Result<String>;
-    fn list_courses(&mut self) -> anyhow::Result<Vec<Course>>;
-    fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>>;
-    fn logout(&mut self) -> anyhow::Result<()>;
-    fn wait_for_submission(
-        &self,
-        submission_url: Url,
-    ) -> Result<SubmissionFinished, TestMyCodeClientError>;
-    fn submit(
-        &self,
-        projects_dir: &Path,
-        course_slug: &str,
-        exercise_slug: &str,
-        locale: Option<Language>,
-    ) -> Result<NewSubmission, LangsError>;
-    fn get_course_exercises(&mut self, course_id: u32) -> anyhow::Result<Vec<CourseExercise>>;
-    fn get_exercise_details(
-        &mut self,
-        exercise_ids: Vec<u32>,
-    ) -> Result<Vec<ExercisesDetails>, TestMyCodeClientError>;
-    fn download_or_update_exercises(
-        &mut self,
-        download_params: &[u32],
-        path: &Path,
-    ) -> Result<DownloadResult, LangsError>;
-    fn is_test_mode(&mut self) -> bool;
-    fn get_course_details(&self, course_id: u32) -> Result<CourseDetails, TestMyCodeClientError>;
-    fn get_organization(
-        &self,
-        organization_slug: &str,
-    ) -> Result<Organization, TestMyCodeClientError>;
-    fn update_exercises(
-        &mut self,
-        path: &Path,
-    ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError>;
-    fn paste(
-        &self,
-        projects_dir: &Path,
-        course_slug: &str,
-        exercise_slug: &str,
-        paste_message: Option<String>,
-        locale: Option<Language>,
-    ) -> Result<NewSubmission, String>;
-
-    // mooc commands
-    fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>>;
-    fn mooc_course_exercises(
-        &self,
-        course_instance_id: Uuid,
-    ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>>;
-    fn mooc_download_exercise(&self, url: String) -> anyhow::Result<Bytes>;
-    fn mooc_submit_exercise(
-        &self,
-        exercise_id: Uuid,
-        slide_id: Uuid,
-        task_id: Uuid,
-        archive: &Path,
-    ) -> anyhow::Result<ExerciseTaskSubmissionResult>;
-    fn mooc_get_submission_grading(
-        &self,
-        submission_id: Uuid,
-    ) -> anyhow::Result<ExerciseTaskSubmissionStatus>;
-}
-
-impl ClientProduction {
-    pub fn new(test_mode: bool) -> anyhow::Result<Self> {
-        let tmc_root_url_env = env::var("TMC_LANGS_TMC_ROOT_URL");
-        let tmc_root_url = tmc_root_url_env.as_deref().unwrap_or("https://tmc.mooc.fi");
-        let tmc_root_url = tmc_root_url
-            .parse()
-            .with_context(|| format!("Failed to parse URL {tmc_root_url}"))?;
-
-        let mooc_root_url = env::var("TMC_LANGS_MOOC_ROOT_URL")
-            .unwrap_or_else(|_| "https://courses.mooc.fi".to_string());
-
+impl Client {
+    pub fn new(tmc_root_url: Url, mooc_root_url: String, test_mode: bool) -> anyhow::Result<Self> {
         let (tmc_client, _credentials) = tmc_langs::init_testmycode_client_with_credentials(
             tmc_root_url,
             PLUGIN,
@@ -121,26 +44,26 @@ impl ClientProduction {
         let (mooc_client, _credentials) =
             tmc_langs::init_mooc_client_with_credentials(mooc_root_url, PLUGIN)?;
 
-        Ok(ClientProduction {
+        Ok(Client {
             tmc_client,
             mooc_client,
             test_mode,
         })
     }
-    #[allow(dead_code)]
+
     pub fn is_test_mode(&mut self) -> bool {
         self.test_mode
     }
 
-    fn authenticate(&mut self, username: String, password: String) -> anyhow::Result<Token> {
+    pub fn authenticate(&mut self, username: String, password: String) -> anyhow::Result<Token> {
         // match self.tmc_client.authenticate(PLUGIN, username, password) {
         match tmc_langs::login_with_password(&mut self.tmc_client, PLUGIN, username, password) {
             Ok(x) => Ok(x),
-            Err(x) => anyhow::bail!(ClientProduction::explain_login_fail(x)),
+            Err(x) => anyhow::bail!(Client::explain_login_fail(x)),
         }
     }
 
-    fn explain_login_fail(error: LangsError) -> String {
+    pub fn explain_login_fail(error: LangsError) -> String {
         let res = format!("{error:?}");
 
         if res.contains("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.") {
@@ -149,11 +72,9 @@ impl ClientProduction {
 
         "Login failed with an unknown error message".to_string()
     }
-}
 
-impl Client for ClientProduction {
     // tmc commands
-    fn paste(
+    pub fn paste(
         &self,
         projects_dir: &Path,
         course_slug: &str,
@@ -185,11 +106,7 @@ impl Client for ClientProduction {
         }
     }
 
-    fn is_test_mode(&mut self) -> bool {
-        self.test_mode
-    }
-
-    fn load_login(&mut self) -> anyhow::Result<()> {
+    pub fn load_login(&mut self) -> anyhow::Result<()> {
         if self.test_mode {
             // Test login exists if config-file has key-value pair test_login = "test_logged_in"
             let config = TmcCliConfig::load()?;
@@ -212,7 +129,7 @@ impl Client for ClientProduction {
         }
     }
 
-    fn try_login(&mut self, username: String, password: String) -> anyhow::Result<String> {
+    pub fn try_login(&mut self, username: String, password: String) -> anyhow::Result<String> {
         if self.test_mode {
             if username == "testusername" && password == "testpassword" {
                 let mut config = TmcCliConfig::load()?;
@@ -236,7 +153,7 @@ impl Client for ClientProduction {
         anyhow::bail!("Error! Saving credentials failed")
     }
 
-    fn list_courses(&mut self) -> anyhow::Result<Vec<Course>> {
+    pub fn list_courses(&mut self) -> anyhow::Result<Vec<Course>> {
         if self.test_mode {
             return Ok(vec![
                 Course {
@@ -292,7 +209,7 @@ impl Client for ClientProduction {
         }
     }
 
-    fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>> {
+    pub fn get_organizations(&mut self) -> anyhow::Result<Vec<Organization>> {
         if self.test_mode {
             return Ok(vec![
                 Organization {
@@ -320,7 +237,7 @@ impl Client for ClientProduction {
         Ok(organizations)
     }
 
-    fn logout(&mut self) -> anyhow::Result<()> {
+    pub fn logout(&mut self) -> anyhow::Result<()> {
         if self.test_mode {
             // Remove test login from config file
             let mut config = TmcCliConfig::load().context("Could not load the config")?;
@@ -336,13 +253,13 @@ impl Client for ClientProduction {
         Ok(())
     }
 
-    fn wait_for_submission(
+    pub fn wait_for_submission(
         &self,
         submission_url: Url,
     ) -> Result<SubmissionFinished, TestMyCodeClientError> {
         self.tmc_client.wait_for_submission_at(submission_url)
     }
-    fn update_exercises(
+    pub fn update_exercises(
         &mut self,
         path: &Path,
     ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
@@ -357,7 +274,7 @@ impl Client for ClientProduction {
         tmc_langs::update_exercises(&self.tmc_client, path)
     }
 
-    fn submit(
+    pub fn submit(
         &self,
         projects_dir: &Path,
         course_slug: &str,
@@ -380,7 +297,7 @@ impl Client for ClientProduction {
         )
     }
 
-    fn get_course_exercises(&mut self, course_id: u32) -> anyhow::Result<Vec<CourseExercise>> {
+    pub fn get_course_exercises(&mut self, course_id: u32) -> anyhow::Result<Vec<CourseExercise>> {
         if self.test_mode {
             return Ok(vec![CourseExercise {
                 id: 0,
@@ -404,23 +321,7 @@ impl Client for ClientProduction {
         }
     }
 
-    fn get_exercise_details(
-        &mut self,
-        exercise_ids: Vec<u32>,
-    ) -> Result<Vec<ExercisesDetails>, TestMyCodeClientError> {
-        if self.test_mode {
-            return Ok(vec![ExercisesDetails {
-                id: 0,
-                course_name: "test_course".to_string(),
-                exercise_name: "test_exercise".to_string(),
-                checksum: "test_checksum".to_string(),
-                hide_submission_results: false,
-            }]);
-        }
-        self.tmc_client.get_exercises_details(&exercise_ids)
-    }
-
-    fn download_or_update_exercises(
+    pub fn download_or_update_exercises(
         &mut self,
         exercise_ids: &[u32],
         path: &Path,
@@ -435,7 +336,10 @@ impl Client for ClientProduction {
         tmc_langs::download_or_update_course_exercises(&self.tmc_client, path, exercise_ids, true)
     }
 
-    fn get_course_details(&self, course_id: u32) -> Result<CourseDetails, TestMyCodeClientError> {
+    pub fn get_course_details(
+        &self,
+        course_id: u32,
+    ) -> Result<CourseDetails, TestMyCodeClientError> {
         if self.test_mode {
             let course = Course {
                 id: 0,
@@ -457,28 +361,13 @@ impl Client for ClientProduction {
             self.tmc_client.get_course_details(course_id)
         }
     }
-    fn get_organization(
-        &self,
-        organization_slug: &str,
-    ) -> Result<Organization, TestMyCodeClientError> {
-        if self.test_mode {
-            return Ok(Organization {
-                name: "String".to_string(),
-                information: "String".to_string(),
-                slug: "String".to_string(),
-                logo_path: "String".to_string(),
-                pinned: false,
-            });
-        }
-        self.tmc_client.get_organization(organization_slug)
-    }
 
     // mooc commands
-    fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
+    pub fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
         let courses = self.mooc_client.course_instances()?;
         Ok(courses)
     }
-    fn mooc_course_exercises(
+    pub fn mooc_course_exercises(
         &self,
         course_instance_id: Uuid,
     ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>> {
@@ -487,11 +376,11 @@ impl Client for ClientProduction {
             .course_instance_exercise_slides(course_instance_id)?;
         Ok(exercises)
     }
-    fn mooc_download_exercise(&self, url: String) -> anyhow::Result<Bytes> {
+    pub fn mooc_download_exercise(&self, url: String) -> anyhow::Result<Bytes> {
         let bytes = self.mooc_client.download(url)?;
         Ok(bytes)
     }
-    fn mooc_submit_exercise(
+    pub fn mooc_submit_exercise(
         &self,
         exercise_id: Uuid,
         slide_id: Uuid,
@@ -503,7 +392,7 @@ impl Client for ClientProduction {
             .submit(exercise_id, slide_id, task_id, archive)?;
         Ok(res)
     }
-    fn mooc_get_submission_grading(
+    pub fn mooc_get_submission_grading(
         &self,
         submission_id: Uuid,
     ) -> anyhow::Result<ExerciseTaskSubmissionStatus> {
@@ -541,7 +430,7 @@ pub fn set_organization(org: String) -> anyhow::Result<()> {
 
 /// Returns course as: Ok(Some(Course)) or Ok(None) if not found, Err(msg) if could not get courses list
 pub fn get_course_by_name(
-    client: &mut dyn Client,
+    client: &mut Client,
     course_name: &str,
 ) -> anyhow::Result<Option<Course>> {
     let courses = client.list_courses()?;
@@ -590,7 +479,7 @@ pub fn get_projects_dir() -> anyhow::Result<PathBuf> {
     tmc_langs::get_projects_dir(PLUGIN).map_err(Into::into)
 }
 
-pub fn choose_course(io: &mut Io, client: &mut dyn Client) -> anyhow::Result<String> {
+pub fn choose_course(io: &mut Io, client: &mut Client) -> anyhow::Result<String> {
     let _org =
         get_organization().context("No organization found. Run 'tmc organization' first.")?;
     io.println("Fetching courses...", PrintColor::Normal)?;

@@ -28,7 +28,7 @@ use tmc_langs::{
 // Err => something went wrong
 fn get_course_by_slug_or_selection(
     io: &mut Io,
-    client: &mut dyn Client,
+    client: &mut Client,
     slug: Option<&str>,
 ) -> anyhow::Result<Option<CourseInstance>> {
     let courses = client.mooc_courses()?;
@@ -126,7 +126,7 @@ fn exercise_path(root: &Path, course_slug: &str, exercise: &TmcExerciseSlide) ->
 }
 
 fn download_and_extract_exercise(
-    client: &mut dyn Client,
+    client: &mut Client,
     url: String,
     target_location: &Path,
 ) -> anyhow::Result<()> {
