@@ -1,4 +1,4 @@
-use crate::commands::util::get_path;
+use crate::TmcCliConfig;
 use anyhow::Context;
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{
@@ -13,10 +13,8 @@ use std::{
     process::Command,
     time::{SystemTime, UNIX_EPOCH},
 };
-use tmc_langs::{ConfigValue, TmcConfig};
 
 pub const GITHUB_URL: &str = "https://api.github.com/repos/rage/tmc-cli-rust/tags";
-pub const PLUGIN: &str = "tmc_cli_rust";
 pub const DELAY_MILLIS_24H: u128 = 1440 * 60 * 1000;
 
 /// Autoupdater for Windows platform.
@@ -25,9 +23,9 @@ pub const DELAY_MILLIS_24H: u128 = 1440 * 60 * 1000;
 /// stashes the old executable and downloads a new one.
 /// Will run in privileged stage if needed on Windows!
 
-pub fn check_for_update(force: bool) -> anyhow::Result<()> {
-    if force || is_it_time_yet()? {
-        generate_time_stamp()?;
+pub fn check_for_update(config: &mut TmcCliConfig, force: bool) -> anyhow::Result<()> {
+    if force || is_it_time_yet(config)? {
+        generate_time_stamp(config)?;
         checktemp()?;
         let new_ver = get_latest_version()?;
         println!("Checking for updates...");
@@ -104,20 +102,10 @@ fn elevate(command: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn is_it_time_yet() -> anyhow::Result<bool> {
-    let config = TmcCliConfig::load()?;
-
-    let value = config.get("update-last-checked");
-    let last_check = match &value {
-        ConfigValue::Value(Some(s)) => s.as_str().context("invalid value")?,
-        _ => {
-            return Ok(true);
-        }
-    };
-
-    let last_check = match last_check.parse::<u128>() {
-        Ok(time) => time,
-        _ => return Ok(true),
+fn is_it_time_yet(config: &TmcCliConfig) -> anyhow::Result<bool> {
+    let last_check = match config.get_update_last_checked() {
+        Some(time) => time,
+        None => return Ok(true),
     };
     let now = SystemTime::now();
     let now = now
@@ -128,21 +116,9 @@ fn is_it_time_yet() -> anyhow::Result<bool> {
     Ok(update)
 }
 
-fn generate_time_stamp() -> anyhow::Result<()> {
-    let mut config = TmcCliConfig::load()?;
-    let now = SystemTime::now();
-    let since_the_epoch = now
-        .duration_since(UNIX_EPOCH)
-        .context("Time went backwards")?
-        .as_millis();
-
-    if let Err(_err) = config.insert(
-        "update-last-checked".to_string(),
-        toml::Value::String(since_the_epoch.to_string()),
-    ) {
-        println!("timestamp could not be changed");
-    }
-    if let Err(_err) = config.save(get_path()?.as_path()) {
+fn generate_time_stamp(config: &mut TmcCliConfig) -> anyhow::Result<()> {
+    config.update_last_checked();
+    if let Err(_err) = config.save() {
         println!("Problem saving timestamp");
     }
     Ok(())

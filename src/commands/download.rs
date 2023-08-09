@@ -1,8 +1,7 @@
-use super::{
-    util,
-    util::{get_projects_dir, Client},
-};
+use super::util;
 use crate::{
+    client::Client,
+    config::TmcCliConfig,
     io::{Io, PrintColor},
     progress_reporting,
     progress_reporting::ProgressBarManager,
@@ -23,24 +22,26 @@ pub fn download_or_update(
     client: &mut Client,
     course_name: Option<&str>,
     current_dir: bool,
+    config: &TmcCliConfig,
+    org: &str,
 ) -> anyhow::Result<()> {
     let fetched_course_name;
     let name_select = if let Some(course_name) = course_name {
         course_name
     } else {
-        fetched_course_name = util::choose_course(io, client)?;
+        fetched_course_name = util::choose_course(io, client, org)?;
         &fetched_course_name
     };
 
     // Get course by name
-    let course = match util::get_course_by_name(client, name_select)? {
+    let course = match util::get_course_by_name(client, name_select, org)? {
         Some(course) => course,
         None => anyhow::bail!("Could not find course with that name"),
     };
     let path = if current_dir {
         std::env::current_dir()?
     } else {
-        get_projects_dir()?
+        config.get_projects_dir().to_path_buf()
     };
 
     match download_exercises(&path, client, &course) {
@@ -59,7 +60,7 @@ pub fn download_or_update(
                     "Starting new cmd with administrator privileges...",
                     PrintColor::Normal,
                 )?;
-                let temp_file_path = get_projects_dir()?;
+                let temp_file_path = config.get_projects_dir();
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(
                     temp_file_path,
@@ -87,7 +88,7 @@ pub fn download_or_update(
 }
 
 pub fn download_exercises(
-    path: &Path,
+    projects_dir: &Path,
     client: &mut Client,
     course: &Course,
 ) -> anyhow::Result<String> {
@@ -114,7 +115,7 @@ pub fn download_exercises(
             );
             manager.start::<ClientUpdateData>();
 
-            let result = client.download_or_update_exercises(&exercise_ids, path);
+            let result = client.download_or_update_exercises(&exercise_ids, projects_dir);
 
             match result {
                 Ok(download_result) => {
@@ -148,7 +149,7 @@ pub fn download_exercises(
                             if !downloaded.is_empty() {
                                 res.push_str(&format!(
                                     "\n\nSuccessful downloads saved to {}",
-                                    path.display()
+                                    projects_dir.display()
                                 ));
                             }
 
@@ -167,13 +168,18 @@ pub fn download_exercises(
 
     Ok(format!(
         "Exercises downloaded successfully to {}",
-        path.display()
+        projects_dir.display()
     ))
 }
 
-pub fn elevated_download(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
+pub fn elevated_download(
+    io: &mut Io,
+    client: &mut Client,
+    config: &TmcCliConfig,
+    org: &str,
+) -> anyhow::Result<()> {
     use std::io::prelude::*;
-    let temp_file_path = get_projects_dir()?;
+    let temp_file_path = config.get_projects_dir();
     let temp_file_path = temp_file_path.join("temp.txt");
     let mut file = std::fs::File::open(temp_file_path.clone())?;
     let mut params = String::new();
@@ -185,7 +191,7 @@ pub fn elevated_download(io: &mut Io, client: &mut Client) -> anyhow::Result<()>
     let name_select = &vec[1];
 
     // Get course by name
-    let course = match util::get_course_by_name(client, name_select)? {
+    let course = match util::get_course_by_name(client, name_select, org)? {
         Some(course) => course,
         None => anyhow::bail!("Could not find course with that name"),
     };

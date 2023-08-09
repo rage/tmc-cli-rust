@@ -1,5 +1,8 @@
-use super::util::{self, choose_course, Client};
-use crate::io::{Io, PrintColor};
+use super::util::{self, choose_course};
+use crate::{
+    client::Client,
+    io::{Io, PrintColor},
+};
 use tmc_langs::tmc::response::CourseExercise;
 
 /// Lists exercises for a given course
@@ -7,15 +10,16 @@ pub fn list_exercises(
     io: &mut Io,
     client: &mut Client,
     course_name: Option<&str>,
+    org: &str,
 ) -> anyhow::Result<()> {
     let fetched_course_name;
     let name_select = if let Some(course_name) = course_name {
         course_name
     } else {
-        fetched_course_name = choose_course(io, client)?;
+        fetched_course_name = choose_course(io, client, org)?;
         &fetched_course_name
     };
-    let course = util::get_course_by_name(client, name_select)?
+    let course = util::get_course_by_name(client, name_select, org)?
         .ok_or_else(|| anyhow::anyhow!("Could not find a course with name '{}'", name_select))?;
 
     let mut exercises = client.get_course_exercises(course.id)?;
@@ -94,17 +98,9 @@ fn print_exercises(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_helper::{self, TestSetup};
     use mockito::{Matcher, Mock, Server, ServerGuard};
-    use std::io::Cursor;
-    use termcolor::NoColor;
     use tmc_langs::tmc::response::CourseExercise;
-
-    fn logging() {
-        let _ = flexi_logger::Logger::try_with_env()
-            .unwrap()
-            .log_to_stdout()
-            .start();
-    }
 
     fn mock_server() -> (ServerGuard, Vec<Mock>) {
         let mut server = Server::new();
@@ -162,8 +158,8 @@ mod tests {
 
     #[test]
     fn list_exercises_test() {
-        let mut output = NoColor::new(Vec::<u8>::new());
-        let mut input = Cursor::new(Vec::<u8>::new());
+        test_helper::logging();
+        let (mut input, mut output) = test_helper::input_output();
         let mut io = Io::new(&mut output, &mut input);
 
         let points = vec![
@@ -227,15 +223,15 @@ mod tests {
 
     #[test]
     fn list_exercises_with_client_test() {
-        logging();
+        test_helper::logging();
         let (server, _mocks) = mock_server();
+        let (mut input, mut output) = test_helper::input_output();
+        let TestSetup {
+            mut io, mut client, ..
+        } = test_helper::setup(&mut input, &mut output, &server);
+        client.set_tmc_token(test_helper::tmc_token());
 
-        let mut output = NoColor::new(Vec::<u8>::new());
-        let mut input = Cursor::new(Vec::<u8>::new());
-        let mut io = Io::new(&mut output, &mut input);
-
-        let mut client = Client::new(server.url().parse().unwrap(), "".to_string(), false).unwrap();
-        list_exercises(&mut io, &mut client, Some("course_name")).unwrap();
+        list_exercises(&mut io, &mut client, Some("course_name"), "test").unwrap();
 
         let output = String::from_utf8(output.into_inner()).unwrap();
         let output = output.lines().collect::<Vec<_>>();

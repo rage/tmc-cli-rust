@@ -1,5 +1,8 @@
-use super::util::{get_projects_dir, Client};
-use crate::io::{Io, PrintColor};
+use crate::{
+    client::Client,
+    config::TmcCliConfig,
+    io::{Io, PrintColor},
+};
 use anyhow::Context;
 use std::{
     path::{Path, PathBuf},
@@ -19,13 +22,18 @@ use std::{
 /// tmc update //runs update command in project dir
 /// tmc update -d //runs update command in current dir
 ///
-pub fn update(io: &mut Io, client: &mut Client, current_dir: bool) -> anyhow::Result<()> {
+pub fn update(
+    io: &mut Io,
+    client: &mut Client,
+    current_dir: bool,
+    config: &TmcCliConfig,
+) -> anyhow::Result<()> {
     // Get a client that has credentials
-    client.load_login()?;
+    client.load_login(config)?;
     let path = if current_dir {
         std::env::current_dir()?
     } else {
-        get_projects_dir()?
+        config.get_projects_dir().to_path_buf()
     };
     let tmp_path = path.to_str().context("invalid path")?;
     match call_update(&path, client) {
@@ -41,7 +49,7 @@ pub fn update(io: &mut Io, client: &mut Client, current_dir: bool) -> anyhow::Re
                     "Starting new cmd with administrator privileges...",
                     PrintColor::Normal,
                 )?;
-                let temp_file_path = get_projects_dir()?;
+                let temp_file_path = config.get_projects_dir();
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(temp_file_path, tmp_path)?;
                 Command::new("cmd")
@@ -73,9 +81,13 @@ fn call_update(path: &Path, client: &mut Client) -> anyhow::Result<String> {
     ))
 }
 
-pub fn elevated_update(io: &mut Io, client: &mut Client) -> anyhow::Result<()> {
+pub fn elevated_update(
+    io: &mut Io,
+    client: &mut Client,
+    config: &TmcCliConfig,
+) -> anyhow::Result<()> {
     use std::io::prelude::*;
-    let temp_file_path = get_projects_dir()?;
+    let temp_file_path = config.get_projects_dir();
     let temp_file_path = temp_file_path.join("temp.txt");
     let mut file = std::fs::File::open(temp_file_path.clone())?;
     let mut params = String::new();

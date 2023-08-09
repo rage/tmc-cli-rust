@@ -6,23 +6,29 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install fmt and clippy
-      run: |
-        rustup component add rustfmt
-        rustup component add clippy
-    - name: Run fmt
-      run: cargo fmt -- --check
-    - name: Run clippy
-      run: cargo clippy -- -D warnings
-    - name: Build
-      run: cargo build --tests --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - uses: actions/checkout@v2
+
+      - name: Install fmt, clippy and nightly for the fmt
+        run: |
+          rustup component add rustfmt
+          rustup component add clippy
+          rustup toolchain install nightly
+          rustup component add --toolchain nightly rustfmt
+
+      - name: Run fmt
+        run: cargo +nightly fmt -- --check
+
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Build
+        run: cargo build --tests --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
 
   deploy:
     needs: test
@@ -33,23 +39,28 @@ jobs:
         target: [i686-unknown-linux-gnu, x86_64-unknown-linux-gnu]
     steps:
       - uses: actions/checkout@v2
+
       - uses: google-github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
+
       - name: Install dependencies
         run: |
           sudo dpkg --add-architecture i386
           sudo apt update
           sudo apt install -y gcc-multilib libssl-dev:i386 # required to build for 32-bit arch
+
       - name: Cargo build
         run: |
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu # required to build for 32-bit arch
           export I686_UNKNOWN_LINUX_GNU_OPENSSL_INCLUDE_DIR=/usr/include/i386-linux-gnu # required to build for 32-bit arch
           rustup target add i686-unknown-linux-gnu
           cargo build -p tmc --release --verbose --target ${{ matrix.target }}
+
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
       - name: Deploy
         run: gsutil cp target/${{ matrix.target }}/release/tmc gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}
