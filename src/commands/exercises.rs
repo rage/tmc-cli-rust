@@ -228,7 +228,7 @@ mod tests {
         let (mut input, mut output) = test_helper::input_output();
         let TestSetup {
             mut io, mut client, ..
-        } = test_helper::setup(&mut input, &mut output, &server);
+        } = test_helper::tmc_setup(&mut input, &mut output, &server);
         client.set_tmc_token(test_helper::tmc_token());
 
         list_exercises(&mut io, &mut client, Some("course_name"), "test").unwrap();

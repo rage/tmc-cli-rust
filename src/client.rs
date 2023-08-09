@@ -1,8 +1,10 @@
 use crate::{commands::util, config::TmcCliConfig, PLUGIN, PLUGIN_VERSION};
 use anyhow::Context;
+use bytes::Bytes;
 use reqwest::Url;
 use std::path::Path;
 use tmc_langs::{
+    mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus, MoocClient},
     tmc::{
         response::{
             Course, CourseDetails, CourseExercise, NewSubmission, Organization, SubmissionFinished,
@@ -11,25 +13,30 @@ use tmc_langs::{
     },
     Credentials, DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
 };
+use uuid::Uuid;
 
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
 
 pub struct Client {
     pub tmc_client: TestMyCodeClient,
+    pub mooc_client: MoocClient,
     pub test_mode: bool,
 }
 
 impl Client {
-    pub fn new(tmc_root_url: Url, test_mode: bool) -> anyhow::Result<Self> {
+    pub fn new(tmc_root_url: Url, mooc_root_url: String, test_mode: bool) -> anyhow::Result<Self> {
         let (tmc_client, _credentials) = tmc_langs::init_testmycode_client_with_credentials(
             tmc_root_url,
             PLUGIN,
             PLUGIN_VERSION,
         )?;
+        let (mooc_client, _credentials) =
+            tmc_langs::init_mooc_client_with_credentials(mooc_root_url, PLUGIN)?;
 
         Ok(Client {
             tmc_client,
+            mooc_client,
             test_mode,
         })
     }
@@ -349,6 +356,44 @@ impl Client {
         } else {
             self.tmc_client.get_course_details(course_id)
         }
+    }
+
+    // mooc commands
+    pub fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
+        let courses = self.mooc_client.course_instances()?;
+        Ok(courses)
+    }
+    pub fn mooc_course_exercises(
+        &self,
+        course_instance_id: Uuid,
+    ) -> anyhow::Result<Vec<mooc::TmcExerciseSlide>> {
+        let exercises = self
+            .mooc_client
+            .course_instance_exercise_slides(course_instance_id)?;
+        Ok(exercises)
+    }
+    pub fn mooc_download_exercise(&self, url: String) -> anyhow::Result<Bytes> {
+        let bytes = self.mooc_client.download(url)?;
+        Ok(bytes)
+    }
+    pub fn mooc_submit_exercise(
+        &self,
+        exercise_id: Uuid,
+        slide_id: Uuid,
+        task_id: Uuid,
+        archive: &Path,
+    ) -> anyhow::Result<ExerciseTaskSubmissionResult> {
+        let res = self
+            .mooc_client
+            .submit(exercise_id, slide_id, task_id, archive)?;
+        Ok(res)
+    }
+    pub fn mooc_get_submission_grading(
+        &self,
+        submission_id: Uuid,
+    ) -> anyhow::Result<ExerciseTaskSubmissionStatus> {
+        let res = self.mooc_client.get_submission_grading(submission_id)?;
+        Ok(res)
     }
 
     #[cfg(test)]

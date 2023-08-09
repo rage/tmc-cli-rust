@@ -1,17 +1,10 @@
-use super::{download, organization, util};
 use crate::{
     client::Client,
     config::TmcCliConfig,
     io::{Io, PrintColor},
 };
-use anyhow::Context;
 
-pub fn login(
-    io: &mut Io,
-    client: &mut Client,
-    interactive_mode: bool,
-    config: &mut TmcCliConfig,
-) -> anyhow::Result<()> {
+pub fn login(io: &mut Io, client: &mut Client, config: &mut TmcCliConfig) -> anyhow::Result<()> {
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
     username = username.trim().to_string();
@@ -34,71 +27,11 @@ pub fn login(
     let message = client.try_login(username, password, config)?;
     io.println(&message, PrintColor::Success)?;
 
-    let org = if interactive_mode {
-        organization::set_organization(io, client, config)
-    } else {
-        organization::set_organization_old(io, client, config)
-    }
-    .context("Could not set organization")?;
-
     if client.is_test_mode() {
         return Ok(());
     }
 
-    if interactive_mode {
-        download_after_login(client, io, config, &org)?;
-    }
-
     io.println("Logged in", PrintColor::Success)?;
-    Ok(())
-}
-
-pub fn download_after_login(
-    client: &mut Client,
-    io: &mut Io,
-    config: &TmcCliConfig,
-    org: &str,
-) -> anyhow::Result<()> {
-    io.println("Fetching courses...", PrintColor::Normal)?;
-    let courses = client.list_courses(org)?;
-
-    let mut courses = courses
-        .iter()
-        .map(|course| client.get_course_details(course.id))
-        .collect::<Result<Vec<_>, _>>()?;
-
-    courses.sort_by(|a, b| {
-        a.course
-            .title
-            .to_lowercase()
-            .cmp(&b.course.title.to_lowercase())
-    });
-
-    let mut courses_displayed = courses
-        .iter()
-        .map(|course| course.course.title.as_str())
-        .collect::<Vec<_>>();
-    let no_download = "Don't download anything".to_string();
-    courses_displayed.insert(0, no_download.as_str());
-
-    let course = util::get_course_name(&courses_displayed)?;
-    if course == no_download {
-        anyhow::bail!("No course downloaded.");
-    }
-    let name_select = &courses
-        .iter()
-        .find(|c| c.course.title == course)
-        .context("No course matching the selected name was found")?
-        .course
-        .name;
-
-    // Get course by name
-    let course = util::get_course_by_name(client, name_select, org)?
-        .ok_or_else(|| anyhow::anyhow!("Could not find course with that name"))?;
-    let path = config.get_projects_dir();
-
-    let msg = download::download_exercises(path, client, &course)?;
-    io.println(&msg, PrintColor::Success)?;
     Ok(())
 }
 

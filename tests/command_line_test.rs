@@ -127,12 +127,11 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         "No login found. Login to use this command with 'tmc login'",
     ));
 
-    // login -n
+    // login
     // testusername testpassword imag
     cmd = command(&envs);
     cmd.arg("--testmode")
         .arg("login")
-        .arg("-n")
         .write_stdin("testusername\ntestpassword\nimag\n")
         .assert()
         .success()

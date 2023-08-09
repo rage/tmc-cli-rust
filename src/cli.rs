@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand, ValueEnum};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -45,11 +46,7 @@ pub enum Command {
         course: Option<String>,
     },
     /// Login to TMC server.
-    Login {
-        /// Initiates the non-interactive mode.
-        #[arg(short, long)]
-        non_interactive: bool,
-    },
+    Login,
     /// Logout from TMC server.
     Logout,
     /// Change organization.
@@ -69,6 +66,33 @@ pub enum Command {
         /// If set, exercises in the current working directory are updated.
         #[arg(short = 'd', long)]
         currentdir: bool,
+    },
+
+    // MOOC commands
+    /// Currently enrolled courses.mooc.fi courses.
+    MoocCourses,
+    /// Active exercises of the selected course.
+    MoocCourseExercises {
+        /// If set, the exercises of this course are listed. If not set, the selection is done from an interactive menu.
+        course: Option<String>,
+    },
+    /// Downloads active exercises for the selected course.
+    MoocDownloadExercises {
+        /// If set, the exercises of this course are downloaded. If not set, the selection is done from an interactive menu.
+        course: Option<String>,
+        /// If set, exercises are downloaded to the current working directory.
+        #[arg(short = 'd', long)]
+        currentdir: bool,
+    },
+    /// Updates local exercises for the selected course.
+    MoocUpdateExercises {
+        /// If set, the exercises of this course are downloaded. If not set, the selection is done from an interactive menu.
+        course: Option<String>,
+    },
+    /// Submits an exercise.
+    MoocSubmitExercise {
+        /// If set, the exercise at this path is submitted. If not set, the selection is done from an interactive menu.
+        path: Option<PathBuf>,
     },
 
     // hidden commands

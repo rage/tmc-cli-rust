@@ -4,6 +4,7 @@ mod exercises;
 mod generate_completions;
 mod login;
 mod logout;
+mod mooc;
 mod organization;
 mod paste;
 mod submit;
@@ -27,7 +28,9 @@ pub fn handle(cli: Cli, io: &mut Io, mut config: TmcCliConfig) -> anyhow::Result
             .with_context(|| format!("Failed to parse TMC_LANGS_TMC_ROOT_URL ({url}) as a URL"))?,
         Err(_) => "https://tmc.mooc.fi".parse().expect("known to work"),
     };
-    let mut client = Client::new(tmc_root_url, cli.testmode)?;
+    let mooc_root_url = env::var("TMC_LANGS_MOOC_ROOT_URL")
+        .unwrap_or_else(|_| "https://courses.mooc.fi".to_string());
+    let mut client = Client::new(tmc_root_url, mooc_root_url, cli.testmode)?;
 
     let require_logged_out = |client: &mut Client| {
         let exists = client.load_login(&config).is_ok();
@@ -49,10 +52,9 @@ pub fn handle(cli: Cli, io: &mut Io, mut config: TmcCliConfig) -> anyhow::Result
 
     match cli.subcommand {
         // tmc commands
-        Command::Login { non_interactive } => {
+        Command::Login => {
             require_logged_out(&mut client)?;
-            let interactive_mode = !non_interactive;
-            login::login(io, &mut client, interactive_mode, &mut config)?;
+            login::login(io, &mut client, &mut config)?;
         }
         Command::Download { course, currentdir } => {
             require_logged_in(&mut client)?;
@@ -99,6 +101,25 @@ pub fn handle(cli: Cli, io: &mut Io, mut config: TmcCliConfig) -> anyhow::Result
         Command::Logout => {
             require_logged_in(&mut client)?;
             logout::logout(io, &mut client, &mut config)?;
+        }
+
+        // mooc commands
+        Command::MoocCourses => mooc::courses::run(io, &mut client)?,
+        Command::MoocCourseExercises { course } => {
+            mooc::course_exercises::run(io, &mut client, course.as_deref())?
+        }
+        Command::MoocDownloadExercises { course, currentdir } => mooc::download_exercises::run(
+            io,
+            &mut client,
+            course.as_deref(),
+            currentdir,
+            &mut config,
+        )?,
+        Command::MoocUpdateExercises { course } => {
+            mooc::update_exercises::run(io, &mut client, course.as_deref(), &mut config)?
+        }
+        Command::MoocSubmitExercise { path } => {
+            mooc::submit_exercise::run(io, &mut client, path.as_deref(), &config)?
         }
 
         // hidden commands
