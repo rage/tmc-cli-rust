@@ -23,5 +23,13 @@ fn main() {
     };
     let mut output = StandardStream::stderr(color);
     let mut io = Io::new(&mut output, &mut stdin);
+
+    // we ignore errors here because it's not a big deal if these operations fail
+    let _ = ctrlc::set_handler(move || {
+        // if the user presses Ctrl+C during raw mode, it can mess up the terminal,
+        // so we disable it here
+        let _ = crossterm::terminal::disable_raw_mode();
+    });
+
     tmc::run(cli, &mut io);
 }

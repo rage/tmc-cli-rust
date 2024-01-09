@@ -1,3 +1,4 @@
+use super::util;
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -5,6 +6,7 @@ use crate::{
 };
 
 pub fn logout(io: &mut Io, client: &mut Client, config: &mut TmcCliConfig) -> anyhow::Result<()> {
+    util::require_logged_in(client, &config)?;
     client.logout(config)?;
     io.println("Logged out successfully.", PrintColor::Success)?;
     Ok(())

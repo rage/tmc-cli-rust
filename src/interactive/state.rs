@@ -1,4 +1,4 @@
-use tui::widgets::ListState;
+use ratatui::widgets::ListState;
 
 /// Handles the state of the application
 /// Provides functions `next`, `previous` etc.
@@ -83,17 +83,22 @@ impl<'a, T: Clone> StatefulList<'a, T> {
 /// app.push_filter('s');
 /// assert_eq!(items[2], app.get_selected().unwrap());
 /// ```
-pub struct AppState<'a> {
+pub struct ListView<'a> {
     pub items: StatefulList<'a, &'a str>,
     pub filter: String,
+    pub help: Option<&'a str>,
 }
 
-impl<'a> AppState<'a> {
-    pub fn new(items: &'a [&'a str]) -> AppState<'a> {
+impl<'a> ListView<'a> {
+    pub fn new(items: &'a [&'a str], help: Option<&'a str>) -> ListView<'a> {
         let filter = String::from("");
         let mut items = StatefulList::with_items(items);
         items.next();
-        AppState { items, filter }
+        ListView {
+            items,
+            filter,
+            help,
+        }
     }
 
     /// pushes an ASCII character to the filter
@@ -141,7 +146,7 @@ impl<'a> AppState<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::AppState;
+    use super::ListView;
 
     fn get_item_list() -> &'static [&'static str] {
         &["eka", "toka", "kolmas"]
@@ -151,7 +156,7 @@ mod tests {
     fn app_state_new() {
         let items = get_item_list();
 
-        let app = AppState::new(items);
+        let app = ListView::new(items, None);
 
         assert_eq!(app.items.items, items);
         assert_eq!(app.items.displayed, items);
@@ -162,7 +167,7 @@ mod tests {
     fn app_select_next() {
         let items = get_item_list();
 
-        let mut app = AppState::new(items);
+        let mut app = ListView::new(items, None);
 
         //assert_eq!(items[0], items[app.items.get_current().unwrap()]);
         assert_eq!(items[0], app.get_selected().unwrap());
@@ -176,7 +181,7 @@ mod tests {
     fn app_test_filter_push_pop() {
         let items = get_item_list();
 
-        let mut app = AppState::new(items);
+        let mut app = ListView::new(items, None);
 
         app.push_filter('s');
         assert_eq!(items[2], app.get_selected().unwrap());

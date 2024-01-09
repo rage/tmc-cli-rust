@@ -15,10 +15,7 @@ pub fn run(
     path: Option<&Path>,
     config: &TmcCliConfig,
 ) -> anyhow::Result<()> {
-    let Some(exercise) = select_exercise(io, client, path, config)? else {
-        return Ok(());
-    };
-
+    let exercise = select_exercise(client, path, config)?;
     io.println("Packaging the submission...", PrintColor::Normal)?;
     let temp_file = tmc_langs::file_util::named_temp_file()?;
     tmc_langs::compress_project_to(
@@ -98,17 +95,15 @@ pub fn run(
 }
 
 fn select_exercise(
-    io: &mut Io,
     client: &mut Client,
     path: Option<&Path>,
-
     config: &TmcCliConfig,
-) -> anyhow::Result<Option<LocalMoocExercise>> {
+) -> anyhow::Result<LocalMoocExercise> {
     match path {
         Some(path) => {
             // try to find exercise details for path
             let canon_path = path.canonicalize()?;
-            let exercises = config.get_mooc_exercises();
+            let exercises = config.get_local_mooc_exercises();
             let exercise = exercises
                 .deref()
                 .iter()
@@ -116,16 +111,12 @@ fn select_exercise(
                 .ok_or_else(|| {
                     anyhow::anyhow!("Failed to find exercise for the path '{}'", path.display())
                 })?;
-            Ok(Some(exercise.clone()))
+            Ok(exercise.clone())
         }
         None => {
-            let Some(course) = super::get_course_by_slug_or_selection(io, client, None)? else {
-                return Ok(None);
-            };
-            let Some(exercise) = super::select_exercise(io, &course, config)? else {
-                return Ok(None);
-            };
-            Ok(Some(exercise))
+            let course = super::get_course_by_slug_or_selection(client, None)?;
+            let exercise = super::select_exercise(&course, config)?;
+            Ok(exercise)
         }
     }
 }

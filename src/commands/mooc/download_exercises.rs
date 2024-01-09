@@ -14,14 +14,19 @@ pub fn run(
     current_dir: bool,
     config: &mut TmcCliConfig,
 ) -> anyhow::Result<()> {
-    let Some(course) = super::get_course_by_slug_or_selection(io, client, slug)? else {
-        return Ok(());
-    };
-
+    let course = super::get_course_by_slug_or_selection(client, slug)?;
     let exercises = client.mooc_course_exercises(course.id)?;
     download_exercises(io, client, &course, exercises, current_dir, config)?;
 
     Ok(())
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct LocalMoocExerciseKey {
+    course_instance_id: Uuid,
+    exercise_id: Uuid,
+    slide_id: Uuid,
+    task_id: Uuid,
 }
 
 /// Prints information about given exercises
@@ -39,12 +44,28 @@ fn download_exercises(
         config.get_projects_dir().to_path_buf()
     };
     let local_exercise_map = config
-        .get_mooc_exercises()
+        .get_local_mooc_exercises()
         .iter()
         .cloned()
-        .map(|e| ((e.exercise_id, e.slide_id, e.task_id), e))
+        .map(|e| {
+            (
+                LocalMoocExerciseKey {
+                    course_instance_id: e.course_instance_id,
+                    exercise_id: e.exercise_id,
+                    slide_id: e.slide_id,
+                    task_id: e.task_id,
+                },
+                e,
+            )
+        })
         .collect::<HashMap<_, _>>();
 
+    if exercises.is_empty() {
+        io.println(
+            &format!("No TestMyCode exercises for '{}' found", course.course_name,),
+            PrintColor::Normal,
+        )?;
+    }
     io.println(
         &format!(
             "Downloading exercises for '{}' into '{}'...",
@@ -83,19 +104,24 @@ fn download_exercise(
     io: &mut Io,
     client: &mut Client,
     config: &mut TmcCliConfig,
-    course: &CourseInstance,
+    course_instance: &CourseInstance,
     projects_dir: &Path,
     exercise: TmcExerciseSlide,
-    local_exercise_map: &HashMap<(Uuid, Uuid, Uuid), LocalMoocExercise>,
+    local_exercise_map: &HashMap<LocalMoocExerciseKey, LocalMoocExercise>,
 ) -> anyhow::Result<()> {
     if exercise.tasks.len() > 1 {
         io.println("Exercise contains more than one task, but only one task per exercise is currently supported by the CLI. Only the first task will be processed.", PrintColor::Failed)?;
     }
-    let download_location = super::exercise_path(projects_dir, &course.course_slug, &exercise);
+    let download_location = super::exercise_path(projects_dir, course_instance, &exercise);
     // only take first task
     if let Some(task) = exercise.tasks.into_iter().next() {
-        let existing_exercise =
-            local_exercise_map.get(&(exercise.exercise_id, exercise.slide_id, task.task_id));
+        let key = LocalMoocExerciseKey {
+            course_instance_id: course_instance.id,
+            exercise_id: exercise.exercise_id,
+            slide_id: exercise.slide_id,
+            task_id: task.task_id,
+        };
+        let existing_exercise = local_exercise_map.get(&key);
 
         match task.public_spec {
             Some(PublicSpec::Editor {
@@ -135,7 +161,7 @@ fn download_exercise(
                     )?;
                 }
                 config.add_mooc_exercise(LocalMoocExercise {
-                    course_instance_id: course.id,
+                    course_instance_id: course_instance.id,
                     exercise_name: exercise.exercise_name,
                     exercise_id: exercise.exercise_id,
                     slide_id: exercise.slide_id,

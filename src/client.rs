@@ -6,9 +6,7 @@ use std::path::Path;
 use tmc_langs::{
     mooc::{self, ExerciseTaskSubmissionResult, ExerciseTaskSubmissionStatus, MoocClient},
     tmc::{
-        response::{
-            Course, CourseDetails, CourseExercise, NewSubmission, Organization, SubmissionFinished,
-        },
+        response::{Course, CourseExercise, NewSubmission, Organization, SubmissionFinished},
         TestMyCodeClient, TestMyCodeClientError, Token,
     },
     Credentials, DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
@@ -182,13 +180,12 @@ impl Client {
                     course_list.push(Course {
                         name: course.name,
                         id: course.id,
-
-                        title: "".to_string(),
+                        title: course.title,
                         description: None,
-                        details_url: "".to_string(),
-                        unlock_url: "".to_string(),
-                        reviews_url: "".to_string(),
-                        comet_url: "".to_string(),
+                        details_url: course.details_url,
+                        unlock_url: course.unlock_url,
+                        reviews_url: course.reviews_url,
+                        comet_url: course.comet_url,
                         spyware_urls: vec![],
                     });
                 }
@@ -332,34 +329,8 @@ impl Client {
         )
     }
 
-    pub fn get_course_details(
-        &self,
-        course_id: u32,
-    ) -> Result<CourseDetails, TestMyCodeClientError> {
-        if self.test_mode {
-            let course = Course {
-                id: 0,
-                name: "".to_string(),
-                title: "".to_string(),
-                description: None,
-                details_url: "".to_string(),
-                unlock_url: "".to_string(),
-                reviews_url: "".to_string(),
-                comet_url: "".to_string(),
-                spyware_urls: vec![],
-            };
-            Ok(CourseDetails {
-                course,
-                unlockables: vec![],
-                exercises: vec![],
-            })
-        } else {
-            self.tmc_client.get_course_details(course_id)
-        }
-    }
-
     // mooc commands
-    pub fn mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
+    pub fn enrolled_mooc_courses(&self) -> anyhow::Result<Vec<mooc::CourseInstance>> {
         let courses = self.mooc_client.course_instances()?;
         Ok(courses)
     }

@@ -1,3 +1,6 @@
+pub mod organization;
+
+use super::Platform;
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -8,6 +11,63 @@ use crate::{
 use anyhow::Context;
 use std::{env, path::PathBuf};
 use tmc_langs::{tmc::response::Course, Credentials, ProjectsConfig};
+
+pub fn require_logged_out(client: &mut Client, config: &TmcCliConfig) -> anyhow::Result<()> {
+    let exists = client.load_login(config).is_ok();
+    if exists {
+        anyhow::bail!("Already logged in. Please logout first with 'tmc logout'");
+    }
+    Ok(())
+}
+
+pub fn ensure_logged_in(
+    client: &mut Client,
+    io: &mut Io,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<()> {
+    let exists = client.load_login(config).is_ok();
+    if !exists {
+        super::login::login(io, client, config)?;
+    }
+    Ok(())
+}
+
+pub fn require_logged_in(client: &mut Client, config: &TmcCliConfig) -> anyhow::Result<()> {
+    let exists = client.load_login(config).is_ok();
+    if !exists {
+        anyhow::bail!("Not logged in.");
+    }
+    Ok(())
+}
+
+pub fn get_or_select_organization(
+    org_arg: Option<String>,
+    client: &mut Client,
+    io: &mut Io,
+) -> anyhow::Result<String> {
+    // priority to cli arg
+    if let Some(org_param) = org_arg {
+        return Ok(org_param);
+    }
+    // otherwise we ask the user
+    let org = self::organization::select_organization(io, client)?;
+    Ok(org)
+}
+
+pub fn select_courses_or_tmc() -> anyhow::Result<Platform> {
+    const MOOC: &str = "https://courses.mooc.fi/";
+    const TMC: &str = "https://tmc.mooc.fi/";
+    let selection = interactive::interactive_list("Select MOOC platform", &[MOOC, TMC], None)?;
+    let platform = match selection.as_deref() {
+        Some(MOOC) => Platform::Mooc,
+        Some(TMC) => Platform::Tmc,
+        Some(_) => unreachable!(),
+        None => {
+            anyhow::bail!("Did not select a platform");
+        }
+    };
+    Ok(platform)
+}
 
 pub fn get_credentials() -> Option<Credentials> {
     // Load login credentials if they exist in the file
@@ -64,38 +124,25 @@ pub fn exercise_pathfinder(path: Option<&str>, config: &TmcCliConfig) -> anyhow:
 
 pub fn choose_course(io: &mut Io, client: &mut Client, org: &str) -> anyhow::Result<String> {
     io.println("Fetching courses...", PrintColor::Normal)?;
-    let courses = client
-        .list_courses(org)
-        .context("Could not list courses.")?;
-
-    let mut courses = courses
-        .iter()
-        .map(|course| client.get_course_details(course.id))
-        .collect::<Result<Vec<_>, _>>()?;
-    courses.sort_by(|a, b| {
-        a.course
-            .title
-            .to_lowercase()
-            .cmp(&b.course.title.to_lowercase())
-    });
+    let mut courses = client.list_courses(org).context("Could not list courses")?;
+    courses.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
     let course = get_course_name(
         &courses
             .iter()
-            .map(|course| course.course.title.as_str())
+            .map(|course| course.title.as_str())
             .collect::<Vec<_>>(),
     )?;
     let selection = courses
         .into_iter()
-        .find(|c| c.course.title == course)
+        .find(|c| c.title == course)
         .context("No course with the selected name was found")?
-        .course
         .name;
     Ok(selection)
 }
 
 pub fn get_course_name(courses: &[&str]) -> anyhow::Result<String> {
-    let course = interactive::interactive_list("Select your course:", courses)?
-        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
+    let course = interactive::interactive_list("Select your course:", courses, None)?
+        .ok_or_else(|| anyhow::anyhow!("Did not select any course"))?;
 
     if course.is_empty() {
         anyhow::bail!("Could not find a course by the given title");
@@ -128,8 +175,8 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_course = interactive_list("First select course: ", &courses)?
-        .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
+    let chosen_course = interactive_list("First select course: ", &courses, None)?
+        .ok_or_else(|| anyhow::anyhow!("Did not select any course"))?;
 
     let course_config = projects_config
         .courses
@@ -152,8 +199,8 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         );
     }
 
-    let chosen_exercise = interactive_list("Select exercise: ", &exercise_list)?
-        .ok_or_else(|| anyhow::anyhow!("Didn't select any exercise"))?;
+    let chosen_exercise = interactive_list("Select exercise: ", &exercise_list, None)?
+        .ok_or_else(|| anyhow::anyhow!("Did not select any exercise"))?;
 
     let mut path = config.get_projects_dir().to_path_buf();
     path.push(chosen_course);

@@ -7,26 +7,20 @@ use std::{collections::HashMap, ops::DerefMut};
 use tmc_langs::mooc::{PublicSpec, TmcExerciseTask};
 use uuid::Uuid;
 
-pub fn run(
-    io: &mut Io,
-    client: &mut Client,
-    course: Option<&str>,
-    config: &mut TmcCliConfig,
-) -> anyhow::Result<()> {
-    let Some(course) = super::get_course_by_slug_or_selection(io, client, course)? else {
-        return Ok(());
-    };
-
-    let mooc_exercises = client
-        .mooc_course_exercises(course.id)?
-        .into_iter()
-        .flat_map(|e| {
-            e.tasks
-                .into_iter()
-                .map(move |t| ((e.exercise_id, e.slide_id, t.task_id), t))
-        })
-        .collect::<HashMap<_, _>>();
-    update_exercises(io, client, mooc_exercises, config)?;
+pub fn run(io: &mut Io, client: &mut Client, config: &mut TmcCliConfig) -> anyhow::Result<()> {
+    let courses = client.enrolled_mooc_courses()?;
+    for course in courses {
+        let mooc_exercises = client
+            .mooc_course_exercises(course.id)?
+            .into_iter()
+            .flat_map(|e| {
+                e.tasks
+                    .into_iter()
+                    .map(move |t| ((e.exercise_id, e.slide_id, t.task_id), t))
+            })
+            .collect::<HashMap<_, _>>();
+        update_exercises(io, client, mooc_exercises, config)?;
+    }
 
     Ok(())
 }
@@ -37,7 +31,7 @@ fn update_exercises(
     mooc_exercises: HashMap<(Uuid, Uuid, Uuid), TmcExerciseTask>,
     config: &mut TmcCliConfig,
 ) -> anyhow::Result<()> {
-    for local_exercise in config.get_mooc_exercises().deref_mut() {
+    for local_exercise in config.get_local_mooc_exercises().deref_mut() {
         if let Err(err) = update_exercise(io, client, local_exercise, &mooc_exercises) {
             // ignore (highly unlikely) logging errors, we'll want to save the config either way
             let _ = io.println(

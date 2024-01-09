@@ -19,10 +19,12 @@ anyhow = { version = "1.0.56", features = ["backtrace"] }
 bytes = "1.4.0"
 clap = { version = "4.0.7", features = ["derive"] }
 clap_complete = "4.0.2"
-crossterm = "0.26.0"
-flexi_logger = "0.25.3"
+crossterm = "0.27.0"
+ctrlc = "3.4.2"
+flexi_logger = "0.27.3"
 indicatif = "0.17.1"
 log = "0.4.17"
+ratatui = { version = "0.25.0", default-features = false, features = ['crossterm'] }
 reqwest = { version = "0.11.9", default-features = false, features = [
   "blocking",
   "json",
@@ -33,10 +35,9 @@ rpassword = "7.0.0"
 serde = "1.0.136"
 serde_json = "1.0.79"
 termcolor = "1.1.3"
-terminal_size = "0.2.1"
-tmc-langs = { git = "https://github.com/rage/tmc-langs-rust", tag = "0.33.0" }
-toml = "0.7.2"
-tui = { version = "0.19.0", default-features = false, features = ['crossterm'] }
+terminal_size = "0.3.0"
+tmc-langs = { git = "https://github.com/rage/tmc-langs-rust", tag = "0.36.0" }
+toml = "0.8.8"
 url = "2.2.2"
 uuid = { version = "1.4.0", features = ["v4"] }
 

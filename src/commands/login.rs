@@ -1,3 +1,4 @@
+use super::util;
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -5,6 +6,7 @@ use crate::{
 };
 
 pub fn login(io: &mut Io, client: &mut Client, config: &mut TmcCliConfig) -> anyhow::Result<()> {
+    util::require_logged_out(client, &config)?;
     io.print("Email / username: ", PrintColor::Normal)?;
     let mut username = io.read_line()?;
     username = username.trim().to_string();

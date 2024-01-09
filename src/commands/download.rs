@@ -1,4 +1,4 @@
-use super::util;
+use super::{mooc, util, Platform};
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -7,17 +7,38 @@ use crate::{
     progress_reporting::ProgressBarManager,
 };
 use anyhow::Context;
-use std::{path::Path, process::Command};
+use std::{io::prelude::*, path::Path, process::Command};
 use tmc_langs::{
     tmc::{response::Course, ClientUpdateData},
     DownloadResult,
 };
 
+pub fn download_or_update(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+    org: Option<String>,
+    course: Option<&str>,
+    current_dir: bool,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            mooc::download_exercises::run(io, client, course, current_dir, config)?;
+        }
+        Platform::Tmc => {
+            let org = util::get_or_select_organization(org, client, io)?;
+            tmc_download_or_update(io, client, course, current_dir, &config, &org)?;
+        }
+    };
+    Ok(())
+}
+
 // Downloads course exercises
 // course_name as None will trigger interactive menu for selecting a course
 // currentdir determines if course should be downloaded to current directory or central project directory
 // Will run in privileged stage if needed on Windows.
-pub fn download_or_update(
+fn tmc_download_or_update(
     io: &mut Io,
     client: &mut Client,
     course_name: Option<&str>,
@@ -87,7 +108,7 @@ pub fn download_or_update(
     }
 }
 
-pub fn download_exercises(
+fn download_exercises(
     projects_dir: &Path,
     client: &mut Client,
     course: &Course,
@@ -175,10 +196,27 @@ pub fn download_exercises(
 pub fn elevated_download(
     io: &mut Io,
     client: &mut Client,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            todo!()
+        }
+        Platform::Tmc => {
+            let org = util::get_or_select_organization(None, client, io)?;
+            elevated_tmc_download(io, client, &config, &org)?;
+        }
+    };
+    Ok(())
+}
+
+fn elevated_tmc_download(
+    io: &mut Io,
+    client: &mut Client,
     config: &TmcCliConfig,
     org: &str,
 ) -> anyhow::Result<()> {
-    use std::io::prelude::*;
     let temp_file_path = config.get_projects_dir();
     let temp_file_path = temp_file_path.join("temp.txt");
     let mut file = std::fs::File::open(temp_file_path.clone())?;
@@ -191,7 +229,7 @@ pub fn elevated_download(
     let name_select = &vec[1];
 
     // Get course by name
-    let course = match util::get_course_by_name(client, name_select, org)? {
+    let course = match util::get_course_by_name(client, name_select, &org)? {
         Some(course) => course,
         None => anyhow::bail!("Could not find course with that name"),
     };

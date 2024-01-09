@@ -1,4 +1,4 @@
-use super::util;
+use super::{mooc, util, Platform};
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -13,6 +13,24 @@ use tmc_langs::{
     Language,
 };
 
+pub fn submit(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+    path: Option<&str>,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            mooc::submit_exercise::run(io, client, None, &config)?;
+        }
+        Platform::Tmc => {
+            tmc_submit(io, client, path, &config)?;
+        }
+    };
+    Ok(())
+}
+
 /// Sends the course exercise submission to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.
@@ -20,7 +38,7 @@ use tmc_langs::{
 /// # Errors
 /// Returns an error if no exercise was found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn submit(
+pub fn tmc_submit(
     io: &mut Io,
     client: &mut Client,
     path: Option<&str>,

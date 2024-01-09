@@ -10,7 +10,6 @@ use std::{
 use tmc_langs::TmcConfig;
 use uuid::Uuid;
 
-const ORGANIZATION_KEY: &str = "organization";
 const TEST_LOGIN_KEY: &str = "test_login";
 const TEST_LOGIN_VALUE: &str = "test_logged_in";
 const MOOC_EXERCISES_KEY: &str = "mooc_exercises";
@@ -59,15 +58,6 @@ impl TmcCliConfig {
         self.config.get_projects_dir()
     }
 
-    pub fn get_organization(&self) -> Option<&str> {
-        self.config.get(ORGANIZATION_KEY).and_then(|v| v.as_str())
-    }
-
-    pub fn set_organization(&mut self, org: String) {
-        self.config
-            .insert(ORGANIZATION_KEY.to_string(), toml::Value::String(org));
-    }
-
     pub fn get_test_login(&self) -> Option<&str> {
         self.config.get(TEST_LOGIN_KEY).and_then(|v| v.as_str())
     }
@@ -82,22 +72,7 @@ impl TmcCliConfig {
         self.config.remove(TEST_LOGIN_KEY);
     }
 
-    pub fn get_mooc_exercises(&self) -> RefMut<'_, Vec<LocalMoocExercise>> {
-        self.init_mooc_exercises()
-    }
-
-    // ensures no duplicates get added
-    pub fn add_mooc_exercise(&mut self, exercise: LocalMoocExercise) {
-        let mut exercises = self.init_mooc_exercises();
-        let existing = exercises.deref_mut().iter_mut().find(|e| e == &&exercise);
-        if let Some(existing) = existing {
-            *existing = exercise;
-        } else {
-            exercises.push(exercise);
-        }
-    }
-
-    fn init_mooc_exercises(&self) -> RefMut<'_, Vec<LocalMoocExercise>> {
+    pub fn get_local_mooc_exercises(&self) -> RefMut<'_, Vec<LocalMoocExercise>> {
         RefMut::map(self.mooc_exercises.borrow_mut(), |ex| match ex {
             Some(exercises) => exercises,
             None => {
@@ -109,6 +84,17 @@ impl TmcCliConfig {
                 ex.insert(exercises)
             }
         })
+    }
+
+    // ensures no duplicates get added
+    pub fn add_mooc_exercise(&mut self, exercise: LocalMoocExercise) {
+        let mut exercises = self.get_local_mooc_exercises();
+        let existing = exercises.deref_mut().iter_mut().find(|e| e == &&exercise);
+        if let Some(existing) = existing {
+            *existing = exercise;
+        } else {
+            exercises.push(exercise);
+        }
     }
 }
 

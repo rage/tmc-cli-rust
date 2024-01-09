@@ -1,13 +1,29 @@
+use super::{mooc, util, Platform};
 use crate::{
     client::Client,
     config::TmcCliConfig,
     io::{Io, PrintColor},
 };
 use anyhow::Context;
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{path::PathBuf, process::Command};
+
+pub fn update(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+    current_dir: bool,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            mooc::update_exercises::run(io, client, config)?;
+        }
+        Platform::Tmc => {
+            tmc_update(io, client, current_dir, config)?;
+        }
+    };
+    Ok(())
+}
 
 /// Updates exercises from project dir or current directory.
 /// Update is ran only if local exercise checksums differ from
@@ -22,11 +38,11 @@ use std::{
 /// tmc update //runs update command in project dir
 /// tmc update -d //runs update command in current dir
 ///
-pub fn update(
+fn tmc_update(
     io: &mut Io,
     client: &mut Client,
     current_dir: bool,
-    config: &TmcCliConfig,
+    config: &mut TmcCliConfig,
 ) -> anyhow::Result<()> {
     // Get a client that has credentials
     client.load_login(config)?;
@@ -36,12 +52,21 @@ pub fn update(
         config.get_projects_dir().to_path_buf()
     };
     let tmp_path = path.to_str().context("invalid path")?;
-    match call_update(&path, client) {
-        Ok(msg) => io.println(&format!("\n{msg}"), PrintColor::Success)?,
-        Err(msg) => {
+    match client.update_exercises(&path) {
+        Ok(_) => {
+            io.println(
+                &format!(
+                    "Exercises updated succesfully to {}",
+                    path.to_str().context("invalid path")?
+                ),
+                PrintColor::Success,
+            )?;
+        }
+        Err(err) => {
             let os = std::env::consts::OS;
+            let err = anyhow::format_err!(err);
             if os == "windows"
-                && msg
+                && err
                     .chain()
                     .any(|e| e.to_string().contains("Failed to create file"))
             {
@@ -66,22 +91,31 @@ pub fn update(
                     .spawn()
                     .context("launch failure")?;
             } else {
-                anyhow::bail!(msg);
+                anyhow::bail!(err);
             }
         }
     }
     Ok(())
 }
 
-fn call_update(path: &Path, client: &mut Client) -> anyhow::Result<String> {
-    client.update_exercises(path)?;
-    Ok(format!(
-        "Exercises updated succesfully to {}",
-        path.to_str().context("invalid path")?
-    ))
+pub fn elevated_update(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            todo!()
+        }
+        Platform::Tmc => {
+            elevated_tmc_update(io, client, config)?;
+        }
+    };
+    Ok(())
 }
 
-pub fn elevated_update(
+fn elevated_tmc_update(
     io: &mut Io,
     client: &mut Client,
     config: &TmcCliConfig,
@@ -95,8 +129,14 @@ pub fn elevated_update(
     std::fs::remove_file(temp_file_path)?;
     let path = PathBuf::from(params);
     io.println("", PrintColor::Normal)?;
-    let msg = call_update(&path, client)?;
-    io.println(&msg, PrintColor::Success)?;
+    client.update_exercises(&path)?;
+    io.println(
+        &format!(
+            "Exercises updated succesfully to {}",
+            path.to_str().context("invalid path")?
+        ),
+        PrintColor::Success,
+    )?;
     pause()?;
     Ok(())
 }

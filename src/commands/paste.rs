@@ -1,4 +1,4 @@
-use super::util;
+use super::{util, Platform};
 use crate::{
     client::Client,
     config::TmcCliConfig,
@@ -9,6 +9,24 @@ use crate::{
 use anyhow::Context;
 use tmc_langs::{tmc::ClientUpdateData, Language};
 
+pub fn paste(
+    io: &mut Io,
+    client: &mut Client,
+    config: &mut TmcCliConfig,
+    path: Option<&str>,
+) -> anyhow::Result<()> {
+    util::ensure_logged_in(client, io, config)?;
+    match util::select_courses_or_tmc()? {
+        Platform::Mooc => {
+            todo!()
+        }
+        Platform::Tmc => {
+            tmc_paste(io, client, path, &config)?;
+        }
+    };
+    Ok(())
+}
+
 /// Sends the course exercise submission with paste message to the server.
 /// Path to the exercise can be given as a parameter or
 /// the user can run the command in the exercise folder.
@@ -16,7 +34,7 @@ use tmc_langs::{tmc::ClientUpdateData, Language};
 /// # Errors
 /// Returns an error if no exercise found on given path or current folder.
 /// Returns an error if user is not logged in.
-pub fn paste(
+pub fn tmc_paste(
     io: &mut Io,
     client: &mut Client,
     path: Option<&str>,

@@ -1,18 +1,18 @@
-use super::state::AppState;
+use super::state::ListView;
 use crossterm::{
     event::{poll, read, Event, KeyCode, KeyModifiers},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{io::stdout, time::Duration};
-use tui::{
+use ratatui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
-    text::{Span, Spans},
+    text::Span,
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Terminal,
 };
+use std::{io::stdout, time::Duration};
 
 /// control the maximum waiting time for event availability
 /// in this case, the value should not really matter,
@@ -35,14 +35,18 @@ const POLL_RATE: u64 = 1000;
 ///     println!("You chose: {}", choice);
 /// }
 /// ```
-pub fn interactive_list(prompt: &str, items: &[&str]) -> anyhow::Result<Option<String>> {
+pub fn interactive_list(
+    prompt: &str,
+    items: &[&str],
+    help: Option<&str>,
+) -> anyhow::Result<Option<String>> {
     execute!(stdout(), EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
 
     terminal.clear()?;
     enable_raw_mode()?;
-    let mut app = AppState::new(items);
+    let mut app = ListView::new(items, help);
     let result = event_loop(&mut terminal, &mut app, prompt)?;
 
     disable_raw_mode()?;
@@ -55,31 +59,40 @@ pub fn interactive_list(prompt: &str, items: &[&str]) -> anyhow::Result<Option<S
 
 fn draw_terminal<B>(
     terminal: &mut Terminal<B>,
-    app: &mut AppState,
+    app: &mut ListView,
     prompt: &str,
 ) -> anyhow::Result<()>
 where
     B: Backend,
 {
     terminal.draw(|f| {
-        let chunks = Layout::default()
+        let vertical_layout = if app.help.is_some() {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_slice())
+                .split(f.size())
+        } else {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Percentage(100)].as_slice())
+                .split(f.size())
+        };
+        let top_layout = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
-            .split(f.size());
+            .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_slice())
+            .split(vertical_layout[0]);
+
         let items: Vec<ListItem> = app
             .items
             .displayed
             .iter()
-            .map(|i| {
-                let lines = vec![Spans::from(*i)];
-                ListItem::new(lines).style(Style::default())
-            })
+            .map(|i| ListItem::new(*i).style(Style::default()))
             .collect();
         let items = List::new(items)
             .block(Block::default().borders(Borders::NONE).title(prompt))
             .highlight_style(Style::default().add_modifier(Modifier::BOLD))
             .highlight_symbol(">> ");
-        f.render_stateful_widget(items, chunks[0], &mut app.items.state);
+        f.render_stateful_widget(items, top_layout[0], &mut app.items.state);
 
         // if the user hasn't written anything yet, display the help message in its place
         let text = if app.filter.is_empty() {
@@ -91,7 +104,11 @@ where
         } else {
             Paragraph::new(Span::raw(app.filter.clone())).wrap(Wrap { trim: true })
         };
-        f.render_widget(text, chunks[1]);
+        f.render_widget(text, top_layout[1]);
+        if let Some(help) = app.help {
+            let text = Paragraph::new(Span::raw(help)).wrap(Wrap { trim: false });
+            f.render_widget(text, vertical_layout[1]);
+        }
     })?;
     Ok(())
 }
@@ -102,7 +119,7 @@ where
 /// None: nothing was selected yet
 /// Some(None): the user selected nothing (quit with ESC)
 /// Some(Some(res)): the user selected an item
-fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
+fn read_keys(app: &mut ListView) -> anyhow::Result<Option<Option<String>>> {
     if poll(Duration::from_millis(POLL_RATE))? {
         if let Event::Key(x) = read()? {
             // CTRL-C is the usual stop command
@@ -142,7 +159,7 @@ fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
 
 fn event_loop<B>(
     terminal: &mut Terminal<B>,
-    app: &mut AppState<'_>,
+    app: &mut ListView<'_>,
     prompt: &str,
 ) -> anyhow::Result<Option<String>>
 where
