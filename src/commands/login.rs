@@ -46,7 +46,7 @@ pub fn login(
     }
 
     if interactive_mode {
-        download_after_login(client, io, config, &org)?;
+        download_after_login(client, io, config, &org.slug)?;
     }
 
     io.println("Logged in", PrintColor::Success)?;

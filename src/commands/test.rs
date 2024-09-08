@@ -4,22 +4,17 @@ use crate::{
     io::{Io, PrintColor},
 };
 use anyhow::Context;
-use std::path::Path;
-use tmc_langs::RunResult;
+use std::{cmp::Ordering, collections::HashMap, path::Path};
+use tmc_langs::{RunResult, RunStatus};
 
 /// Executes tmc tests for one exercise. If path not given, check if current folder is an exercise.
 /// If not, asks exercise with an interactive menu.
+#[tracing::instrument(skip_all)]
 pub fn test(io: &mut Io, path: Option<&str>, config: &TmcCliConfig) -> anyhow::Result<()> {
     // todo: use context
     let exercise_path =
         util::exercise_pathfinder(path, config).context("Error finding exercise")?;
-    test_exercise_path(io, &exercise_path)?;
-    Ok(())
-}
-
-/// Wrapper around test_exercise funtion to get uniform Result type
-fn test_exercise_path(io: &mut Io, path: &Path) -> anyhow::Result<()> {
-    test_exercise(io, path, true)?;
+    test_exercise(io, &exercise_path, true)?;
     Ok(())
 }
 
@@ -47,6 +42,7 @@ fn print_result_test(
 ) -> anyhow::Result<bool> {
     io.println("", PrintColor::Normal)?;
     io.println(&format!("Testing: {exercise_name}"), PrintColor::Normal)?;
+    io.flush()?;
 
     let mut tests_passed = 0;
     let mut tests_total = 0;
@@ -67,23 +63,97 @@ fn print_result_test(
     }
 
     io.println("", PrintColor::Normal)?;
+
+    match run_result.status {
+        RunStatus::Passed => {
+            if tests_total == 0 {
+                io.println(
+                    "No tests found. Submit to server with 'tmc submit'",
+                    PrintColor::Success,
+                )?;
+                if print_progress {
+                    io.println(&util::get_progress_string(1, 1, 64), PrintColor::Normal)?;
+                }
+            } else {
+                io.println(
+                    &format!("Test results: {tests_passed}/{tests_total} tests passed"),
+                    PrintColor::Success,
+                )?;
+                io.println(
+                    "All tests passed! Submit to server with 'tmc submit'",
+                    PrintColor::Success,
+                )?;
+                if print_progress {
+                    io.println(
+                        &util::get_progress_string(tests_passed, tests_total, 64),
+                        PrintColor::Normal,
+                    )?;
+                }
+            }
+            return Ok(true);
+        }
+        RunStatus::TestsFailed => {
+            io.println(
+                &format!("Test results: {tests_passed}/{tests_total} tests passed"),
+                PrintColor::Normal,
+            )?;
+            if print_progress {
+                io.println(
+                    &util::get_progress_string(tests_passed, tests_total, 64),
+                    PrintColor::Normal,
+                )?;
+            }
+        }
+        RunStatus::CompileFailed => {
+            print_logs(io, &run_result.logs)?;
+            io.println(
+                "Compilation failed, unable to run the tests. \
+                The logs for the test process are printed above, if any.",
+                PrintColor::Failed,
+            )?;
+        }
+        RunStatus::TestrunInterrupted => {
+            print_logs(io, &run_result.logs)?;
+            io.println(
+                "The test run was interrupted. \
+                The logs for the test process are printed above, if any.",
+                PrintColor::Failed,
+            )?;
+        }
+        RunStatus::GenericError => {
+            print_logs(io, &run_result.logs)?;
+            io.println(
+                "An unexpected error occurred. \
+                The logs for the test process are printed above, if any.",
+                PrintColor::Failed,
+            )?;
+        }
+    }
+    Ok(false)
+}
+
+fn print_logs(io: &mut Io, logs: &HashMap<String, String>) -> anyhow::Result<()> {
+    let mut logs = logs
+        .into_iter()
+        // filter out empty log entries to reduce clutter
+        .filter(|(_, logs)| !logs.is_empty())
+        .collect::<Vec<_>>();
+    // sort stdout first, then stderr, then everything else in alphabetical order
+    logs.sort_by(|a, b| match (a.0.as_str(), b.0.as_str()) {
+        ("stdout", _) => Ordering::Greater,
+        ("stderr", _) => Ordering::Greater,
+        (a, b) => a.cmp(b),
+    });
+    let logs = logs
+        .into_iter()
+        .map(|(key, logs)| format!("{key}:\n{logs}"))
+        .collect::<Vec<_>>()
+        .join("\n\n");
     io.println(
-        &format!("Test results: {tests_passed}/{tests_total} tests passed"),
+        &format!("Logs from the test process:\n{logs}"),
         PrintColor::Normal,
     )?;
-    if tests_passed == tests_total {
-        io.println(
-            "All tests passed! Submit to server with 'tmc submit'",
-            PrintColor::Success,
-        )?;
-    }
-    if print_progress {
-        io.println(
-            &util::get_progress_string(tests_passed, tests_total, 64),
-            PrintColor::Normal,
-        )?;
-    }
-    Ok(tests_passed == tests_total)
+    Ok(())
 }
 
 #[cfg(test)]
@@ -164,8 +234,15 @@ mod tests {
         assert_eq!(progress_string, expected_string);
     }
 
+    fn assert_contains(line: &str, contains: &str) {
+        assert!(
+            line.contains(contains),
+            "Line '{line}' did not contain '{contains}'"
+        );
+    }
+
     #[test]
-    fn print_test_results_test() {
+    fn print_test_results_no_tests() {
         let mut output = NoColor::new(Vec::<u8>::new());
         let mut input = Cursor::new(Vec::<u8>::new());
         let mut io = Io::new(&mut output, &mut input);
@@ -180,41 +257,12 @@ mod tests {
         let output = output.lines().collect::<Vec<_>>();
         assert_eq!(output[0], "");
 
-        assert!(
-            output[1].contains("Testing"),
-            "line does not contain 'Testing'"
-        );
-        assert!(
-            output[1].contains(exercise_name),
-            "line does not contain exercise name"
-        );
+        assert_contains(output[1], "Testing");
+        assert_contains(output[1], exercise_name);
         assert_eq!(output[2], "");
-        assert!(
-            output[3].contains("Test results"),
-            "line does not contain 'Test results'"
-        );
-        assert!(
-            output[3].contains("0/0"),
-            "line does not contain completed tests, should be '0/0' "
-        );
-
-        assert!(
-            output[4].contains("All tests passed"),
-            "line does not contain 'All tests passed'"
-        );
-        assert!(
-            output[4].contains("tmc submit"),
-            "line does not contain hint 'tmc submit'"
-        );
-
-        assert!(
-            output[5].contains('█'),
-            "line does not contain progress bar char '█'"
-        );
-        assert!(
-            output[5].contains("100%"),
-            "line does not contain progress '100%'"
-        );
+        assert_contains(output[3], "No tests found");
+        assert_contains(output[4], "█");
+        assert_contains(output[4], "100%");
         assert!(
             all_tests_passed,
             "print_result_test returned false, expected true"
@@ -246,41 +294,17 @@ mod tests {
         let output = output.lines().collect::<Vec<_>>();
         assert_eq!(output[0], "");
 
-        assert!(
-            output[1].contains("Testing"),
-            "line does not contain 'Testing'"
-        );
-        assert!(
-            output[1].contains(exercise_name),
-            "line does not contain exercise name"
-        );
+        assert_contains(output[1], "Testing");
+        assert_contains(output[1], exercise_name);
         assert_eq!(output[2], "");
-        assert!(
-            output[3].contains("Test results"),
-            "line does not contain 'Test results'"
-        );
-        assert!(
-            output[3].contains("1/1"),
-            "line does not contain completed tests, should be '1/1' "
-        );
+        assert_contains(output[3], "Test results");
+        assert_contains(output[3], "1/1");
 
-        assert!(
-            output[4].contains("All tests passed"),
-            "line does not contain 'All tests passed'"
-        );
-        assert!(
-            output[4].contains("tmc submit"),
-            "line does not contain hint 'tmc submit'"
-        );
+        assert_contains(output[4], "All tests passed");
+        assert_contains(output[4], "tmc submit");
 
-        assert!(
-            output[5].contains('█'),
-            "line does not contain progress bar char '█'"
-        );
-        assert!(
-            output[5].contains("100%"),
-            "line does not contain progress '100%'"
-        );
+        assert_contains(output[5], "█");
+        assert_contains(output[5], "100%");
         assert!(
             all_tests_passed,
             "print_result_test returned false, expected true"
@@ -304,7 +328,7 @@ mod tests {
 
         let logs: HashMap<String, String> = HashMap::new();
         let test_results = vec![test_result_completed];
-        let run_result = RunResult::new(RunStatus::Passed, test_results, logs);
+        let run_result = RunResult::new(RunStatus::TestsFailed, test_results, logs);
         let exercise_name = "my_test_exercise";
 
         let all_tests_passed = print_result_test(&mut io, run_result, exercise_name, true).unwrap();
@@ -313,42 +337,17 @@ mod tests {
         let output = output.lines().collect::<Vec<_>>();
         assert_eq!(output[0], "");
 
-        assert!(
-            output[1].contains("Testing"),
-            "line does not contain 'Testing'"
-        );
-        assert!(
-            output[1].contains(exercise_name),
-            "line does not contain exercise name"
-        );
-        assert!(
-            output[2].contains("Failed"),
-            "line does not contain 'Failed'"
-        );
-        assert!(
-            output[3].contains(test_result_message),
-            "line does not contain message from test_result"
-        );
-
-        assert!(
-            output[6].contains("Test results"),
-            "line does not contain 'Test results'"
-        );
-        assert!(
-            output[6].contains("0/1"),
-            "line does not contain completed tests, should be '0/1' "
-        );
-        assert!(
-            output[7].contains('░'),
-            "line does not contain progress bar char '█'"
-        );
-        assert!(
-            output[7].contains(" 0%"),
-            "line does not contain progress ' 0%'"
-        );
+        assert_contains(output[1], "Testing");
+        assert_contains(output[1], exercise_name);
+        assert_contains(output[2], "Failed");
+        assert_contains(output[3], test_result_message);
+        assert_contains(output[6], "Test results");
+        assert_contains(output[6], "0/1");
+        assert_contains(output[7], "░");
+        assert_contains(output[7], " 0%");
         assert!(
             !all_tests_passed,
-            "print_result_test returned true, expected false"
+            "print_result_test returned true, expected false",
         );
     }
 }

@@ -1,18 +1,18 @@
 use super::state::AppState;
 use crossterm::{
     event::{poll, read, Event, KeyCode, KeyModifiers},
-    execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
-use std::{io::stdout, time::Duration};
-use tui::{
+use ratatui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
-    text::{Span, Spans},
+    text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Terminal,
 };
+use std::{io::stdout, time::Duration};
 
 /// control the maximum waiting time for event availability
 /// in this case, the value should not really matter,
@@ -36,19 +36,21 @@ const POLL_RATE: u64 = 1000;
 /// }
 /// ```
 pub fn interactive_list(prompt: &str, items: &[&str]) -> anyhow::Result<Option<String>> {
-    execute!(stdout(), EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
 
-    terminal.clear()?;
+    // enter raw mode and alternate screen
     enable_raw_mode()?;
+    stdout().execute(EnterAlternateScreen)?;
+    terminal.clear()?;
+
     let mut app = AppState::new(items);
     let result = event_loop(&mut terminal, &mut app, prompt)?;
 
+    // leave alternate screen and raw mode
+    stdout().execute(LeaveAlternateScreen)?;
     disable_raw_mode()?;
-
     terminal.clear()?;
-    execute!(stdout(), LeaveAlternateScreen)?;
 
     Ok(result)
 }
@@ -65,13 +67,13 @@ where
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
-            .split(f.size());
+            .split(f.area());
         let items: Vec<ListItem> = app
             .items
             .displayed
             .iter()
             .map(|i| {
-                let lines = vec![Spans::from(*i)];
+                let lines = vec![Line::from(*i)];
                 ListItem::new(lines).style(Style::default())
             })
             .collect();
@@ -108,7 +110,8 @@ fn read_keys(app: &mut AppState) -> anyhow::Result<Option<Option<String>>> {
             // CTRL-C is the usual stop command
             // which is disabled by default because of raw mode
             if x.code == KeyCode::Char('c') && x.modifiers == KeyModifiers::CONTROL {
-                // respect the interrupt and exit immediately
+                // respect the interrupt and exit immediately after disabling raw mode
+                disable_raw_mode().ok();
                 std::process::exit(0);
             }
             let selection = match x.code {

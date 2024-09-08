@@ -4,13 +4,14 @@ use crate::{
     interactive::{self, interactive_list},
     io::{Io, PrintColor},
 };
+use tmc_langs::tmc::response::Organization;
 
 // Asks for organization from user and saves it into file
 pub fn set_organization_old(
     io: &mut Io,
     client: &mut Client,
     config: &mut TmcCliConfig,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<Organization> {
     // List all organizations
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(b.name.cmp(&a.name)));
@@ -36,9 +37,9 @@ pub fn set_organization_old(
     let slug = io.read_line()?.trim().to_string();
 
     if let Some(org) = orgs.into_iter().find(|org| org.slug == slug) {
-        config.set_organization(org.slug);
+        config.set_organization(org.slug.clone());
         config.save()?;
-        return Ok(org.name);
+        return Ok(org);
     }
 
     anyhow::bail!("No such organization for the given slug: {}", slug);
@@ -48,7 +49,7 @@ pub fn set_organization(
     io: &mut Io,
     client: &mut Client,
     config: &mut TmcCliConfig,
-) -> anyhow::Result<String> {
+) -> anyhow::Result<Organization> {
     io.println("Fetching organizations...", PrintColor::Normal)?;
     let mut orgs = client.get_organizations()?;
     orgs.sort_by(|a, b| b.pinned.cmp(&a.pinned).then(a.name.cmp(&b.name)));
@@ -73,9 +74,9 @@ pub fn set_organization(
     };
 
     if let Some(org) = orgs.into_iter().find(|org| org.name == org_name) {
-        config.set_organization(org.slug);
+        config.set_organization(org.slug.clone());
         config.save()?;
-        return Ok(org.name);
+        return Ok(org);
     }
 
     anyhow::bail!("Something strange happened");
@@ -95,7 +96,7 @@ pub fn organization(
     };
 
     io.println(
-        &format!("Selected {org} as organization."),
+        &format!("Selected {} as organization.", org.name),
         PrintColor::Success,
     )?;
     Ok(())

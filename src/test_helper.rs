@@ -23,8 +23,6 @@ pub fn input_output() -> (Cursor<Vec<u8>>, NoColor<Vec<u8>>) {
 
 pub struct TestSetup<'a> {
     pub io: Io<'a>,
-    pub config_file: NamedTempFile,
-    pub config: TmcCliConfig,
     pub client: Client,
 }
 
@@ -34,11 +32,9 @@ pub fn setup<'a>(
     server: &'a ServerGuard,
 ) -> TestSetup<'a> {
     let config_file = NamedTempFile::new().unwrap();
-    let config = TmcCliConfig::load(config_file.path().to_path_buf()).unwrap();
+    let _config = TmcCliConfig::load(config_file.path().to_path_buf()).unwrap();
     TestSetup {
         io: Io::new(output, input),
-        config_file,
-        config,
         client: Client::new(server.url().parse().unwrap(), false).unwrap(),
     }
 }

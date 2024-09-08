@@ -114,8 +114,8 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         Err(err) => anyhow::bail!("Could not load info about projects due to '{err}'"),
     };
 
-    for course in &projects_config.courses {
-        courses.push(course.0.as_str());
+    for course in projects_config.courses.keys() {
+        courses.push(course.as_str());
     }
 
     if courses.is_empty() {
@@ -128,6 +128,7 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         );
     }
 
+    courses.sort();
     let chosen_course = interactive_list("First select course: ", &courses)?
         .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 

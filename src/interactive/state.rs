@@ -1,4 +1,4 @@
-use tui::widgets::ListState;
+use ratatui::widgets::ListState;
 
 /// Handles the state of the application
 /// Provides functions `next`, `previous` etc.
