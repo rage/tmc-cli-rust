@@ -16,7 +16,7 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.7
 
       - name: Enable long paths for git
         run: git config --system core.longpaths true # allow long paths from git deps
@@ -46,15 +46,15 @@ jobs:
       matrix:
         target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.7
 
       - id: "auth"
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v2.1.5
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_SA_KEY }}
       - name: "Set up Cloud SDK"
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v2.1.1
 
       - name: Enable long paths for git
         run: git config --system core.longpaths true # allow long paths from git deps
@@ -76,17 +76,13 @@ jobs:
           cargo install cargo-wix
           cargo wix --output installer.msi
       - name: Upload msi artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: svenstaro/upload-release-action@2.9.0
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./installer.msi
-          asset_name: tmc-cli-rust-${{ steps.get_version.outputs.VERSION }}.msi
-          asset_content_type: application/octet-stream
+          file: "./installer.msi"
+          asset_name: tmc-cli-rust-$tag.msi
 
       - name: Deploy
         run: |
-          $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
+          $env:python_version=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
           $env:CLOUDSDK_PYTHON="C:\hostedtoolcache\windows\Python\$env:python_version\x64\python"
           gsutil cp target/${{ matrix.target }}/release/tmc.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}.exe
