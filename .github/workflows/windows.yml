@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Enable long paths for git
         run: git config --system core.longpaths true # allow long paths from git deps
@@ -39,9 +39,9 @@ jobs:
       matrix:
         target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: google-github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
