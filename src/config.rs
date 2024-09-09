@@ -61,7 +61,7 @@ impl TmcCliConfig {
 
 #[cfg(target_os = "windows")]
 impl TmcCliConfig {
-    const UPDATE_LAST_CHECKED_KEY: &str = "update-last-checked";
+    const UPDATE_LAST_CHECKED_KEY: &'static str = "update-last-checked";
 
     pub fn get_update_last_checked(&self) -> Option<u128> {
         self.config
