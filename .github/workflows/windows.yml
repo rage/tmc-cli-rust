@@ -60,6 +60,21 @@ jobs:
         shell: bash
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
+      - name: Create msi installer
+        run: |
+          dotnet tool install --global wix
+          cargo install cargo-wix
+          cargo wix --output installer.msi
+      - name: Upload msi artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./installer.msi
+          asset_name: tmc-cli-rust-${{ steps.get_version.outputs.VERSION }}.msi
+          asset_content_type: application/octet-stream
+
       - name: Deploy
         run: |
           $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
