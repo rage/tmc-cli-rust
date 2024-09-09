@@ -133,7 +133,7 @@ fn print_result_test(
 
 fn print_logs(io: &mut Io, logs: &HashMap<String, String>) -> anyhow::Result<()> {
     let mut logs = logs
-        .into_iter()
+        .iter()
         // filter out empty log entries to reduce clutter
         .filter(|(_, logs)| !logs.is_empty())
         .collect::<Vec<_>>();
