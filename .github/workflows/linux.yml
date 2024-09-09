@@ -1,6 +1,13 @@
 name: Linux
 
-on: push
+on:
+  push:
+    branches: [main, "v[0-9]+.[0-9]+.[0-9]+"]
+  pull_request:
+    branches: [main, "v[0-9]+.[0-9]+.[0-9]+"]
+  release:
+    types:
+      - created
 
 env:
   CARGO_TERM_COLOR: always
@@ -32,7 +39,7 @@ jobs:
 
   deploy:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
