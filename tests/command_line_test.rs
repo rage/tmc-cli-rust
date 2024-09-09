@@ -6,8 +6,8 @@ const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[test]
 fn command_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut envs = HashMap::new();
-    envs.insert("RUST_LOG", "debug".to_string());
+    let envs = HashMap::new();
+    // envs.insert("RUST_LOG", "debug".to_string());
 
     let mut cmd = command(&envs);
     cmd.arg("--help");
@@ -20,8 +20,8 @@ fn command_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn command_wrong_argument_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut envs = HashMap::new();
-    envs.insert("RUST_LOG", "debug".to_string());
+    let envs = HashMap::new();
+    // envs.insert("RUST_LOG", "debug".to_string());
 
     let mut cmd = command(&envs);
     cmd.arg("--wrong_argument");
@@ -71,7 +71,7 @@ fn all_integration_tests() -> Result<(), Box<dyn std::error::Error>> {
         config_dir.path().as_os_str().to_str().unwrap().to_string(),
     );
     envs.insert("TMC_LANGS_ROOT_URL", server.url());
-    envs.insert("RUST_LOG", "debug".to_string());
+    // envs.insert("RUST_LOG", "debug".to_string());
 
     // logout
     let mut cmd = command(&envs);

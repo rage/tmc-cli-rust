@@ -42,7 +42,6 @@ fn print_result_test(
 ) -> anyhow::Result<bool> {
     io.println("", PrintColor::Normal)?;
     io.println(&format!("Testing: {exercise_name}"), PrintColor::Normal)?;
-    io.flush()?;
 
     let mut tests_passed = 0;
     let mut tests_total = 0;
