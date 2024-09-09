@@ -83,6 +83,6 @@ jobs:
 
       - name: Deploy
         run: |
-          $env:python_version=$(python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')
+          $env:python_version=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
           $env:CLOUDSDK_PYTHON="C:\hostedtoolcache\windows\Python\$env:python_version\x64\python"
           gsutil cp target/${{ matrix.target }}/release/tmc.exe gs://${{ secrets.GCP_BUCKET }}/tmc-cli-rust/tmc-cli-rust-${{ matrix.target }}-${{ steps.get_version.outputs.VERSION }}.exe
