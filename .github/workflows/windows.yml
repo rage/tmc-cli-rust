@@ -70,7 +70,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./installer.msi
           asset_name: tmc-cli-rust-${{ steps.get_version.outputs.VERSION }}.msi
           asset_content_type: application/octet-stream
