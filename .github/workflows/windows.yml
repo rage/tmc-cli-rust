@@ -79,7 +79,7 @@ jobs:
         uses: svenstaro/upload-release-action@2.9.0
         with:
           file: "./installer.msi"
-          asset_name: tmc-cli-rust--${{ matrix.target }}-$tag.msi
+          asset_name: tmc-cli-rust-${{ matrix.target }}-$tag.msi
 
       - name: Deploy
         run: |
