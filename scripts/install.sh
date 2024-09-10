@@ -128,7 +128,7 @@ if [ "$SHELLNAME" = "bash" ]; then
   eval "mkdir -p $COMPLETIONS_PATH"
 
   # calling the generate-completions subcommand to generate the completion script
-  eval "$CMD generate-completions --bash > $COMPLETIONS_PATH/tmc.bash"
+  eval "$CMD generate-completions bash > $COMPLETIONS_PATH/tmc.bash"
 
   # adding the line to .bashrc so that bash knows where to look for
   echo "source $COMPLETIONS_PATH/tmc.bash" >> "$PROFILEFILE"
@@ -143,7 +143,7 @@ elif [ "$SHELLNAME" = "zsh" ]; then
   sed -i '/fpath/!b;/tmc-autocomplete/d' "$PROFILEFILE"
 
   eval "mkdir -p $COMPLETIONS_PATH"
-  eval "$CMD generate-completions --bash > $COMPLETIONS_PATH/_tmc"
+  eval "$CMD generate-completions bash > $COMPLETIONS_PATH/_tmc"
 
   echo "fpath=($COMPLETIONS_PATH/_tmc " '$fpath)' >> "$PROFILEFILE"
 
