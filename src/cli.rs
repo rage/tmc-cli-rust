@@ -17,7 +17,7 @@ pub struct Cli {
     #[arg(short = 'd', long, hide = !cfg!(windows))]
     pub no_update: bool,
     /// Force auto-update to run.
-    #[arg(short = 'u', long, hide = !cfg!(windows))]
+    #[arg(short = 'u', long, hide = !cfg!(windows), conflicts_with = "no_update")]
     pub force_update: bool,
 
     /// Only for internal testing, disables server connection.
@@ -95,7 +95,7 @@ pub enum Command {
 
 impl Command {
     pub fn requires_organization_set(&self) -> bool {
-        matches!(self, Command::Download { .. } | Command::Courses { .. })
+        matches!(self, Command::Download { .. } | Command::Courses)
     }
 }
 
