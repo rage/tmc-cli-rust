@@ -58,7 +58,7 @@ After restarting the terminal, this should work:
 
 ### Using the Windows installer
 
-The Windows installer can be found in the [releases](https://github.com/rage/tmc-cli-rust/releases). In most cases you will want the 64 bit version, `tmc-cli-rust-x86_64-pc-windows-msvc-v1.1.2.msi`. When a 32 bit version is required, `tmc-cli-rust-i686-pc-windows-msvc-v1.1.2.msi` is also available. After installation, the application updates automatically.
+The Windows installer can be found in the [releases](https://github.com/rage/tmc-cli-rust/releases). In most cases you will want the 64 bit version (`tmc-cli-rust-x86_64-pc-windows-msvc-*.msi`); a 32 bit version (`tmc-cli-rust-i686-pc-windows-msvc-*.msi`) is also available. After installation, the application updates automatically.
 
 ### Manual installation, additional steps
 
