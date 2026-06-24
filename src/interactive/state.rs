@@ -20,7 +20,7 @@ impl<'a, T: Clone> StatefulList<'a, T> {
         StatefulList::with_items(&[])
     }
 
-    pub fn with_items(items: &[T]) -> StatefulList<T> {
+    pub fn with_items(items: &[T]) -> StatefulList<'_, T> {
         StatefulList {
             state: ListState::default(),
             displayed: items.to_vec(),

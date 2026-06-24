@@ -22,7 +22,6 @@ pub const DELAY_MILLIS_24H: u128 = 1440 * 60 * 1000;
 /// generates a new timestamp. If a new version is found, the function
 /// stashes the old executable and downloads a new one.
 /// Will run in privileged stage if needed on Windows!
-
 pub fn check_for_update(config: &mut TmcCliConfig, force: bool) -> anyhow::Result<()> {
     if force || is_it_time_yet(config)? {
         generate_time_stamp(config)?;

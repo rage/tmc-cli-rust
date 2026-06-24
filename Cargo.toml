@@ -12,19 +12,19 @@ authors = [
 edition = "2021"
 description = "Client for downloading, testing and submitting exercises through the TestMyCode and MOOC.fi systems."
 license = "Apache-2.0"
-rust-version = "1.70.0"
+rust-version = "1.88.0"
 
 [dependencies]
 anyhow = { version = "1.0.56", features = ["backtrace"] }
 bytes = "1.4.0"
 clap = { version = "4.0.7", features = ["derive"] }
 clap_complete = "4.0.2"
-crossterm = "0.28.1"
+crossterm = "0.29.0"
 flexi_logger = "0.29.0"
 indicatif = "0.17.1"
 log = "0.4.17"
-ratatui = { version = "0.28.1", default-features = false, features = [
-  'crossterm',
+ratatui = { version = "0.30.2", default-features = false, features = [
+  "crossterm_0_29",
 ] }
 reqwest = { version = "0.12.7", default-features = false, features = [
   "blocking",

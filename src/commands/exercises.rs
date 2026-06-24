@@ -189,7 +189,7 @@ mod tests {
         print_exercises(&mut io, "course_name", &exercises).unwrap();
         let output = String::from_utf8(output.into_inner()).unwrap();
         let output = output.lines().collect::<Vec<_>>();
-        assert!(output[0].eq(""), "first line should be empty");
+        assert!(output[0].is_empty(), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
             output[1].eq(course_string),
@@ -235,7 +235,7 @@ mod tests {
 
         let output = String::from_utf8(output.into_inner()).unwrap();
         let output = output.lines().collect::<Vec<_>>();
-        assert!(output[0].eq(""), "first line should be empty");
+        assert!(output[0].is_empty(), "first line should be empty");
         let course_string = "Course name: course_name";
         assert!(
             output[1].eq(course_string),

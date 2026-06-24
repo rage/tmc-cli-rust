@@ -62,6 +62,7 @@ fn draw_terminal<B>(
 ) -> anyhow::Result<()>
 where
     B: Backend,
+    B::Error: std::error::Error + Send + Sync + 'static,
 {
     terminal.draw(|f| {
         let chunks = Layout::default()
@@ -150,6 +151,7 @@ fn event_loop<B>(
 ) -> anyhow::Result<Option<String>>
 where
     B: Backend,
+    B::Error: std::error::Error + Send + Sync + 'static,
 {
     loop {
         draw_terminal(terminal, app, prompt)?;

@@ -1,3 +1,7 @@
+// tmc-langs' LangsError/TestMyCodeClientError are large and returned by value across the
+// client API; boxing every Result isn't worth it for a CLI.
+#![allow(clippy::result_large_err)]
+
 mod cli;
 mod client;
 mod commands;
