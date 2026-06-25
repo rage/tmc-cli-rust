@@ -1,3 +1,7 @@
+// tmc-langs' LangsError/TestMyCodeClientError are large and returned by value across the
+// client API; boxing every Result isn't worth it for a CLI.
+#![allow(clippy::result_large_err)]
+
 mod cli;
 mod client;
 mod commands;
@@ -39,14 +43,12 @@ fn run_inner(io: &mut Io, cli: Cli) -> anyhow::Result<()> {
     #[cfg(target_os = "windows")]
     let mut config = config;
 
+    // Auto-update on Windows unless disabled (--no-update) or running in test mode.
     if cli.no_update {
-        let os = std::env::consts::OS;
-        if os == "windows" {
-            #[cfg(target_os = "windows")]
-            updater::check_for_update(&mut config, cli.force_update)?;
-        }
-    } else {
         println!("No Auto-Updates");
+    } else if !cli.testmode {
+        #[cfg(target_os = "windows")]
+        updater::check_for_update(&mut config, cli.force_update)?;
     }
 
     commands::handle(cli, io, config)

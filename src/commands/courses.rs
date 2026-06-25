@@ -98,7 +98,7 @@ mod tests {
 
         let output = String::from_utf8(output.into_inner()).unwrap();
         let output = output.lines().collect::<Vec<_>>();
-        assert!(output[0].eq(""), "first line should be empty");
+        assert!(output[0].is_empty(), "first line should be empty");
         assert!(
             output[1].eq("mooc-tutustumiskurssi"),
             "Expected 'mooc-tutustumiskurssi', got {}",
