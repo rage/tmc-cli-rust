@@ -70,7 +70,7 @@ pub fn submit(
         Err(err) => {
             manager.force_join();
 
-            io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", &new_submission.show_submission_url), PrintColor::Normal)?;
+            io.println(&format!("Failed while waiting for server to process submission.\n You can still check your submission manually here: {}.", new_submission.show_submission_url), PrintColor::Normal)?;
             io.println(&format!("Error message: {err:#?}"), PrintColor::Normal)?;
         }
     }

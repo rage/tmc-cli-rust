@@ -64,7 +64,7 @@ pub fn download_or_update(
                 let temp_file_path = temp_file_path.join("temp.txt");
                 std::fs::write(
                     temp_file_path,
-                    format!("{};{}", &path.display(), &course.name),
+                    format!("{};{}", path.display(), course.name),
                 )?;
                 Command::new("cmd")
                     .args([

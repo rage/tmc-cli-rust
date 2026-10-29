@@ -135,7 +135,7 @@ fn get_latest_version() -> anyhow::Result<String> {
         anyhow::bail!(
             "Version lookup failed with status: {:?} - for: {:?}",
             resp.status(),
-            &url
+            url
         );
     }
     let tags = resp.json::<serde_json::Value>()?;
