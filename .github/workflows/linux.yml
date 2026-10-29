@@ -82,6 +82,8 @@ jobs:
             -v "$HOME/.cargo-container/git":/usr/local/cargo/git \
             rust:1.88.0-bullseye bash -euo pipefail -c '
             export DEBIAN_FRONTEND=noninteractive
+            # bullseye is past end of life and deb.debian.org no longer serves all of its packages
+            sed -i "s|http://deb.debian.org|http://archive.debian.org|g" /etc/apt/sources.list
             apt-get update
             apt-get install -y gcc-multilib g++-multilib libclang-dev
             curl -fsSL https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr/local
