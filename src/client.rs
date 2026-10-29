@@ -14,9 +14,6 @@ use tmc_langs::{
 
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
-const UNHANDLED_PASTE_ERROR: &str =
-    "Received unhandled TestMyCodeClientError when calling paste command from tmc_client";
-
 pub struct Client {
     pub tmc_client: TestMyCodeClient,
     pub test_mode: bool,
@@ -82,9 +79,9 @@ impl Client {
                 TestMyCodeClientError::HttpError { status, error, .. } => {
                     Err(format!("Status {status}, message: {error}"))
                 }
-                _ => Err(UNHANDLED_PASTE_ERROR.to_string()),
+                err => Err(err.to_string()),
             },
-            Err(_) => Err(UNHANDLED_PASTE_ERROR.to_string()),
+            Err(err) => Err(err.to_string()),
             Ok(submission) => Ok(submission),
         }
     }
