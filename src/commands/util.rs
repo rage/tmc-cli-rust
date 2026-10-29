@@ -114,7 +114,7 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         Err(err) => anyhow::bail!("Could not load info about projects due to '{err}'"),
     };
 
-    for course in projects_config.courses.keys() {
+    for course in projects_config.tmc_courses.keys() {
         courses.push(course.as_str());
     }
 
@@ -133,7 +133,7 @@ pub fn choose_exercise(config: &TmcCliConfig) -> anyhow::Result<PathBuf> {
         .ok_or_else(|| anyhow::anyhow!("Didn't select any course"))?;
 
     let course_config = projects_config
-        .courses
+        .tmc_courses
         .get(&chosen_course)
         .context("Failed to find selected course")?;
 
@@ -202,7 +202,7 @@ pub fn is_exercise_dir(dir: PathBuf) -> anyhow::Result<bool> {
         )
     })?;
 
-    Ok(config.courses.contains_key(&course_slug))
+    Ok(config.tmc_courses.contains_key(&course_slug))
 }
 
 /// Returns a manual progress bar of size 'length' based on percentage of 'completed' / 'total'

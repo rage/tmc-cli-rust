@@ -68,10 +68,11 @@ jobs:
 
       # Build inside the official Rust image on Debian bullseye (glibc 2.31, the same floor
       # as Ubuntu 20.04) so the binaries run on older systems and the toolchain ships in the
-      # image instead of being downloaded on every run. gcc-multilib provides the 32-bit
-      # toolchain for the i686 target; reqwest uses rustls-tls, so no OpenSSL is needed. The
-      # image tag pins the toolchain to the MSRV. Cargo caches are mounted in and ownership
-      # normalised afterwards so the cache and gsutil can read the root-owned tree.
+      # image instead of being downloaded on every run. gcc/g++-multilib provide the 32-bit
+      # toolchain for the i686 target. tmc-langs builds BoringSSL (boring-sys), which needs
+      # libclang, cmake >= 3.22 (bullseye ships 3.18) and SSE2 on i686. The image tag pins the
+      # toolchain to the MSRV. Cargo caches are mounted in and ownership normalised afterwards
+      # so the cache and gsutil can read the root-owned tree.
       - name: Cargo build
         run: |
           mkdir -p "$HOME/.cargo-container/registry" "$HOME/.cargo-container/git"
@@ -82,7 +83,9 @@ jobs:
             rust:1.88.0-bullseye bash -euo pipefail -c '
             export DEBIAN_FRONTEND=noninteractive
             apt-get update
-            apt-get install -y gcc-multilib
+            apt-get install -y gcc-multilib g++-multilib libclang-dev
+            curl -fsSL https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr/local
+            export CFLAGS_i686_unknown_linux_gnu=-msse2 CXXFLAGS_i686_unknown_linux_gnu=-msse2
             rustup target add ${{ matrix.target }}
             cargo build -p tmc --release --verbose --target ${{ matrix.target }}
           '

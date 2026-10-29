@@ -88,7 +88,7 @@ fn print_exercises(
         };
 
         io.println(
-            &format!("  {}: {}", completion_status, &exercise.name),
+            &format!("  {}: {}", completion_status, exercise.name),
             PrintColor::Normal,
         )?;
     }

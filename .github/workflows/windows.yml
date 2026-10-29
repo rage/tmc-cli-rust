@@ -59,6 +59,9 @@ jobs:
       - name: Enable long paths for git
         run: git config --system core.longpaths true # allow long paths from git deps
 
+      - name: Install NASM
+        uses: ilammy/setup-nasm@v1 # boringssl assembles its x86 asm with nasm
+
       - name: Cargo build # crt-static is set with RUSTFLAGS to statically link MSVCRT (VCRUNTIME140.dll)
         run: |
           rustup target add i686-pc-windows-msvc

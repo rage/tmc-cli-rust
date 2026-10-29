@@ -9,12 +9,11 @@ use tmc_langs::{
         },
         TestMyCodeClient, TestMyCodeClientError, Token,
     },
-    Credentials, DownloadOrUpdateCourseExercisesResult, DownloadResult, LangsError, Language,
+    Credentials, DownloadOrUpdateTmcCourseExercisesResult, DownloadResult, LangsError, Language,
 };
 
 pub const SUCCESSFUL_LOGIN: &str = "Logged in successfully!";
 pub const WRONG_LOGIN: &str = "Wrong username or password";
-
 pub struct Client {
     pub tmc_client: TestMyCodeClient,
     pub test_mode: bool,
@@ -40,7 +39,7 @@ impl Client {
 
     pub fn authenticate(&mut self, username: String, password: String) -> anyhow::Result<Token> {
         // match self.tmc_client.authenticate(PLUGIN, username, password) {
-        match tmc_langs::login_with_password(&mut self.tmc_client, PLUGIN, username, password) {
+        match tmc_langs::login_with_password(&mut self.tmc_client, username, password) {
             Ok(x) => Ok(x),
             Err(x) => anyhow::bail!(Client::explain_login_fail(x)),
         }
@@ -76,15 +75,13 @@ impl Client {
             paste_message,
             locale,
         ) {
-            Err(client_error) => match client_error {
-                LangsError::TestMyCodeClient(TestMyCodeClientError::HttpError { status, error, .. }) => {
+            Err(LangsError::TestMyCodeClient(err)) => match *err {
+                TestMyCodeClientError::HttpError { status, error, .. } => {
                     Err(format!("Status {status}, message: {error}"))
                 }
-                _ => Err(
-                    "Received unhandled TestMyCodeClientError when calling paste command from tmc_client"
-                        .to_string(),
-                ),
+                err => Err(err.to_string()),
             },
+            Err(err) => Err(err.to_string()),
             Ok(submission) => Ok(submission),
         }
     }
@@ -187,7 +184,7 @@ impl Client {
                 }
                 Ok(course_list)
             }
-            Err(TestMyCodeClientError::NotAuthenticated) => {
+            Err(err) if matches!(*err, TestMyCodeClientError::NotAuthenticated) => {
                 anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
             Err(err) => anyhow::bail!("Unexpected error: '{err}'."),
@@ -241,21 +238,23 @@ impl Client {
         &self,
         submission_url: Url,
     ) -> Result<SubmissionFinished, TestMyCodeClientError> {
-        self.tmc_client.wait_for_submission_at(submission_url)
+        self.tmc_client
+            .wait_for_submission_at(submission_url)
+            .map_err(|err| *err)
     }
     pub fn update_exercises(
         &mut self,
         path: &Path,
-    ) -> Result<DownloadOrUpdateCourseExercisesResult, LangsError> {
+    ) -> Result<DownloadOrUpdateTmcCourseExercisesResult, LangsError> {
         if self.test_mode {
-            return Ok(DownloadOrUpdateCourseExercisesResult {
+            return Ok(DownloadOrUpdateTmcCourseExercisesResult {
                 downloaded: vec![],
                 skipped: vec![],
                 failed: None,
             });
         }
 
-        tmc_langs::update_exercises(&self.tmc_client, path)
+        tmc_langs::update_tmc_exercises(&self.tmc_client, path)
     }
 
     pub fn submit(
@@ -298,7 +297,7 @@ impl Client {
         }
         match self.tmc_client.get_course_exercises(course_id) {
             Ok(exercises) => Ok(exercises),
-            Err(TestMyCodeClientError::NotAuthenticated) => {
+            Err(err) if matches!(*err, TestMyCodeClientError::NotAuthenticated) => {
                 anyhow::bail!("Login token is invalid. Please try logging in again.")
             }
             Err(err) => anyhow::bail!("Unexpected error: '{err}'."),
@@ -347,7 +346,9 @@ impl Client {
                 exercises: vec![],
             })
         } else {
-            self.tmc_client.get_course_details(course_id)
+            self.tmc_client
+                .get_course_details(course_id)
+                .map_err(|err| *err)
         }
     }
 
